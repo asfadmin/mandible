@@ -1,0 +1,51 @@
+import h5py
+import numpy as np
+import pytest
+from lambdas.lib.h5_parser import H5parser
+
+
+@pytest.fixture
+def h5_test_file(tmp_path):
+    filename = tmp_path / "test.h5"
+    dataset_1 = np.array((0.0, 0.1, 0.2, 0.3, 0.4, 0.5))
+    dataset_2 = np.array((b"Testing"))
+    with h5py.File(filename, "w") as hf:
+        group_1 = hf.create_group("test")
+        group_2 = hf.create_group("test/long/path/metadata")
+        group_1.create_dataset("tester", data=dataset_1)
+        group_2.create_dataset("test_meta", data=dataset_2)
+    yield filename
+    filename.unlink()
+
+
+def test_h5_parser_parent_key(h5_test_file):
+    groups = ["test"]
+    data = H5parser(groups)
+    data.read_file(h5_test_file)
+    assert data == {
+        "test_meta": "Testing",
+        "tester": [
+            0.0,
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+            0.5
+        ]
+    }
+
+
+def test_h5_parser_single_key(h5_test_file):
+    groups = ["test/long/path/metadata"]
+    data = H5parser(groups)
+    data.read_file(h5_test_file)
+    assert data == {
+        "test_meta": "Testing"
+    }
+
+
+def test_h5_parser_no_group(h5_test_file):
+    groups = []
+    data = H5parser(groups)
+    data.read_file(h5_test_file)
+    assert data == {}
