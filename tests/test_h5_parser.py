@@ -19,7 +19,7 @@ def h5_test_file(tmp_path):
 
 
 def test_h5_parser_parent_key(h5_test_file):
-    groups = ["test"]
+    groups = ["test/long/path/metadata/test_meta", "/test/tester"]
     data = H5parser(groups)
     data.read_file(h5_test_file)
     assert data == {
@@ -36,7 +36,7 @@ def test_h5_parser_parent_key(h5_test_file):
 
 
 def test_h5_parser_single_key(h5_test_file):
-    groups = ["test/long/path/metadata"]
+    groups = ["test/long/path/metadata/test_meta"]
     data = H5parser(groups)
     data.read_file(h5_test_file)
     assert data == {
