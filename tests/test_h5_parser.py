@@ -49,3 +49,10 @@ def test_h5_parser_no_group(h5_test_file):
     data = H5parser(groups)
     data.read_file(h5_test_file)
     assert data == {}
+
+
+def test_h5_praser_group_missing(h5_test_file):
+    groups = ["bad"]
+    with pytest.raises(Exception, match="does not contain bad"):
+        data = H5parser(groups)
+        data.read_file(h5_test_file)
