@@ -1,3 +1,5 @@
+import logging
+
 import h5py
 import numpy as np
 
@@ -11,6 +13,7 @@ class H5parser(dict):
     """
     def __init__(self, h5_groups):
         self.h5_groups = h5_groups
+        self.log = logging.getLogger(__name__)
 
     def read_file(self, file: str) -> None:
         with h5py.File(file, "r") as h5f:
