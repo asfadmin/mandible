@@ -52,7 +52,7 @@ def test_h5_parser_no_group(h5_test_file):
 
 
 def test_h5_praser_group_missing(h5_test_file):
-    groups = ["bad"]
-    with pytest.raises(Exception, match="does not contain bad"):
+    groups = ["test/long/path/metadata/test_meta", "thing", "here"]
+    with pytest.raises(KeyError, match="Unable to open object"):
         data = H5parser(groups)
         data.read_file(h5_test_file)
