@@ -29,5 +29,4 @@ class H5parser(dict):
                         node_val = [x.decode("utf-8") for x in node_val]
                 if isinstance(node_val, bytes):
                     node_val = node_val.decode("utf-8")
-                md_name = key.split("/")[-1]
-                self[md_name] = node_val
+                self[key] = node_val
