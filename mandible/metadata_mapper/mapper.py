@@ -32,15 +32,21 @@ class Source:
 
     def query_all_values(self):
         with self.storage.get_file() as file:
-            self._values.update(
-                self.format.get_values(
-                    file,
-                    list(self._keys)
-                )
+            keys = list(self._keys)
+            new_values = self.format.get_values(file, keys)
+            log.debug(
+                "%s: using keys %s, got new values %s",
+                self,
+                keys,
+                new_values
             )
+            self._values.update(new_values)
 
     def get_value(self, key: str):
         return self._values[key]
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.storage}, {self.format})"
 
 
 class SourceProvider(ABC):

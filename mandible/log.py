@@ -9,3 +9,4 @@ def init_root_logger():
     logging.getLogger().setLevel(level)
     logging.getLogger("boto3").setLevel(logging.INFO)
     logging.getLogger("botocore").setLevel(logging.INFO)
+    logging.getLogger("s3fs").setLevel(logging.INFO)
