@@ -1,11 +1,8 @@
 import logging
-import re
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Dict, Set
+from typing import Dict
 
-from .format import Format
-from .storage import Storage
+from .source import Source, SourceProvider
 
 log = logging.getLogger(__name__)
 
@@ -15,89 +12,6 @@ class Context:
     files: Dict[str, Dict] = field(default_factory=dict)
 
 
-class Source:
-    def __init__(
-        self,
-        storage: Storage,
-        format: Format,
-    ):
-        self.storage = storage
-        self.format = format
-
-        self._keys: Set[str] = set()
-        self._values: Dict[str] = {}
-
-    def add_key(self, key: str):
-        self._keys.add(key)
-
-    def query_all_values(self):
-        with self.storage.get_file() as file:
-            keys = list(self._keys)
-            new_values = self.format.get_values(file, keys)
-            log.debug(
-                "%s: using keys %s, got new values %s",
-                self,
-                keys,
-                new_values
-            )
-            self._values.update(new_values)
-
-    def get_value(self, key: str):
-        return self._values[key]
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.storage}, {self.format})"
-
-
-class SourceProvider(ABC):
-    @abstractmethod
-    def get_sources(self, context: Context) -> Dict[str, Source]:
-        pass
-
-
-class ConfigSourceProvider(SourceProvider):
-    """Provide sources from JSON object config"""
-
-    def __init__(self, config: Dict):
-        self.config = config
-
-    def get_sources(self, context: Context) -> Dict[str, Source]:
-        return {
-            key: Source(
-                storage=self._get_storage(key, config["storage"], context),
-                format=self._get_format(config["format"])
-            )
-            for key, config in self.config.items()
-        }
-
-    def _get_storage(self, name: str, config: Dict, context: Context) -> Storage:
-        cls = Storage.get_subclass(config["class"])
-
-        if (file_name := config.get("name")) is not None:
-            file = context.files[file_name]
-        elif (file_name_match := config.get("name_match")) is not None:
-            pattern = re.compile(file_name_match)
-            for file_name, file_info in context.files.items():
-                if pattern.match(file_name):
-                    file = file_info
-                    break
-            else:
-                raise RuntimeError(
-                    f"No files matched pattern '{file_name_match}'"
-                )
-        else:
-            raise ValueError(
-                f"Missing 'name' or 'name_match' keys for source '{name}'"
-            )
-
-        return cls(**file)
-
-    def _get_format(self, config: Dict) -> Format:
-        cls_name = config["class"]
-        cls = Format.get_subclass(cls_name)
-        return cls()
-
-
 class MetadataMapper:
     def __init__(self, template, source_provider: SourceProvider = None):
         self.template = template
@@ -105,14 +19,17 @@ class MetadataMapper:
 
     def get_metadata(self, context: Context) -> Dict:
         if self.source_provider is not None:
-            sources = self.source_provider.get_sources(context)
+            sources = self.source_provider.get_sources()
         else:
             sources = {}
         self._cache_source_keys(sources)
 
         for name, source in sources.items():
             log.info("Querying source '%s': %s", name, source)
-            source.query_all_values()
+            try:
+                source.query_all_values(context)
+            except Exception as e:
+                raise RuntimeError(f"Failed to query source '{name}'") from e
 
         return self._replace_template(self.template, sources)
 
