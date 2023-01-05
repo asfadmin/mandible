@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 @dataclass
 class Context:
     files: Dict[str, Dict] = field(default_factory=dict)
+    meta: Dict = field(default_factory=dict)
 
 
 class MetadataMapper:
@@ -22,7 +23,7 @@ class MetadataMapper:
             sources = self.source_provider.get_sources()
         else:
             sources = {}
-        self._cache_source_keys(sources)
+        self._cache_source_keys(context, sources)
 
         for name, source in sources.items():
             log.info("Querying source '%s': %s", name, source)
@@ -31,18 +32,21 @@ class MetadataMapper:
             except Exception as e:
                 raise RuntimeError(f"Failed to query source '{name}'") from e
 
-        return self._replace_template(self.template, sources)
+        return self._replace_template(context, self.template, sources)
 
-    def _cache_source_keys(self, sources: Dict[str, Source]):
+    def _cache_source_keys(self, context: Context, sources: Dict[str, Source]):
         for value in _walk_values(self.template):
             if isinstance(value, dict) and "@mapped" in value:
                 config = value["@mapped"]
                 source = config["source"]
                 key = config["key"]
 
+                if callable(key):
+                    key = key(context)
+
                 sources[source].add_key(key)
 
-    def _replace_template(self, template, sources: Dict[str, Source]):
+    def _replace_template(self, context: Context, template, sources: Dict[str, Source]):
         if isinstance(template, dict):
             # TODO(reweeden): Implement functions as objects dynamically
             if "@mapped" in template:
@@ -50,13 +54,16 @@ class MetadataMapper:
                 source = config["source"]
                 key = config["key"]
 
+                if callable(key):
+                    key = key(context)
+
                 return sources[source].get_value(key)
             return {
-                k: self._replace_template(v, sources)
+                k: self._replace_template(context, v, sources)
                 for k, v in template.items()
             }
         if isinstance(template, list):
-            return [self._replace_template(v, sources) for v in template]
+            return [self._replace_template(context, v, sources) for v in template]
         return template
 
 

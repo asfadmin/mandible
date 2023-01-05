@@ -117,6 +117,25 @@ def test_basic(mapper, context):
     }
 
 
+def test_mapped_key_callable(config, context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {
+                    "source": "name_match_file",
+                    "key": lambda ctx: ctx.meta["foo"]
+                }
+            },
+        },
+        source_provider=ConfigSourceProvider(config["sources"])
+    )
+    context.meta["foo"] = "bar"
+
+    assert mapper.get_metadata(context) == {
+        "foo": "value for bar"
+    }
+
+
 def test_basic_py_source_provider(config, context):
     mapper = MetadataMapper(
         template=config["template"],
