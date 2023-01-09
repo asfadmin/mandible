@@ -18,7 +18,10 @@ class H5parser(dict):
     def read_file(self, file: str) -> None:
         with h5py.File(file, "r") as h5f:
             for key in self.h5_groups:
-                node_val = h5f[key][()]
+                try:
+                    node_val = h5f[key][()]
+                except KeyError:
+                    raise KeyError(key)
                 if isinstance(node_val, np.integer):
                     node_val = int(node_val)
                 if isinstance(node_val, np.floating):
