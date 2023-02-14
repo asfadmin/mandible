@@ -1,6 +1,6 @@
 import re
 from abc import ABC, abstractmethod
-from typing import IO, Dict, Type, Union
+from typing import IO, Dict, Union
 
 import s3fs
 
