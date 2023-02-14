@@ -2,6 +2,8 @@ import json
 from abc import ABC, abstractmethod
 from typing import IO, Dict, Iterable
 
+from lxml import etree
+
 from ..h5_parser import H5parser
 
 
@@ -42,3 +44,12 @@ class Json(Format):
             val = val[key]
 
         return val
+
+
+class Xml(Format):
+    def get_values(self, file: IO[bytes], keys: Iterable[str]):
+        tree = etree.parse(file)
+        return {
+            key: tree.xpath(key)[0].text
+            for key in keys
+        }
