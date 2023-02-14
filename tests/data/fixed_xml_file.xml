@@ -1,0 +1,13 @@
+<root>
+  <foo>
+    <bar>
+      <foobar>testing_1</foobar>
+    </bar>
+    <bar>
+      <foobar>2</foobar>
+    </bar>
+    <bar>
+      <foobar>testing_3</foobar>
+    </bar>
+  </foo>
+</root>

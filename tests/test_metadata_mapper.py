@@ -8,7 +8,7 @@ from lambdas.lib.metadata_mapper import (
     PySourceProvider,
     Source
 )
-from lambdas.lib.metadata_mapper.format import Json
+from lambdas.lib.metadata_mapper.format import Json, Xml
 from lambdas.lib.metadata_mapper.storage import LocalFile
 
 
@@ -33,7 +33,16 @@ def config():
                 "format": {
                     "class": "Json"
                 }
-            }
+            },
+            "fixed_xml_file": {
+                "storage": {
+                    "class": "LocalFile",
+                    "name": "fixed_xml_file.xml"
+                },
+                "format": {
+                    "class": "Xml"
+                }
+            },
         },
         "template": {
             "foo": {
@@ -55,6 +64,18 @@ def config():
                         "key": "bar"
                     }
                 }
+            },
+            "xml_foobar_1": {
+                "@mapped": {
+                    "source": "fixed_xml_file",
+                    "key": "./foo/bar[1]/foobar"
+                }
+            },
+            "xml_foobar_2": {
+                "@mapped": {
+                    "source": "fixed_xml_file",
+                    "key": "./foo/bar[2]/foobar"
+                }
             }
         }
     }
@@ -66,6 +87,9 @@ def context(data_path):
         files={
             "fixed_name_file.json": {
                 "path": str(data_path / "fixed_name_file.json")
+            },
+            "fixed_xml_file.xml": {
+                "path": str(data_path / "fixed_xml_file.xml")
             },
             "another_file.json": {},
             "yet_another_file.json": {},
@@ -113,7 +137,9 @@ def test_basic(mapper, context):
         "outer": {
             "nested": "value for nested",
             "bar": "value for bar"
-        }
+        },
+        "xml_foobar_1": "testing_1",
+        "xml_foobar_2": "2",
     }
 
 
@@ -146,6 +172,12 @@ def test_basic_py_source_provider(config, context):
                 ),
                 format=Json()
             ),
+            "fixed_xml_file": Source(
+                storage=LocalFile(
+                    name="fixed_xml_file.xml"
+                ),
+                format=Xml()
+            ),
             "name_match_file": Source(
                 storage=LocalFile(
                     name_match=r".*match_me\.json"
@@ -165,7 +197,9 @@ def test_basic_py_source_provider(config, context):
         "outer": {
             "nested": "value for nested",
             "bar": "value for bar"
-        }
+        },
+        "xml_foobar_1": "testing_1",
+        "xml_foobar_2": "2",
     }
 
 
@@ -188,5 +222,7 @@ def test_basic_s3_file(s3_resource, config, context):
         "outer": {
             "nested": "value for nested",
             "bar": "value for bar"
-        }
+        },
+        "xml_foobar_1": "testing_1",
+        "xml_foobar_2": "2",
     }
