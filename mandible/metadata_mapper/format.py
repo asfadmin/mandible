@@ -2,7 +2,10 @@ import json
 from abc import ABC, abstractmethod
 from typing import IO, Dict, Iterable
 
-from lxml import etree
+try:
+    from lxml import etree
+except ImportError:
+    etree = None
 
 from ..h5_parser import H5parser
 
@@ -46,10 +49,15 @@ class Json(Format):
         return val
 
 
-class Xml(Format):
-    def get_values(self, file: IO[bytes], keys: Iterable[str]):
-        tree = etree.parse(file)
-        return {
-            key: tree.xpath(key)[0].text
-            for key in keys
-        }
+if etree:
+    class Xml(Format):
+        def get_values(self, file: IO[bytes], keys: Iterable[str]):
+            tree = etree.parse(file)
+            return {
+                key: tree.xpath(key)[0].text
+                for key in keys
+            }
+else:
+    class Xml(Format):
+        def __init__(self) -> None:
+            raise Exception("lxml must be installed to use the Xml Format Class")
