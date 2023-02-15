@@ -49,7 +49,7 @@ class Json(Format):
         return val
 
 
-if etree:
+if etree is not None:
     class Xml(Format):
         def get_values(self, file: IO[bytes], keys: Iterable[str]):
             tree = etree.parse(file)
@@ -61,3 +61,6 @@ else:
     class Xml(Format):
         def __init__(self) -> None:
             raise Exception("lxml must be installed to use the Xml Format Class")
+
+        def get_values(self, file: IO[bytes], keys: Iterable[str]):
+            return {}
