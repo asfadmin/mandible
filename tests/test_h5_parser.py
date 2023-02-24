@@ -1,6 +1,7 @@
 import h5py
 import numpy as np
 import pytest
+
 from mandible.h5_parser import H5parser
 
 
