@@ -1,15 +1,16 @@
 import re
 
 import pytest
-from lambdas.lib.metadata_mapper import (
+
+from mandible.metadata_mapper import (
     ConfigSourceProvider,
     Context,
     MetadataMapper,
     PySourceProvider,
-    Source
+    Source,
 )
-from lambdas.lib.metadata_mapper.format import Json, Xml
-from lambdas.lib.metadata_mapper.storage import LocalFile
+from mandible.metadata_mapper.format import Json, Xml
+from mandible.metadata_mapper.storage import LocalFile
 
 
 @pytest.fixture

@@ -1,5 +1,5 @@
 import pytest
-from lambdas.lib.log import log_errors
+from mandible.log import log_errors
 
 
 def test_log_errors(caplog):
