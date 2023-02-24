@@ -2,6 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Dict, Set
 
+from .context import Context
 from .format import Format
 from .storage import Storage
 
@@ -19,7 +20,7 @@ class Source:
     def add_key(self, key: str):
         self._keys.add(key)
 
-    def query_all_values(self, context: "Context"):
+    def query_all_values(self, context: Context):
         with self.storage.open_file(context) as file:
             keys = list(self._keys)
             new_values = self.format.get_values(file, keys)

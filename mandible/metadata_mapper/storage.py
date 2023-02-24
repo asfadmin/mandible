@@ -4,6 +4,8 @@ from typing import IO, Dict, Union
 
 import s3fs
 
+from .context import Context
+
 
 class Storage(ABC):
     _SUBCLASSES: Dict[str, "Storage"] = {}
@@ -32,7 +34,7 @@ class Storage(ABC):
         self.name = name
         self.name_match = name_match
 
-    def open_file(self, context: "Context") -> IO[bytes]:
+    def open_file(self, context: Context) -> IO[bytes]:
         if self.name is not None:
             file = context.files[self.name]
         elif self.name_match is not None:
