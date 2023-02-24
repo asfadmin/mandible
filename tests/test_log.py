@@ -1,4 +1,5 @@
 import pytest
+
 from mandible.log import log_errors
 
 
