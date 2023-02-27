@@ -4,3 +4,4 @@
 # Tools
 poetry.lock
 .tox
+.coverage
