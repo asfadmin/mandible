@@ -1,6 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Dict, Set
+from dataclasses import dataclass
+from typing import Any, Dict, Set
 
 from .context import Context
 from .format import Format
@@ -9,13 +10,14 @@ from .storage import Storage
 log = logging.getLogger(__name__)
 
 
+@dataclass
 class Source:
-    def __init__(self, storage: Storage, format: Format):
-        self.storage = storage
-        self.format = format
+    storage: Storage
+    format: Format
 
+    def __post_init__(self):
         self._keys: Set[str] = set()
-        self._values: Dict[str] = {}
+        self._values: Dict[str, Any] = {}
 
     def add_key(self, key: str):
         self._keys.add(key)
@@ -34,9 +36,6 @@ class Source:
 
     def get_value(self, key: str):
         return self._values[key]
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.storage}, {self.format})"
 
 
 class SourceProvider(ABC):
