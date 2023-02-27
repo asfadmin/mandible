@@ -70,7 +70,9 @@ class ConfigSourceProvider(SourceProvider):
         }
 
     def _get_storage(self, name: str, config: Dict) -> Storage:
-        cls = Storage.get_subclass(config["class"])
+        cls_name = config["class"]
+        cls = Storage.get_subclass(cls_name)
+
         name = config.get("name")
         name_match = config.get("name_match")
 
@@ -82,4 +84,5 @@ class ConfigSourceProvider(SourceProvider):
     def _get_format(self, config: Dict) -> Format:
         cls_name = config["class"]
         cls = Format.get_subclass(cls_name)
+
         return cls()
