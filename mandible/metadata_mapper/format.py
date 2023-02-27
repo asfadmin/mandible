@@ -1,13 +1,27 @@
+import contextlib
 import json
 from abc import ABC, abstractmethod
-from typing import IO, Dict, Iterable
+from typing import IO, Any, ContextManager, Dict, Iterable
+
+from ..h5_parser import normalize
+
+try:
+    import h5py
+except ImportError:
+    h5py = None
 
 try:
     from lxml import etree
 except ImportError:
     etree = None
 
-from ..h5_parser import H5parser
+
+class FormatError(Exception):
+    def __init__(self, reason: str):
+        self.reason = reason
+
+    def __str__(self):
+        return self.reason
 
 
 class Format(ABC):
@@ -20,25 +34,53 @@ class Format(ABC):
     def get_subclass(cls, name: str) -> "Format":
         return cls._SUBCLASSES[name]
 
-    @abstractmethod
     def get_values(self, file: IO[bytes], keys: Iterable[str]):
+        with self._parse_data(file) as data:
+            return {
+                key: self._eval_key_wrapper(data, key)
+                for key in keys
+            }
+
+    def _eval_key_wrapper(self, data, key: str):
+        try:
+            return self._eval_key(data, key)
+        except KeyError as e:
+            raise FormatError(f"Key not found '{key}'") from e
+        except Exception as e:
+            raise FormatError(f"'{key}' {e}") from e
+
+    @staticmethod
+    @abstractmethod
+    def _parse_data(file: IO[bytes]) -> ContextManager[Any]:
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def _eval_key(data, key: str):
         pass
 
 
 class H5(Format):
-    def get_values(self, file: IO[bytes], keys: Iterable[str]):
-        h5_data = H5parser(keys)
-        h5_data.read_file(file)
-        return h5_data
+    def __init__(self) -> None:
+        if h5py is None:
+            raise Exception("h5py must be installed to use the H5 format class")
+
+    @staticmethod
+    @contextlib.contextmanager
+    def _parse_data(file: IO[bytes]):
+        with h5py.File(file, "r") as h5f:
+            yield h5f
+
+    @staticmethod
+    def _eval_key(data, key: str):
+        return normalize(data[key][()])
 
 
 class Json(Format):
-    def get_values(self, file: IO[bytes], keys: Iterable[str]):
-        data = json.load(file)
-        return {
-            key: self._eval_key(data, key)
-            for key in keys
-        }
+    @staticmethod
+    @contextlib.contextmanager
+    def _parse_data(file: IO[bytes]):
+        yield json.load(file)
 
     @staticmethod
     def _eval_key(data: dict, key: str):
@@ -49,18 +91,22 @@ class Json(Format):
         return val
 
 
-if etree is not None:
-    class Xml(Format):
-        def get_values(self, file: IO[bytes], keys: Iterable[str]):
-            tree = etree.parse(file)
-            return {
-                key: tree.xpath(key)[0].text
-                for key in keys
-            }
-else:
-    class Xml(Format):
-        def __init__(self) -> None:
-            raise Exception("lxml must be installed to use the Xml Format Class")
+class Xml(Format):
+    def __init__(self) -> None:
+        if etree is None:
+            raise Exception("lxml must be installed to use the Xml format class")
 
-        def get_values(self, file: IO[bytes], keys: Iterable[str]):
-            return {}
+    @staticmethod
+    @contextlib.contextmanager
+    def _parse_data(file: IO[bytes]):
+        yield etree.parse(file)
+
+    @staticmethod
+    def _eval_key(data: etree.ElementTree, key: str):
+        elements = data.xpath(key)
+        if not elements:
+            raise KeyError(key)
+
+        # TODO(reweeden): Add a way to return the whole list here and not just
+        # the first element.
+        return elements[0].text

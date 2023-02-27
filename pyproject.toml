@@ -35,5 +35,11 @@ pytest = "^7.1.2"
 pytest-mock = "^3.8.2"
 
 
+[tool.pytest.ini_options]
+markers = [
+    "h5: requires the 'h5' extra to be installed",
+    "xml: requires the 'xml' extra to be installed",
+]
+
 [tool.isort]
 profile = "black"
