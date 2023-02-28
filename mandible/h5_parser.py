@@ -22,14 +22,18 @@ class H5parser(dict):
                     node_val = h5f[key][()]
                 except KeyError:
                     raise KeyError(key)
-                if isinstance(node_val, np.integer):
-                    node_val = int(node_val)
-                if isinstance(node_val, np.floating):
-                    node_val = float(node_val)
-                if isinstance(node_val, np.ndarray):
-                    node_val = node_val.tolist()
-                    if isinstance(node_val[0], bytes):
-                        node_val = [x.decode("utf-8") for x in node_val]
-                if isinstance(node_val, bytes):
-                    node_val = node_val.decode("utf-8")
-                self[key] = node_val
+                self[key] = normalize(node_val)
+
+
+def normalize(node_val):
+    if isinstance(node_val, np.integer):
+        return int(node_val)
+    if isinstance(node_val, np.floating):
+        return float(node_val)
+    if isinstance(node_val, np.ndarray):
+        value = node_val.tolist()
+        if isinstance(value[0], bytes):
+            value = [x.decode("utf-8") for x in value]
+        return value
+    if isinstance(node_val, bytes):
+        return node_val.decode("utf-8")

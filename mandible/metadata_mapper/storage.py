@@ -1,14 +1,17 @@
 import re
 from abc import ABC, abstractmethod
-from typing import IO, Dict, Union
+from dataclasses import dataclass
+from typing import IO, ClassVar, Dict, Optional, Union
 
 import s3fs
 
 from .context import Context
 
 
+@dataclass
 class Storage(ABC):
-    _SUBCLASSES: Dict[str, "Storage"] = {}
+    # Registry boilerplate
+    _SUBCLASSES: ClassVar[Dict[str, "Storage"]] = {}
 
     def __init_subclass__(cls):
         Storage._SUBCLASSES[cls.__name__] = cls
@@ -17,22 +20,19 @@ class Storage(ABC):
     def get_subclass(cls, name: str) -> "Storage":
         return cls._SUBCLASSES[name]
 
-    def __init__(
-        self,
-        *,
-        name: str = None,
-        name_match: Union[str, re.Pattern] = None
-    ):
-        if name is None and name_match is None:
+    # Begin class definition
+    name: Optional[str] = None
+    name_match: Optional[Union[str, re.Pattern]] = None
+
+    def __post_init__(self):
+        if self.name is None and self.name_match is None:
             raise ValueError(
                 "You must provide either a 'name' xor 'name_match' argument"
             )
-        if name is not None and name_match is not None:
+        if self.name is not None and self.name_match is not None:
             raise ValueError(
                 "You can't provide both a 'name' and 'name_match' argument"
             )
-        self.name = name
-        self.name_match = name_match
 
     def open_file(self, context: Context) -> IO[bytes]:
         if self.name is not None:
