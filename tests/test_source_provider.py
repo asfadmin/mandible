@@ -12,8 +12,8 @@ from mandible.metadata_mapper.storage import LocalFile
 @pytest.fixture
 def sources():
     return {
-        "json": Source(LocalFile(name="foo"), Json()),
-        "xml": Source(LocalFile(name="foo"), Xml())
+        "json": Source(LocalFile(filters={"name": "foo"}), Json()),
+        "xml": Source(LocalFile(filters={"name": "foo"}), Xml())
     }
 
 
@@ -28,7 +28,9 @@ def test_config_source_provider(sources):
         "json": {
             "storage": {
                 "class": "LocalFile",
-                "name": "foo"
+                "filters": {
+                    "name": "foo"
+                }
             },
             "format": {
                 "class": "Json"
@@ -37,7 +39,9 @@ def test_config_source_provider(sources):
         "xml": {
             "storage": {
                 "class": "LocalFile",
-                "name": "foo"
+                "filters": {
+                    "name": "foo"
+                }
             },
             "format": {
                 "class": "Xml"

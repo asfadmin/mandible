@@ -20,7 +20,9 @@ def config():
             "fixed_name_file": {
                 "storage": {
                     "class": "LocalFile",
-                    "name": "fixed_name_file.json"
+                    "filters": {
+                        "name": r"fixed_name_file\.json"
+                    }
                 },
                 "format": {
                     "class": "Json",
@@ -29,7 +31,9 @@ def config():
             "name_match_file": {
                 "storage": {
                     "class": "LocalFile",
-                    "name_match": r".*match_me\.json"
+                    "filters": {
+                        "name": r".*match_me\.json"
+                    }
                 },
                 "format": {
                     "class": "Json"
@@ -38,7 +42,9 @@ def config():
             "fixed_xml_file": {
                 "storage": {
                     "class": "LocalFile",
-                    "name": "fixed_xml_file.xml"
+                    "filters": {
+                        "name": "fixed_xml_file.xml"
+                    }
                 },
                 "format": {
                     "class": "Xml"
@@ -85,20 +91,29 @@ def config():
 @pytest.fixture
 def context(data_path):
     return Context(
-        files={
-            "fixed_name_file.json": {
+        files=[
+            {
+                "name": "fixed_name_file.json",
                 "path": str(data_path / "fixed_name_file.json")
             },
-            "fixed_xml_file.xml": {
+            {
+                "name": "fixed_xml_file.xml",
                 "path": str(data_path / "fixed_xml_file.xml")
             },
-            "another_file.json": {},
-            "yet_another_file.json": {},
-            "first_match_me.json": {
+            {
+                "name": "another_file.json"
+            },
+            {
+                "name": "yet_another_file.json"
+            },
+            {
+                "name": "first_match_me.json",
                 "path": str(data_path / "match_me.json")
             },
-            "dont_match_me.json": {}
-        }
+            {
+                "name": "dont_match_me.json"
+            },
+        ]
     )
 
 
@@ -169,25 +184,33 @@ def test_basic_py_source_provider(config, context):
         source_provider=PySourceProvider({
             "fixed_name_file": Source(
                 storage=LocalFile(
-                    name="fixed_name_file.json"
+                    filters={
+                        "name": "fixed_name_file.json"
+                    }
                 ),
                 format=Json()
             ),
             "fixed_xml_file": Source(
                 storage=LocalFile(
-                    name="fixed_xml_file.xml"
+                    filters={
+                        "name": "fixed_xml_file.xml"
+                    }
                 ),
                 format=Xml()
             ),
             "name_match_file": Source(
                 storage=LocalFile(
-                    name_match=r".*match_me\.json"
+                    filters={
+                        "name": r".*match_me\.json"
+                    }
                 ),
                 format=Json()
             ),
             "name_match_file2": Source(
                 storage=LocalFile(
-                    name_match=re.compile(r".*match_me\.json")
+                    filters={
+                        "name": re.compile(r".*match_me\.json")
+                    }
                 ),
                 format=Json()
             )
@@ -207,9 +230,9 @@ def test_basic_py_source_provider(config, context):
 def test_basic_s3_file(s3_resource, config, context):
     s3_resource.create_bucket(Bucket="test")
     s3_resource.Object("test", "fixed_name_file.json").put(
-        Body=open(context.files["fixed_name_file.json"]["path"]).read()
+        Body=open(context.files[0]["path"]).read()
     )
-    context.files["fixed_name_file.json"]["s3uri"] = "s3://test/fixed_name_file.json"
+    context.files[0]["s3uri"] = "s3://test/fixed_name_file.json"
 
     config["sources"]["fixed_name_file"]["storage"]["class"] = "S3File"
 
