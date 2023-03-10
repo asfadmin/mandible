@@ -46,3 +46,15 @@ def test_source(mock_context, mock_format, mock_storage):
 
     assert source.get_value("foo") == "foo value"
     assert source.get_value("bar") == "bar value"
+
+
+def test_source_query_no_keys(mock_context, mock_format, mock_storage):
+    source = Source(
+        mock_storage,
+        mock_format
+    )
+
+    source.query_all_values(mock_context)
+
+    mock_storage.open_file.assert_not_called()
+    mock_format.get_values.assert_not_called()

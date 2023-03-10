@@ -23,6 +23,9 @@ class Source:
         self._keys.add(key)
 
     def query_all_values(self, context: Context):
+        if not self._keys:
+            return
+
         with self.storage.open_file(context) as file:
             keys = list(self._keys)
             new_values = self.format.get_values(file, keys)
