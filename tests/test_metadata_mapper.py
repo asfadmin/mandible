@@ -290,3 +290,25 @@ def test_source_missing_key(config, context):
         )
     ):
         mapper.get_metadata(context)
+
+
+def test_mapped_missing_source(config, context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {
+                    "key": "does not exist",
+                }
+            }
+        },
+        source_provider=ConfigSourceProvider(config["sources"])
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            "failed to process template: "
+            "@mapped attribute missing key 'source'"
+        )
+    ):
+        mapper.get_metadata(context)
