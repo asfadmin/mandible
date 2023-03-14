@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
+from typing import List, TypedDict
 
 # ISO 8601 with Z
 UMM_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -10,73 +10,70 @@ def _remove_missing(ummg: dict) -> dict:
     return {k: v for k, v in ummg.items() if v}
 
 
-class UmmgBase():
-    """
-    Relies on keys that are required to extract metadata
+class FileMd(TypedDict, total=False):
+    name: str
+    uri: str
+    s3uri: str
+    size: int
 
-    CollectionRef:
-        ShortName: str
-        LongName: str
-    ProductMd:
-        productCreationDateTime: datetime
-        productStartTime: datetime
-        productStopTime: datetime
-    FileMd:
-        productFile: {
-            name: str,
-            uri: str,
-            s3uri: str,
-            size: str,
-            key: str,
-            bucket: str,
-        }
-        relatedFiles: [
-            {
-                name: str,
-                uri: str,
-                s3uri: str,
-                size: str,
-                key: str,
-                bucket: str,
-            }
-        ]
 
-    """
-    def __init__(self, meta: dict):
+class CollectionRef(TypedDict, total=False):
+    short_name: str
+    long_name: str
+
+
+class ProductMd(TypedDict, total=False):
+    product_creation_datetime: datetime
+    product_start_time: datetime
+    product_stop_time: datetime
+    mission: str
+
+
+class ProductFilesMd(TypedDict, total=False):
+    productFile: FileMd
+    related_Files: List[FileMd]
+
+
+class Meta(TypedDict, total=False):
+    collection_ref: CollectionRef
+    product_md: ProductMd
+    product_files_md: ProductFilesMd
+
+
+class UmmgBase:
+    def __init__(self, meta: Meta):
         self.now = datetime.now(timezone.utc)
         self.set_product_metadata(meta)
         self.set_product_files(meta)
-        self.set_product_file_md()
         self.set_collection_ref_table(meta)
-        self.set_file_name()
-        self.file_type = {
+
+    # object setters
+    def set_collection_ref_table(self, meta: dict):
+        self.collection_ref_table = meta["collection_ref"]
+
+    def set_product_metadata(self, meta: dict):
+        self.product_metadata = meta["product_md"]
+
+    def set_product_files(self, meta: dict):
+        self.product_files = meta["product_files_md"]
+
+    # general getters used in the ummg getters
+    def get_file_name_path(self) -> Path:
+        return Path(self.get_product_file_metadata()["name"])
+
+    def get_file_type(self) -> str:
+        file_type = {
             ".bin": "Binary",
             ".gpkg": "GeoPackage",
             ".h5": "HDF5",
             ".json": "JSON",
             ".xml": "XML",
         }
+        file_ext = self.get_file_name_path().suffix
+        return file_type.get(file_ext, "ASCII")
 
-    # object setters
-    def set_collection_ref_table(self, meta: dict):
-        self.collection_ref_table = meta["CollectionRef"]
-
-    def set_product_metadata(self, meta: dict):
-        self.product_metadata = meta["ProductMd"]
-
-    def set_product_files(self, meta: dict):
-        self.product_files = meta["FileMd"]
-
-    def set_file_name(self):
-        self.file_name = Path(self.product_file_md["name"])
-
-    def set_product_file_md(self):
-        self.product_file_md = self.product_files["productFile"]
-
-    # general getters used in the ummg getters
-    def get_file_type(self) -> str:
-        file_ext = self.file_name.suffix
-        return self.file_type.get(file_ext, "ASCII")
+    def get_product_file_metadata(self) -> dict:
+        return self.product_files["product_file"]
 
     def get_mission(self) -> str:
         return self.product_metadata["mission"]
@@ -85,13 +82,13 @@ class UmmgBase():
         return self.now
 
     def get_product_creation_time(self) -> datetime:
-        return self.product_metadata["productCreationDateTime"]
+        return self.product_metadata["product_creation_datetime"]
 
     def get_product_start_time(self) -> datetime:
-        return self.product_metadata["productStartTime"]
+        return self.product_metadata["product_start_time"]
 
     def get_product_end_time(self) -> datetime:
-        return self.product_metadata["productStopTime"]
+        return self.product_metadata["product_stop_time"]
 
     def get_archive_distribution_information(self) -> List[dict]:
         return [{
@@ -107,31 +104,25 @@ class UmmgBase():
         }]
 
     def get_collection_long_name(self) -> str:
-        return self.collection_ref_table["LongName"]
+        return self.collection_ref_table["long_name"]
 
     def get_collection_short_name(self) -> str:
-        return self.collection_ref_table["ShortName"]
+        return self.collection_ref_table["short_name"]
 
     def get_scene_id(self) -> str:
-        return self.file_name.name.split(".", 1)[0]
+        return self.get_file_name_path().name.split(".", 1)[0]
 
     def get_file_name(self) -> str:
-        return str(self.file_name)
+        return str(self.get_file_name_path())
 
     def get_product_url(self) -> str:
-        return self.product_file_md["uri"]
+        return self.get_product_file_metadata()["uri"]
 
     def get_product_s3_uri(self) -> str:
-        return self.product_file_md["s3uri"]
+        return self.get_product_file_metadata()["s3uri"]
 
     def get_product_file_size(self) -> str:
-        return self.product_file_md["size"]
-
-    def get_product_key(self) -> str:
-        return self.product_file_md["key"]
-
-    def get_product_bucket(self) -> str:
-        return self.product_file_md["bucket"]
+        return self.get_product_file_metadata()["size"]
 
     # Start of getters that handle the big picture
     def get_additional_attributes(self) -> List[dict]:
@@ -151,7 +142,7 @@ class UmmgBase():
         }
 
     def get_granule_ur(self) -> str:
-        return self.file_name.name.replace(".", "-")
+        return self.get_file_name_path().name.replace(".", "-")
 
     def get_metadata_specification(self) -> dict:
         return {
