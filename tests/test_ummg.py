@@ -2,23 +2,23 @@ from datetime import datetime, timezone
 
 from freezegun import freeze_time
 
-from mandible.umm.ummg import UmmgBase
+from mandible.umm.ummg import Meta, UmmgBase
 
 
 @freeze_time("2022-08-25 21:45:44.123456")
 def test_ummg():
-    data = {
-        "CollectionRef": {
+    data = Meta(
+        CollectionRef={
             "ShortName": "test-short-name",
             "LongName": "test-long-name"
         },
-        "ProductMd": {
+        ProductMd={
             "productCreationDateTime": datetime.now(timezone.utc),
             "productStartTime": datetime.now(timezone.utc),
             "productStopTime": datetime.now(timezone.utc),
             "mission": "tester-mission-9000",
         },
-        "FileMd": {
+        ProductFilesMd={
             "productFile": {
                 "name": "test.xml",
                 "uri": "http://test/test.xml",
@@ -38,7 +38,7 @@ def test_ummg():
                 }
             ]
         }
-    }
+    )
     new_data = UmmgBase(data)
     res = new_data.get_ummg()
     assert res == {
