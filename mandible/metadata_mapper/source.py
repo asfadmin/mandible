@@ -45,6 +45,10 @@ class Source:
         return self._values[key]
 
 
+class SourceProviderError(Exception):
+    pass
+
+
 class SourceProvider(ABC):
     @abstractmethod
     def get_sources(self) -> Dict[str, Source]:
@@ -68,26 +72,53 @@ class ConfigSourceProvider(SourceProvider):
         self.config = config
 
     def get_sources(self) -> Dict[str, Source]:
-        # TODO(reweeden): Catch errors and correlate to key
         return {
-            key: Source(
-                storage=self._get_registered_class(STORAGE_REGISTRY, config["storage"]),
-                format=self._get_registered_class(FORMAT_REGISTRY, config["format"])
-            )
+            key: self._create_source(key, config)
             for key, config in self.config.items()
         }
 
-    def _get_registered_class(
+    def _create_source(self, key: str, config: Dict) -> Source:
+        try:
+            return Source(
+                storage=self._create_from_registry(
+                    STORAGE_REGISTRY,
+                    config,
+                    "storage"
+                ),
+                format=self._create_from_registry(
+                    FORMAT_REGISTRY,
+                    config,
+                    "format"
+                )
+            )
+        except Exception as e:
+            raise SourceProviderError(
+                f"failed to create source '{key}': {e}"
+            ) from e
+
+    def _create_from_registry(
         self,
         registry: Registry[Type[T]],
-        config: Dict[str, Any]
+        config: Dict[str, Any],
+        name_key: str
     ) -> T:
-        cls_name = config["class"]
-        cls = registry[cls_name]
+        class_config = config.get(name_key)
+        if class_config is None:
+            raise SourceProviderError(f"missing key '{name_key}' in config")
+
+        cls_name = class_config.get("class")
+        if cls_name is None:
+            raise SourceProviderError(
+                f"missing key 'class' in config {class_config}"
+            )
+
+        cls = registry.get(cls_name)
+        if cls is None:
+            raise SourceProviderError(f"invalid {name_key} type '{cls_name}'")
 
         kwargs = {
             k: v
-            for k, v in config.items()
+            for k, v in class_config.items()
             if k != "class"
         }
 
