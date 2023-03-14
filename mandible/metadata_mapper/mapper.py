@@ -24,7 +24,7 @@ class MetadataMapper:
             try:
                 source.query_all_values(context)
             except Exception as e:
-                raise RuntimeError(f"Failed to query source '{name}'") from e
+                raise RuntimeError(f"failed to query source '{name}'") from e
 
         return self._replace_template(context, self.template, sources)
 
