@@ -3,18 +3,18 @@ import io
 import h5py
 import pytest
 
-from mandible.metadata_mapper.format import H5, Format, FormatError, Json, Xml
+from mandible.metadata_mapper.format import FORMAT_REGISTRY, H5, FormatError, Json, Xml
 
 
 def test_registry():
-    assert Format.get_subclass("H5") is H5
-    assert Format.get_subclass("Json") is Json
-    assert Format.get_subclass("Xml") is Xml
+    assert FORMAT_REGISTRY.get("H5") is H5
+    assert FORMAT_REGISTRY.get("Json") is Json
+    assert FORMAT_REGISTRY.get("Xml") is Xml
 
 
 def test_registry_error():
     with pytest.raises(KeyError):
-        Format.get_subclass("FooBarBaz")
+        FORMAT_REGISTRY["FooBarBaz"]
 
 
 @pytest.mark.h5

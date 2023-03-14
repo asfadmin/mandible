@@ -1,22 +1,17 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Protocol, Set, Type, TypeVar
+from typing import Any, Dict, Set, Type, TypeVar
+
+from mandible.internal import Registry
 
 from .context import Context
-from .format import Format
-from .storage import Storage
+from .format import FORMAT_REGISTRY, Format
+from .storage import STORAGE_REGISTRY, Storage
 
 log = logging.getLogger(__name__)
 
-
 T = TypeVar("T")
-
-
-class _Registry(Protocol[T]):
-    @classmethod
-    def get_subclass(cls, name: str) -> Type[T]:
-        ...
 
 
 @dataclass
@@ -76,15 +71,19 @@ class ConfigSourceProvider(SourceProvider):
         # TODO(reweeden): Catch errors and correlate to key
         return {
             key: Source(
-                storage=self._get_registered_class(Storage, config["storage"]),
-                format=self._get_registered_class(Format, config["format"])
+                storage=self._get_registered_class(STORAGE_REGISTRY, config["storage"]),
+                format=self._get_registered_class(FORMAT_REGISTRY, config["format"])
             )
             for key, config in self.config.items()
         }
 
-    def _get_registered_class(self, registry: _Registry[T], config: Dict) -> T:
+    def _get_registered_class(
+        self,
+        registry: Registry[Type[T]],
+        config: Dict[str, Any]
+    ) -> T:
         cls_name = config["class"]
-        cls = registry.get_subclass(cls_name)
+        cls = registry[cls_name]
 
         kwargs = {
             k: v

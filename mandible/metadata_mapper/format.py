@@ -2,7 +2,7 @@ import contextlib
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import IO, Any, ClassVar, ContextManager, Dict, Iterable
+from typing import IO, Any, ContextManager, Dict, Iterable, Type
 
 from ..h5_parser import normalize
 
@@ -25,17 +25,14 @@ class FormatError(Exception):
         return self.reason
 
 
+FORMAT_REGISTRY: Dict[str, Type["Format"]] = {}
+
+
 @dataclass
 class Format(ABC):
     # Registry boilerplate
-    _SUBCLASSES: ClassVar[Dict[str, "Format"]] = {}
-
     def __init_subclass__(cls):
-        Format._SUBCLASSES[cls.__name__] = cls
-
-    @classmethod
-    def get_subclass(cls, name: str) -> "Format":
-        return cls._SUBCLASSES[name]
+        FORMAT_REGISTRY[cls.__name__] = cls
 
     # Begin class definition
     def get_values(self, file: IO[bytes], keys: Iterable[str]):

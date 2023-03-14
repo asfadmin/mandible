@@ -1,7 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import IO, Any, ClassVar, Dict
+from typing import IO, Any, Dict, Type
 
 import s3fs
 
@@ -12,18 +12,14 @@ class StorageError(Exception):
     pass
 
 
+STORAGE_REGISTRY: Dict[str, Type["Storage"]] = {}
+
+
 @dataclass
 class Storage(ABC):
     # Registry boilerplate
-    # TODO(reweeden): Create Registry class?
-    _SUBCLASSES: ClassVar[Dict[str, "Storage"]] = {}
-
     def __init_subclass__(cls):
-        Storage._SUBCLASSES[cls.__name__] = cls
-
-    @classmethod
-    def get_subclass(cls, name: str) -> "Storage":
-        return cls._SUBCLASSES[name]
+        STORAGE_REGISTRY[cls.__name__] = cls
 
     # Begin class definition
     filters: Dict[str, str] = field(default_factory=dict)

@@ -4,17 +4,22 @@ from hashlib import md5
 import pytest
 
 from mandible.metadata_mapper.context import Context
-from mandible.metadata_mapper.storage import LocalFile, S3File, Storage, StorageError
+from mandible.metadata_mapper.storage import (
+    STORAGE_REGISTRY,
+    LocalFile,
+    S3File,
+    StorageError,
+)
 
 
 def test_registry():
-    assert Storage.get_subclass("LocalFile") is LocalFile
-    assert Storage.get_subclass("S3File") is S3File
+    assert STORAGE_REGISTRY.get("LocalFile") is LocalFile
+    assert STORAGE_REGISTRY.get("S3File") is S3File
 
 
 def test_registry_error():
     with pytest.raises(KeyError):
-        Storage.get_subclass("FooBarBaz")
+        STORAGE_REGISTRY["FooBarBaz"]
 
 
 def test_local_file(data_path):
