@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List
 
 from shapely import wkt
-from ummg.error import UmmgFileNotFound
+from umm.error import UmmgFileNotFound
 
 UMM_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 PRODUCT_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
