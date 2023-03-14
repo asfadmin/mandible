@@ -47,7 +47,7 @@ def test_h5_key_error():
 
     format = H5()
 
-    with pytest.raises(FormatError, match="Key not found 'foo'"):
+    with pytest.raises(FormatError, match="key not found 'foo'"):
         format.get_values(file, ["foo"])
 
 
@@ -79,7 +79,7 @@ def test_json_key_error():
     file = io.BytesIO(b"{}")
     format = Json()
 
-    with pytest.raises(FormatError, match="Key not found 'foo'"):
+    with pytest.raises(FormatError, match="key not found 'foo'"):
         format.get_values(file, ["foo"])
 
 
@@ -117,5 +117,5 @@ def test_xml_key_error():
 
     format = Xml()
 
-    with pytest.raises(FormatError, match="Key not found 'foo'"):
+    with pytest.raises(FormatError, match="key not found 'foo'"):
         format.get_values(file, ["foo"])

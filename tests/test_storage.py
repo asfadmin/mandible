@@ -70,7 +70,7 @@ def test_local_file_name_match_error():
     context = Context()
     storage = LocalFile(filters={"name": "foo.*"})
 
-    with pytest.raises(StorageError, match="No files matched filters"):
+    with pytest.raises(StorageError, match="no files matched filters"):
         storage.open_file(context)
 
 
