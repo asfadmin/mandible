@@ -7,6 +7,10 @@ from .source import Source, SourceProvider
 log = logging.getLogger(__name__)
 
 
+class MetadataMapperError(Exception):
+    pass
+
+
 class MetadataMapper:
     def __init__(self, template, source_provider: SourceProvider = None):
         self.template = template
@@ -24,7 +28,9 @@ class MetadataMapper:
             try:
                 source.query_all_values(context)
             except Exception as e:
-                raise RuntimeError(f"failed to query source '{name}'") from e
+                raise MetadataMapperError(
+                    f"failed to query source '{name}': {e}"
+                ) from e
 
         return self._replace_template(context, self.template, sources)
 
