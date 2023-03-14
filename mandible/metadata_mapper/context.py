@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Any, Dict, List
 
 
 @dataclass
 class Context:
-    files: Dict[str, Dict] = field(default_factory=dict)
-    meta: Dict = field(default_factory=dict)
+    files: List[Dict[str, Any]] = field(default_factory=list)
+    meta: Dict[str, Any] = field(default_factory=dict)

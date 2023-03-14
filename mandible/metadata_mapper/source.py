@@ -1,13 +1,17 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Set
+from typing import Any, Dict, Set, Type, TypeVar
+
+from mandible.internal import Registry
 
 from .context import Context
-from .format import Format
-from .storage import Storage
+from .format import FORMAT_REGISTRY, Format
+from .storage import STORAGE_REGISTRY, Storage
 
 log = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 
 @dataclass
@@ -64,28 +68,27 @@ class ConfigSourceProvider(SourceProvider):
         self.config = config
 
     def get_sources(self) -> Dict[str, Source]:
+        # TODO(reweeden): Catch errors and correlate to key
         return {
             key: Source(
-                storage=self._get_storage(key, config["storage"]),
-                format=self._get_format(config["format"])
+                storage=self._get_registered_class(STORAGE_REGISTRY, config["storage"]),
+                format=self._get_registered_class(FORMAT_REGISTRY, config["format"])
             )
             for key, config in self.config.items()
         }
 
-    def _get_storage(self, name: str, config: Dict) -> Storage:
+    def _get_registered_class(
+        self,
+        registry: Registry[Type[T]],
+        config: Dict[str, Any]
+    ) -> T:
         cls_name = config["class"]
-        cls = Storage.get_subclass(cls_name)
+        cls = registry[cls_name]
 
-        name = config.get("name")
-        name_match = config.get("name_match")
+        kwargs = {
+            k: v
+            for k, v in config.items()
+            if k != "class"
+        }
 
-        return cls(
-            name=name,
-            name_match=name_match
-        )
-
-    def _get_format(self, config: Dict) -> Format:
-        cls_name = config["class"]
-        cls = Format.get_subclass(cls_name)
-
-        return cls()
+        return cls(**kwargs)
