@@ -6,6 +6,7 @@ from mandible.metadata_mapper import (
     ConfigSourceProvider,
     Context,
     MetadataMapper,
+    MetadataMapperError,
     PySourceProvider,
     Source,
 )
@@ -250,3 +251,42 @@ def test_basic_s3_file(s3_resource, config, context):
         "xml_foobar_1": "testing_1",
         "xml_foobar_2": "2",
     }
+
+
+def test_no_matching_files(config):
+    mapper = MetadataMapper(
+        template=config["template"],
+        source_provider=ConfigSourceProvider(config["sources"])
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            "failed to query source 'fixed_name_file': "
+            "no files matched filters"
+        )
+    ):
+        mapper.get_metadata(Context())
+
+
+def test_source_missing_key(config, context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {
+                    "source": "fixed_name_file",
+                    "key": "does not exist",
+                }
+            }
+        },
+        source_provider=ConfigSourceProvider(config["sources"])
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            "failed to query source 'fixed_name_file': "
+            "key not found 'does not exist'"
+        )
+    ):
+        mapper.get_metadata(context)
