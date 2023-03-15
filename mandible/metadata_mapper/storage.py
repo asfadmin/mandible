@@ -40,7 +40,7 @@ class Storage(ABC):
             if self._matches_filters(info):
                 return info
 
-        raise StorageError(f"No files matched filters {self.filters}")
+        raise StorageError(f"no files matched filters {self.filters}")
 
     def _matches_filters(self, info: Dict[str, Any]) -> bool:
         for key, pattern in self._compiled_filters.items():

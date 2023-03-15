@@ -46,7 +46,7 @@ class Format(ABC):
         try:
             return self._eval_key(data, key)
         except KeyError as e:
-            raise FormatError(f"Key not found '{key}'") from e
+            raise FormatError(f"key not found '{key}'") from e
         except Exception as e:
             raise FormatError(f"'{key}' {e}") from e
 
