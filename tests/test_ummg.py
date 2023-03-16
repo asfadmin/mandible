@@ -8,7 +8,7 @@ from mandible.umm.ummg import UmmgBase
 @freeze_time("2022-08-25 21:45:44.123456")
 def test_ummg():
     data = {
-        "collection_ref": {
+        "collection_info": {
             "short_name": "test-short-name",
             "long_name": "test-long-name"
         },
