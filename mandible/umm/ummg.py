@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -32,11 +34,11 @@ class ProductMd(TypedDict, total=False):
 
 
 class ProductFilesMd(TypedDict, total=False):
-    productFile: FileMd
+    product_file: FileMd
     related_Files: List[FileMd]
 
 
-class Meta(TypedDict, total=False):
+class Metadata(TypedDict, total=False):
     collection_info: CollectionInfo
     product_md: ProductMd
     product_files_md: ProductFilesMd
@@ -81,22 +83,44 @@ class RelatedUrl(TypedDict, total=False):
     SubType: NotRequired[str]
 
 
+class PgeVersion(TypedDict, total=False):
+    PGEVersion: str
+
+
+class Platform(TypedDict, total=False):
+    ShortName: str
+
+
+class RangeDateTime(TypedDict, total=False):
+    BeginningDateTime: str
+    EndingDateTime: str
+
+
+class TemporalExtent(TypedDict, total=False):
+    RangeDateTime: RangeDateTime
+
+
+class SpatialExtent(TypedDict, total=False):\
+    HorizontalSpatialDomain: NotRequired[dict]
+
+
+
 class UmmgBase:
-    def __init__(self, meta: Meta):
+    def __init__(self, metadata: Metadata):
         self.now = datetime.now(timezone.utc)
-        self.set_product_metadata(meta)
-        self.set_product_files(meta)
-        self.set_collection_info_table(meta)
+        self.set_product_metadata(metadata)
+        self.set_product_files(metadata)
+        self.set_collection_info_table(metadata)
 
     # object setters
-    def set_collection_info_table(self, meta: dict):
-        self.collection_info_table = meta["collection_info"]
+    def set_collection_info_table(self, metadata: Metadata):
+        self.collection_info_table = metadata["collection_info"]
 
-    def set_product_metadata(self, meta: dict):
-        self.product_metadata = meta["product_md"]
+    def set_product_metadata(self, metadata: Metadata):
+        self.product_metadata = metadata["product_md"]
 
-    def set_product_files(self, meta: dict):
-        self.product_files = meta["product_files_md"]
+    def set_product_files(self, metadata: Metadata):
+        self.product_files = metadata["product_files_md"]
 
     # general getters used in the ummg getters
     def get_file_name_path(self) -> Path:
@@ -192,10 +216,10 @@ class UmmgBase:
             "Version": "1.6.4"
         }
 
-    def get_pge_version(self) -> dict:
-        return {}
+    def get_pge_version(self) -> Optional[PgeVersion]:
+        return None
 
-    def get_platforms(self) -> List[dict]:
+    def get_platforms(self) -> List[Platform]:
         return [{
             "ShortName": self.get_mission()
         }]
@@ -219,10 +243,10 @@ class UmmgBase:
             }
         ]
 
-    def get_spatial_extent(self) -> dict:
-        return {}
+    def get_spatial_extent(self) -> Optional[SpatialExtent]:
+        return None
 
-    def get_temporal_extent(self) -> dict:
+    def get_temporal_extent(self) -> Optional[TemporalExtent]:
         return {
             "RangeDateTime": {
                 "BeginningDateTime": self.get_product_start_time().strftime(UMM_DATETIME_FORMAT),
@@ -230,7 +254,7 @@ class UmmgBase:
             }
         }
 
-    def get_input_granules(self) -> List[str]:
+    def get_input_granules(self) -> Optional[List[str]]:
         return []
 
     def get_ummg(self) -> dict:
