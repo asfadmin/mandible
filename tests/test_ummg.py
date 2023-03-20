@@ -248,5 +248,8 @@ def test_missing_keys():
             ]
         }
     }
-    with pytest.raises(KeyError):
+    with pytest.raises(KeyError, match="mission"):
         UmmgBase(data).get_ummg()
+
+    with pytest.raises(KeyError, match="product_md"):
+        UmmgBase({})
