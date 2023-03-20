@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import List, Optional
 
+import pytest
 from freezegun import freeze_time
 
 from mandible.umm.ummg import UmmgBase
@@ -215,3 +216,37 @@ def test_custom_ummg():
             }
         },
     }
+
+
+def test_missing_keys():
+    data = {
+        "collection_info": {
+            "short_name": "test-short-name",
+            "long_name": "test-long-name"
+        },
+        "product_md": {
+            "product_creation_datetime": datetime.now(timezone.utc)
+        },
+        "product_files_md": {
+            "product_file":  {
+                "name": "test.xml",
+                "uri": "http://test/test.xml",
+                "s3uri": "s3://test/test.xml",
+                "size": 123456,
+                "key": "test.xml",
+                "bucket": "test",
+            },
+            "related_files": [
+                {
+                    "name": "test.xml.md5",
+                    "uri": "http://test/test.xml.md5",
+                    "s3uri": "s3://test/test.xml.md5",
+                    "size": 123,
+                    "key": "test.xml.md5",
+                    "bucket": "test",
+                }
+            ]
+        }
+    }
+    with pytest.raises(KeyError):
+        UmmgBase(data).get_ummg()
