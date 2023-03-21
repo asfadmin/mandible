@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from mandible.umm.ummg_types import (
+    AdditionalAttributes,
     ArchiveDistributionInformation,
     CollectionReference,
     DataGranules,
@@ -111,8 +112,8 @@ class UmmgBase:
         return self.get_product_file_metadata()["size"]
 
     # Start of getters that handle the big picture
-    def get_additional_attributes(self) -> List[dict]:
-        return []
+    def get_additional_attributes(self) -> Optional[AdditionalAttributes]:
+        return None
 
     def get_collection_reference(self) -> CollectionReference:
         return {
@@ -176,7 +177,7 @@ class UmmgBase:
         }
 
     def get_input_granules(self) -> Optional[List[str]]:
-        return []
+        return None
 
     def get_ummg(self) -> dict:
         ummg = {
