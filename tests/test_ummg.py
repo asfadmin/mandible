@@ -96,16 +96,15 @@ def test_ummg():
     }
 
 
-class AdditionalAttributeUmmg(UmmgBase):
-    def get_additional_attributes(self) -> List[dict]:
-        return self.product_metadata["additional_attributes"]
-
-    def get_pge_version(self) -> Optional[PgeVersion]:
-        return {"PGEVersion": self.product_metadata["pge_version"]}
-
-
 @freeze_time("2022-08-25 21:45:44.123456")
 def test_custom_ummg():
+    class AdditionalAttributeUmmg(UmmgBase):
+        def get_additional_attributes(self) -> List[dict]:
+            return self.product_metadata["additional_attributes"]
+
+        def get_pge_version(self) -> Optional[PgeVersion]:
+            return {"PGEVersion": self.product_metadata["pge_version"]}
+
     data = {
         "collection_info": {
             "short_name": "test-json-short-name",
@@ -117,8 +116,10 @@ def test_custom_ummg():
             "product_stop_time": datetime.now(timezone.utc),
             "mission": "tester-mission-9000",
             "additional_attributes": [
-                {"test": "test"},
-                {"tester": 1}
+                {
+                    "Name": "test",
+                    "Value": "1"
+                 },
             ],
             "pge_version": "test-version-1"
         },
@@ -148,10 +149,8 @@ def test_custom_ummg():
     assert res == {
         "AdditionalAttributes": [
             {
-                "test": "test"
-            },
-            {
-                "tester": 1
+                "Name": "test",
+                "Value": "1"
             }
         ],
         "CollectionReference": {
