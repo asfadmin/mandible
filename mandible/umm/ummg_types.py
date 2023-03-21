@@ -94,3 +94,12 @@ class TemporalExtent(TypedDict, total=False):
 
 class SpatialExtent(TypedDict, total=False):
     HorizontalSpatialDomain: NotRequired[dict]
+
+
+class AdditionalAttribute(TypedDict, total=False):
+    Name: str
+    Value: str
+
+
+class AdditionalAttributes(TypedDict, total=False):
+    additional_attributes: List(AdditionalAttribute)
