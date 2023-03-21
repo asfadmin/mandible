@@ -1,9 +1,13 @@
 import io
 
-import h5py
 import pytest
 
 from mandible.metadata_mapper.format import FORMAT_REGISTRY, H5, FormatError, Json, Xml
+
+try:
+    import h5py
+except ImportError:
+    h5py = None
 
 
 def test_registry():
@@ -40,6 +44,7 @@ def test_h5():
     }
 
 
+@pytest.mark.h5
 def test_h5_key_error():
     file = io.BytesIO()
     with h5py.File(file, "w"):
@@ -112,6 +117,7 @@ def test_xml():
     }
 
 
+@pytest.mark.xml
 def test_xml_key_error():
     file = io.BytesIO(b"<root></root>")
 

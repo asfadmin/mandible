@@ -1,8 +1,14 @@
-import h5py
-import numpy as np
 import pytest
 
-from mandible.h5_parser import H5parser
+try:
+    import h5py
+    import numpy as np
+
+    from mandible.h5_parser import H5parser
+except ImportError:
+    pass
+
+pytestmark = pytest.mark.h5
 
 
 @pytest.fixture

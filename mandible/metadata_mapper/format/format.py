@@ -4,18 +4,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import IO, Any, ContextManager, Dict, Iterable, Type
 
-from ..h5_parser import normalize
-
-try:
-    import h5py
-except ImportError:
-    h5py = None
-
-try:
-    from lxml import etree
-except ImportError:
-    etree = None
-
 
 class FormatError(Exception):
     def __init__(self, reason: str):
@@ -32,7 +20,9 @@ FORMAT_REGISTRY: Dict[str, Type["Format"]] = {}
 class Format(ABC):
     # Registry boilerplate
     def __init_subclass__(cls):
-        FORMAT_REGISTRY[cls.__name__] = cls
+        name = cls.__name__
+        if not name.startswith("_"):
+            FORMAT_REGISTRY[name] = cls
 
     # Begin class definition
     def get_values(self, file: IO[bytes], keys: Iterable[str]):
@@ -61,21 +51,39 @@ class Format(ABC):
         pass
 
 
-class H5(Format):
-    def __init__(self) -> None:
-        if h5py is None:
-            raise Exception("h5py must be installed to use the H5 format class")
+# Define placeholders for when extras are not installed
+
+class _PlaceholderBase(Format):
+    """
+    Base class for defining placeholder implementations for classes that
+    require extra dependencies to be installed
+    """
+    def __init__(self, dep: str):
+        raise Exception(
+            f"{dep} must be installed to use the {self.__class__.__name__} "
+            "format class"
+        )
 
     @staticmethod
-    @contextlib.contextmanager
-    def _parse_data(file: IO[bytes]):
-        with h5py.File(file, "r") as h5f:
-            yield h5f
+    def _parse_data(file: IO[bytes]) -> ContextManager[Any]:
+        pass
 
     @staticmethod
     def _eval_key(data, key: str):
-        return normalize(data[key][()])
+        pass
 
+
+class H5(_PlaceholderBase):
+    def __init__(self):
+        super().__init__("h5py")
+
+
+class Xml(_PlaceholderBase):
+    def __init__(self):
+        super().__init__("lxml")
+
+
+# Define formats that don't require extra dependencies
 
 class Json(Format):
     @staticmethod
@@ -90,24 +98,3 @@ class Json(Format):
             val = val[key]
 
         return val
-
-
-class Xml(Format):
-    def __init__(self) -> None:
-        if etree is None:
-            raise Exception("lxml must be installed to use the Xml format class")
-
-    @staticmethod
-    @contextlib.contextmanager
-    def _parse_data(file: IO[bytes]):
-        yield etree.parse(file)
-
-    @staticmethod
-    def _eval_key(data: etree.ElementTree, key: str):
-        elements = data.xpath(key)
-        if not elements:
-            raise KeyError(key)
-
-        # TODO(reweeden): Add a way to return the whole list here and not just
-        # the first element.
-        return elements[0].text

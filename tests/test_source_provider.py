@@ -1,6 +1,6 @@
 import pytest
 
-from mandible.metadata_mapper.format import Json, Xml
+from mandible.metadata_mapper.format import H5, Json, Xml
 from mandible.metadata_mapper.source import (
     ConfigSourceProvider,
     PySourceProvider,
@@ -13,8 +13,8 @@ from mandible.metadata_mapper.storage import LocalFile
 @pytest.fixture
 def sources():
     return {
-        "json": Source(LocalFile(filters={"name": "foo"}), Json()),
-        "xml": Source(LocalFile(filters={"name": "foo"}), Xml())
+        "foo": Source(LocalFile(filters={"name": "foo"}), Json()),
+        "bar": Source(LocalFile(filters={"name": "bar"}), Json())
     }
 
 
@@ -25,6 +25,37 @@ def test_py_source_provider(sources):
 
 
 def test_config_source_provider(sources):
+    provider = ConfigSourceProvider({
+        "foo": {
+            "storage": {
+                "class": "LocalFile",
+                "filters": {
+                    "name": "foo"
+                }
+            },
+            "format": {
+                "class": "Json"
+            }
+        },
+        "bar": {
+            "storage": {
+                "class": "LocalFile",
+                "filters": {
+                    "name": "bar"
+                }
+            },
+            "format": {
+                "class": "Json"
+            }
+        }
+    })
+
+    assert provider.get_sources() == sources
+
+
+@pytest.mark.h5
+@pytest.mark.xml
+def test_config_source_provider_all_formats():
     provider = ConfigSourceProvider({
         "json": {
             "storage": {
@@ -41,16 +72,31 @@ def test_config_source_provider(sources):
             "storage": {
                 "class": "LocalFile",
                 "filters": {
-                    "name": "foo"
+                    "name": "bar"
                 }
             },
             "format": {
                 "class": "Xml"
             }
+        },
+        "h5": {
+            "storage": {
+                "class": "LocalFile",
+                "filters": {
+                    "name": "baz"
+                }
+            },
+            "format": {
+                "class": "H5"
+            }
         }
     })
 
-    assert provider.get_sources() == sources
+    assert provider.get_sources() == {
+        "json": Source(LocalFile(filters={"name": "foo"}), Json()),
+        "xml": Source(LocalFile(filters={"name": "bar"}), Xml()),
+        "h5": Source(LocalFile(filters={"name": "baz"}), H5())
+    }
 
 
 def test_config_source_provider_empty():

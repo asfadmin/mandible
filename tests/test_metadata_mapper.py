@@ -141,13 +141,37 @@ def test_constant_mapping_empty_context():
     assert mapper.get_metadata(Context()) == template
 
 
-def test_empty_context(mapper):
+def test_empty_context():
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {
+                    "source": "fixed_name_file",
+                    "key": "foo"
+                }
+            }
+        },
+        source_provider=ConfigSourceProvider({
+            "fixed_name_file": {
+                "storage": {
+                    "class": "LocalFile",
+                    "filters": {
+                        "name": r"fixed_name_file\.json"
+                    }
+                },
+                "format": {
+                    "class": "Json",
+                }
+            }
+        })
+    )
     context = Context()
 
     with pytest.raises(Exception, match="fixed_name_file"):
         mapper.get_metadata(context)
 
 
+@pytest.mark.xml
 def test_basic(mapper, context):
     assert mapper.get_metadata(context) == {
         "foo": "value for foo",
@@ -160,6 +184,7 @@ def test_basic(mapper, context):
     }
 
 
+@pytest.mark.xml
 def test_mapped_key_callable(config, context):
     mapper = MetadataMapper(
         template={
@@ -179,6 +204,7 @@ def test_mapped_key_callable(config, context):
     }
 
 
+@pytest.mark.xml
 def test_basic_py_source_provider(config, context):
     mapper = MetadataMapper(
         template=config["template"],
@@ -228,6 +254,7 @@ def test_basic_py_source_provider(config, context):
     }
 
 
+@pytest.mark.xml
 def test_basic_s3_file(s3_resource, config, context):
     s3_resource.create_bucket(Bucket="test")
     s3_resource.Object("test", "fixed_name_file.json").put(
@@ -253,6 +280,7 @@ def test_basic_s3_file(s3_resource, config, context):
     }
 
 
+@pytest.mark.xml
 def test_no_matching_files(config):
     mapper = MetadataMapper(
         template=config["template"],
@@ -269,6 +297,7 @@ def test_no_matching_files(config):
         mapper.get_metadata(Context())
 
 
+@pytest.mark.xml
 def test_source_missing_key(config, context):
     mapper = MetadataMapper(
         template={
@@ -292,6 +321,7 @@ def test_source_missing_key(config, context):
         mapper.get_metadata(context)
 
 
+@pytest.mark.xml
 def test_mapped_missing_source(config, context):
     mapper = MetadataMapper(
         template={
