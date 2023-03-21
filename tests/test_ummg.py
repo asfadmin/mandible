@@ -5,7 +5,7 @@ import pytest
 from freezegun import freeze_time
 
 from mandible.umm.ummg import UmmgBase
-from mandible.umm.ummg_types import PgeVersion
+from mandible.umm.ummg_types import AdditionalAttribute, PgeVersion
 
 
 @freeze_time("2022-08-25 21:45:44.123456")
@@ -99,11 +99,11 @@ def test_ummg():
 @freeze_time("2022-08-25 21:45:44.123456")
 def test_custom_ummg():
     class AdditionalAttributeUmmg(UmmgBase):
-        def get_additional_attributes(self) -> List[dict]:
+        def get_additional_attributes(self) -> List[AdditionalAttribute]:
             return self.product_metadata["additional_attributes"]
 
         def get_pge_version(self) -> Optional[PgeVersion]:
-            return {"PGEVersion": self.product_metadata["pge_version"]}
+            return self.product_metadata["pge_version"]
 
     data = {
         "collection_info": {
@@ -119,9 +119,9 @@ def test_custom_ummg():
                 {
                     "Name": "test",
                     "Value": "1"
-                 },
+                },
             ],
-            "pge_version": "test-version-1"
+            "pge_version": {"PGEVersion": "test-version-1"}
         },
         "product_files_md": {
             "product_file":  {
