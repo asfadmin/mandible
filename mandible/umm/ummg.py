@@ -17,13 +17,14 @@ from mandible.umm.ummg_types import (
     RelatedUrl,
     SpatialExtent,
     TemporalExtent,
+    Ummg,
 )
 
 # ISO 8601 with Z
 UMM_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
-def _remove_missing(ummg: dict) -> dict:
+def _remove_missing(ummg: Ummg) -> Ummg:
     return {k: v for k, v in ummg.items() if v}
 
 
@@ -179,7 +180,7 @@ class UmmgBase:
     def get_input_granules(self) -> Optional[List[str]]:
         return None
 
-    def get_ummg(self) -> dict:
+    def get_ummg(self) -> Ummg:
         ummg = {
             "AdditionalAttributes": self.get_additional_attributes(),
             "CollectionReference": self.get_collection_reference(),

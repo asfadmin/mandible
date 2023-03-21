@@ -101,5 +101,16 @@ class AdditionalAttribute(TypedDict, total=False):
     Value: str
 
 
-class AdditionalAttributes(TypedDict, total=False):
-    additional_attributes: List(AdditionalAttribute)
+class UmmG(TypedDict, total=False):
+    AdditionalAttributes: NotRequired[List(AdditionalAttribute)]
+    CollectionReference: CollectionReference
+    DataGranule: DataGranule
+    GranuleUR: str
+    MetadataSpecification: MetadataSpecification
+    PGEVersionClass: NotRequired[PgeVersion]
+    Platforms: List[Platform]
+    ProviderDates: List[ProviderDate]
+    RelatedUrls: List[RelatedUrl]
+    SpatialExtent: NotRequired[SpatialExtent]
+    TemporalExtent: NotRequired[TemporalExtent]
+    InputGranules: NotRequired[List[str]]
