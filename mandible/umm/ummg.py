@@ -3,17 +3,17 @@ from pathlib import Path
 from typing import List, Optional
 
 from mandible.umm.ummg_types import (
-    AdditionalAttributes,
+    AdditionalAttribute,
     ArchiveDistributionInformation,
     CollectionReference,
-    DataGranules,
+    DataGranule,
     DataIdentifiers,
     FileMd,
     Metadata,
     MetadataSpecification,
     PgeVersion,
     Platform,
-    ProviderDates,
+    ProviderDate,
     RelatedUrl,
     SpatialExtent,
     TemporalExtent,
@@ -112,7 +112,7 @@ class UmmgBase:
         return self.get_product_file_metadata()["size"]
 
     # Start of getters that handle the big picture
-    def get_additional_attributes(self) -> Optional[AdditionalAttributes]:
+    def get_additional_attributes(self) -> Optional[List[AdditionalAttribute]]:
         return None
 
     def get_collection_reference(self) -> CollectionReference:
@@ -120,7 +120,7 @@ class UmmgBase:
             "EntryTitle": self.get_collection_long_name()
         }
 
-    def get_data_granule(self) -> DataGranules:
+    def get_data_granule(self) -> DataGranule:
         return {
             "ArchiveAndDistributionInformation": self.get_archive_distribution_information(),
             "DayNightFlag": "Unspecified",
@@ -146,7 +146,7 @@ class UmmgBase:
             "ShortName": self.get_mission()
         }]
 
-    def get_provider_dates(self) -> List[ProviderDates]:
+    def get_provider_dates(self) -> List[ProviderDate]:
         return [
             {"Type": "Insert", "Date": self.get_provider_time().strftime(UMM_DATETIME_FORMAT)},
             {"Type": "Update", "Date": self.get_provider_time().strftime(UMM_DATETIME_FORMAT)},

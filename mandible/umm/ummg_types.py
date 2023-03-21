@@ -51,7 +51,7 @@ class CollectionReference(TypedDict, total=False):
     EntryTitle: str
 
 
-class DataGranules(TypedDict, total=False):
+class DataGranule(TypedDict, total=False):
     ArchiveAndDistributionInformation: ArchiveDistributionInformation
     DayNightFlag: str
     Identifiers: DataIdentifiers
@@ -64,7 +64,7 @@ class MetadataSpecification(TypedDict, total=False):
     Version: str
 
 
-class ProviderDates(TypedDict, total=False):
+class ProviderDate(TypedDict, total=False):
     Type: str
     Date: str
 
