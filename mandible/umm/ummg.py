@@ -153,7 +153,7 @@ class UmmgBase:
             {"Type": "Update", "Date": self.get_provider_time().strftime(UMM_DATETIME_FORMAT)},
         ]
 
-    def get_related_urls(self) -> List[RelatedUrl]:
+    def get_related_urls(self) -> Optional[List[RelatedUrl]]:
         return [
             {
                 "URL": self.get_product_url(),
@@ -181,7 +181,7 @@ class UmmgBase:
         return None
 
     def get_ummg(self) -> Ummg:
-        ummg = {
+        parsed_ummg: Ummg = {
             "AdditionalAttributes": self.get_additional_attributes(),
             "CollectionReference": self.get_collection_reference(),
             "DataGranule": self.get_data_granule(),
@@ -195,4 +195,4 @@ class UmmgBase:
             "TemporalExtent": self.get_temporal_extent(),
             "InputGranules": self.get_input_granules()
         }
-        return _remove_missing(ummg)
+        return _remove_missing(parsed_ummg)
