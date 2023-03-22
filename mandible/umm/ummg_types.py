@@ -52,9 +52,9 @@ class CollectionReference(TypedDict, total=False):
 
 
 class DataGranule(TypedDict, total=False):
-    ArchiveAndDistributionInformation: ArchiveDistributionInformation
+    ArchiveAndDistributionInformation: List[ArchiveDistributionInformation]
     DayNightFlag: str
-    Identifiers: DataIdentifiers
+    Identifiers: List[DataIdentifiers]
     ProductionDateTime: str
 
 
@@ -72,7 +72,7 @@ class ProviderDate(TypedDict, total=False):
 class RelatedUrl(TypedDict, total=False):
     URL: str
     Type: str
-    SubType: NotRequired[str]
+    Subtype: NotRequired[str]
 
 
 class PgeVersion(TypedDict, total=False):
@@ -102,15 +102,15 @@ class AdditionalAttribute(TypedDict, total=False):
 
 
 class Ummg(TypedDict, total=False):
-    AdditionalAttributes: NotRequired[List[AdditionalAttribute]]
+    AdditionalAttributes: NotRequired[List[AdditionalAttribute] | None]
     CollectionReference: CollectionReference
-    DataGranule: NotRequired[DataGranule]
+    DataGranule: NotRequired[DataGranule | None]
     GranuleUR: str
     MetadataSpecification: MetadataSpecification
-    PGEVersionClass: NotRequired[PgeVersion]
-    Platforms: NotRequired[List[Platform]]
+    PGEVersionClass: NotRequired[PgeVersion | None]
+    Platforms: NotRequired[List[Platform] | None]
     ProviderDates: List[ProviderDate]
-    RelatedUrls: NotRequired[List[RelatedUrl]]
-    SpatialExtent: NotRequired[SpatialExtent]
-    TemporalExtent: NotRequired[TemporalExtent]
-    InputGranules: NotRequired[List[str]]
+    RelatedUrls: NotRequired[List[RelatedUrl] | None]
+    SpatialExtent: NotRequired[SpatialExtent | None]
+    TemporalExtent: NotRequired[TemporalExtent | None]
+    InputGranules: NotRequired[List[str] | None]
