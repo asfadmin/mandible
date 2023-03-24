@@ -1,0 +1,13 @@
+<root xmlns:foo="http:foobar/madeup/xml/namespace">
+  <foo:foo>
+    <foo:bar>
+      <foo:foobar>testing_1</foo:foobar>
+    </foo:bar>
+    <foo:bar>
+      <foo:foobar>2</foo:foobar>
+    </foo:bar>
+    <foo:bar>
+      <foo:foobar>testing_3</foo:foobar>
+    </foo:bar>
+  </foo:foo>
+</root>
