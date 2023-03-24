@@ -27,7 +27,7 @@ class ProductMd(TypedDict, total=False):
 
 class ProductFilesMd(TypedDict, total=False):
     product_file: FileMd
-    related_Files: List[FileMd]
+    related_files: List[FileMd]
 
 
 class Metadata(TypedDict, total=False):
