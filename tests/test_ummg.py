@@ -1,14 +1,11 @@
-from __future__ import annotations
-
 from datetime import datetime, timezone
 from typing import List, Optional
 
 import pytest
 from freezegun import freeze_time
-from typing_extensions import NotRequired
 
 from mandible.umm.ummg import UmmgBase
-from mandible.umm.ummg_types import AdditionalAttribute, Metadata, PgeVersion, ProductMd
+from mandible.umm.ummg_types import AdditionalAttribute, Metadata, PgeVersion
 
 
 @freeze_time("2022-08-25 21:45:44.123456")
@@ -101,21 +98,14 @@ def test_ummg():
 
 @freeze_time("2022-08-25 21:45:44.123456")
 def test_custom_ummg():
-    class ExtendedProductMd(ProductMd):
-        additional_attributes: NotRequired[List[AdditionalAttribute]]
-        pge_version: NotRequired[PgeVersion]
-
-    class ExtendedMetadata(Metadata):
-        product_md: ExtendedProductMd
-
     class AdditionalAttributeUmmg(UmmgBase):
-        def get_additional_attributes(self) -> List[AdditionalAttribute]:
+        def get_additional_attributes(self) -> Optional[List[AdditionalAttribute]]:
             return self.product_metadata["additional_attributes"]
 
         def get_pge_version(self) -> Optional[PgeVersion]:
             return self.product_metadata["pge_version"]
 
-    data: ExtendedMetadata = {
+    data: Metadata = {
         "collection_info": {
             "short_name": "test-json-short-name",
             "long_name": "test-json-long-name"
@@ -125,13 +115,15 @@ def test_custom_ummg():
             "product_start_time": datetime.now(timezone.utc),
             "product_stop_time": datetime.now(timezone.utc),
             "mission": "tester-mission-9000",
-            "additional_attributes": [
-                {
-                    "Name": "test",
-                    "Value": "1"
-                },
-            ],
-            "pge_version": {"PGEVersion": "test-version-1"}
+            "optional": {
+                "additional_attributes": [
+                    {
+                        "Name": "test",
+                        "Value": "1"
+                    },
+                ],
+                "pge_version": {"PGEVersion": "test-version-1"}
+            }
         },
         "product_files_md": {
             "product_file":  {
@@ -139,8 +131,6 @@ def test_custom_ummg():
                 "uri": "http://test/test.json",
                 "s3uri": "s3://test/test.json",
                 "size": 123456,
-                "key": "test.json",
-                "bucket": "test",
             },
             "related_files": [
                 {
@@ -148,8 +138,6 @@ def test_custom_ummg():
                     "uri": "http://test/test.json.md5",
                     "s3uri": "s3://test/test.json.md5",
                     "size": 123,
-                    "key": "test.json.md5",
-                    "bucket": "test",
                 }
             ]
         }
@@ -228,7 +216,7 @@ def test_custom_ummg():
 
 
 def test_missing_keys():
-    data = {
+    data: Metadata = {
         "collection_info": {
             "short_name": "test-short-name",
             "long_name": "test-long-name"
@@ -242,8 +230,6 @@ def test_missing_keys():
                 "uri": "http://test/test.xml",
                 "s3uri": "s3://test/test.xml",
                 "size": 123456,
-                "key": "test.xml",
-                "bucket": "test",
             },
             "related_files": [
                 {
@@ -251,8 +237,6 @@ def test_missing_keys():
                     "uri": "http://test/test.xml.md5",
                     "s3uri": "s3://test/test.xml.md5",
                     "size": 123,
-                    "key": "test.xml.md5",
-                    "bucket": "test",
                 }
             ]
         }
