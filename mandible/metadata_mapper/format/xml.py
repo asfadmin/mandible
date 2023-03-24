@@ -14,7 +14,8 @@ class Xml(Format):
 
     @staticmethod
     def _eval_key(data: etree.ElementTree, key: str):
-        elements = data.xpath(key)
+        nsmap = data.getroot().nsmap
+        elements = data.xpath(key, namespaces=nsmap)
         if not elements:
             raise KeyError(key)
 
