@@ -118,6 +118,35 @@ def test_xml():
 
 
 @pytest.mark.xml
+def test_namespace_xml():
+    file = io.BytesIO(b"""
+    <root xmlns:foo="http://bigtest.com/namespace/docs">
+        <foo:foo>foo value</foo:foo>
+        <foo:bar>bar value</foo:bar>
+        <list>
+            <foo:v>list</foo:v>
+            <foo:v>value</foo:v>
+        </list>
+        <foo:nested>
+            <foo:qux>qux nested value</foo:qux>
+        </foo:nested>
+    </root>
+    """)
+    format = Xml()
+
+    # TODO(reweeden): Selecting lists is not supported
+    assert format.get_values(
+        file,
+        ["/root/foo:foo", "./foo:bar", "./list/foo:v[2]", "./foo:nested/foo:qux"]
+    ) == {
+        "/root/foo:foo": "foo value",
+        "./foo:bar": "bar value",
+        "./list/foo:v[2]": "value",
+        "./foo:nested/foo:qux": "qux nested value"
+    }
+
+
+@pytest.mark.xml
 def test_xml_key_error():
     file = io.BytesIO(b"<root></root>")
 

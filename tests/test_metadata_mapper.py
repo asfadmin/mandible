@@ -51,6 +51,17 @@ def config():
                     "class": "Xml"
                 }
             },
+            "namespace_xml_file": {
+                "storage": {
+                    "class": "LocalFile",
+                    "filters": {
+                        "name": "xml_with_namespace.xml"
+                    }
+                },
+                "format": {
+                    "class": "Xml"
+                }
+            }
         },
         "template": {
             "foo": {
@@ -84,7 +95,19 @@ def config():
                     "source": "fixed_xml_file",
                     "key": "./foo/bar[2]/foobar"
                 }
-            }
+            },
+            "namespace_xml_foobar_1": {
+                "@mapped": {
+                    "source": "namespace_xml_file",
+                    "key": "./foo:foo/foo:bar[1]/foo:foobar"
+                }
+            },
+            "namespace_xml_foobar_2": {
+                "@mapped": {
+                    "source": "namespace_xml_file",
+                    "key": "./foo:foo/foo:bar[2]/foo:foobar"
+                }
+            },
         }
     }
 
@@ -100,6 +123,10 @@ def context(data_path):
             {
                 "name": "fixed_xml_file.xml",
                 "path": str(data_path / "fixed_xml_file.xml")
+            },
+            {
+                "name": "xml_with_namespace.xml",
+                "path": str(data_path / "xml_with_namespace.xml")
             },
             {
                 "name": "another_file.json"
@@ -179,6 +206,8 @@ def test_basic(mapper, context):
             "nested": "value for nested",
             "bar": "value for bar"
         },
+        "namespace_xml_foobar_1": "testing_1",
+        "namespace_xml_foobar_2": "2",
         "xml_foobar_1": "testing_1",
         "xml_foobar_2": "2",
     }
@@ -225,6 +254,14 @@ def test_basic_py_source_provider(config, context):
                 ),
                 format=Xml()
             ),
+            "namespace_xml_file": Source(
+                storage=LocalFile(
+                    filters={
+                        "name": "xml_with_namespace.xml"
+                    }
+                ),
+                format=Xml()
+            ),
             "name_match_file": Source(
                 storage=LocalFile(
                     filters={
@@ -249,6 +286,8 @@ def test_basic_py_source_provider(config, context):
             "nested": "value for nested",
             "bar": "value for bar"
         },
+        "namespace_xml_foobar_1": "testing_1",
+        "namespace_xml_foobar_2": "2",
         "xml_foobar_1": "testing_1",
         "xml_foobar_2": "2",
     }
@@ -275,6 +314,8 @@ def test_basic_s3_file(s3_resource, config, context):
             "nested": "value for nested",
             "bar": "value for bar"
         },
+        "namespace_xml_foobar_1": "testing_1",
+        "namespace_xml_foobar_2": "2",
         "xml_foobar_1": "testing_1",
         "xml_foobar_2": "2",
     }
