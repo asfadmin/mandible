@@ -362,8 +362,7 @@ def test_source_missing_key(config, context):
         mapper.get_metadata(context)
 
 
-@pytest.mark.xml
-def test_mapped_missing_source(config, context):
+def test_mapped_missing_source(context):
     mapper = MetadataMapper(
         template={
             "foo": {
@@ -372,13 +371,41 @@ def test_mapped_missing_source(config, context):
                 }
             }
         },
-        source_provider=ConfigSourceProvider(config["sources"])
+        source_provider=ConfigSourceProvider({})
     )
 
     with pytest.raises(
         MetadataMapperError,
         match=(
-            "failed to process template: "
+            r"failed to process template at \$\.foo: "
+            "@mapped attribute missing key 'source'"
+        )
+    ):
+        mapper.get_metadata(context)
+
+
+def test_mapped_missing_source_path(context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "bar": [
+                    "ignored",
+                    "ignored",
+                    {
+                        "@mapped": {
+                            "key": "does not exist",
+                        }
+                    }
+                ]
+            }
+        },
+        source_provider=ConfigSourceProvider({})
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            r"failed to process template at \$\.foo\.bar\[2\]: "
             "@mapped attribute missing key 'source'"
         )
     ):

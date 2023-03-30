@@ -8,7 +8,21 @@ log = logging.getLogger(__name__)
 
 
 class MetadataMapperError(Exception):
-    pass
+    def __init__(self, msg: str):
+        self.msg = msg
+
+
+class TemplateError(MetadataMapperError):
+    def __init__(self, msg: str, debug_path: str = None):
+        super().__init__(msg)
+        self.debug_path = debug_path
+
+    def __str__(self) -> str:
+        debug = ""
+        if self.debug_path is not None:
+            debug = f" at {self.debug_path}"
+
+        return f"failed to process template{debug}: {self.msg}"
 
 
 class MetadataMapper:
@@ -24,9 +38,11 @@ class MetadataMapper:
 
         try:
             self._cache_source_keys(context, sources)
+        except TemplateError:
+            raise
         except Exception as e:
             raise MetadataMapperError(
-                f"failed to process template: {e}"
+                f"failed to cache source keys: {e}"
             )
 
         for name, source in sources.items():
@@ -40,41 +56,68 @@ class MetadataMapper:
 
         try:
             return self._replace_template(context, self.template, sources)
+        except TemplateError:
+            raise
         except Exception as e:
             raise MetadataMapperError(
                 f"failed to evaluate template: {e}"
             ) from e
 
     def _cache_source_keys(self, context: Context, sources: Dict[str, Source]):
-        for value in _walk_values(self.template):
+        for value, debug_path in _walk_values(self.template):
             if isinstance(value, dict) and "@mapped" in value:
-                source, key = self._get_mapped_key(value, context)
+                source, key = self._get_mapped_key(value, context, debug_path)
                 sources[source].add_key(key)
 
-    def _replace_template(self, context: Context, template, sources: Dict[str, Source]):
+    def _replace_template(
+        self,
+        context: Context,
+        template,
+        sources: Dict[str, Source],
+        debug_path: str = "$",
+    ):
         if isinstance(template, dict):
             # TODO(reweeden): Implement functions as objects dynamically
             if "@mapped" in template:
-                source, key = self._get_mapped_key(template, context)
+                source, key = self._get_mapped_key(template, context, debug_path)
                 return sources[source].get_value(key)
 
             return {
-                k: self._replace_template(context, v, sources)
+                k: self._replace_template(
+                    context,
+                    v,
+                    sources,
+                    debug_path=f"{debug_path}.{k}",
+                )
                 for k, v in template.items()
             }
         if isinstance(template, list):
-            return [self._replace_template(context, v, sources) for v in template]
+            return [
+                self._replace_template(
+                    context,
+                    v,
+                    sources,
+                    debug_path=f"{debug_path}[{i}]",
+                )
+                for i, v in enumerate(template)
+            ]
         return template
 
-    def _get_mapped_key(self, value: dict, context: Context) -> Tuple[str, str]:
+    def _get_mapped_key(self, value: dict, context: Context, debug_path: str) -> Tuple[str, str]:
         config = value["@mapped"]
         source = config.get("source")
         if source is None:
-            raise MetadataMapperError("@mapped attribute missing key 'source'")
+            raise TemplateError(
+                "@mapped attribute missing key 'source'",
+                debug_path
+            )
 
         key = config.get("key")
         if key is None:
-            raise MetadataMapperError("@mapped attribute missing key 'key'")
+            raise TemplateError(
+                "@mapped attribute missing key 'key'",
+                debug_path
+            )
 
         if callable(key):
             key = key(context)
@@ -82,11 +125,11 @@ class MetadataMapper:
         return source, key
 
 
-def _walk_values(obj):
-    yield obj
+def _walk_values(obj, debug_path: str = "$"):
+    yield obj, debug_path
     if isinstance(obj, dict):
-        for val in obj.values():
-            yield from _walk_values(val)
+        for key, val in obj.items():
+            yield from _walk_values(val, f"{debug_path}.{key}")
     elif isinstance(obj, (list, tuple, set)):
-        for val in obj:
-            yield from _walk_values(val)
+        for i, val in enumerate(obj):
+            yield from _walk_values(val, f"{debug_path}[{i}]")
