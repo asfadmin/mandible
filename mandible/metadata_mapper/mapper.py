@@ -1,5 +1,7 @@
+import inspect
 import logging
-from typing import Dict, Tuple
+from abc import ABC, abstractmethod
+from typing import Callable, Dict, Optional, Union
 
 from .context import Context
 from .source import Source, SourceProvider
@@ -8,11 +10,15 @@ log = logging.getLogger(__name__)
 
 
 class MetadataMapperError(Exception):
+    """A generic error raised by the MetadataMapper"""
+
     def __init__(self, msg: str):
         self.msg = msg
 
 
 class TemplateError(MetadataMapperError):
+    """An error that occurred while processing the metadata template."""
+
     def __init__(self, msg: str, debug_path: str = None):
         super().__init__(msg)
         self.debug_path = debug_path
@@ -25,10 +31,63 @@ class TemplateError(MetadataMapperError):
         return f"failed to process template{debug}: {self.msg}"
 
 
+class TemplateDirective(ABC):
+    """Base class for directives in a metadata template.
+
+    A directive is a special marker in the metadata template which will be
+    replaced by the MetadataMapper.
+    """
+
+    def __init__(self, context: Context, sources: Dict[str, Source]):
+        self.context = context
+        self.sources = sources
+
+    @abstractmethod
+    def call(self):
+        pass
+
+    def prepare(self):
+        pass
+
+
+class Mapped(TemplateDirective):
+    """A value mapped to the template from a metadata Source.
+
+    The directive will be replaced by looking at the specified Source and
+    extracting the defined key.
+    """
+    def __init__(
+        self,
+        context: Context,
+        sources: Dict[str, Source],
+        source: str,
+        key: Union[str, Callable[[Context], str]]
+    ):
+        super().__init__(context, sources)
+
+        if source not in sources:
+            raise MetadataMapperError(f"source '{source}' does not exist")
+
+        self.source = sources[source]
+        if callable(key):
+            key = key(context)
+        self.key = key
+
+    def call(self):
+        return self.source.get_value(self.key)
+
+    def prepare(self):
+        self.source.add_key(self.key)
+
+
 class MetadataMapper:
     def __init__(self, template, source_provider: SourceProvider = None):
         self.template = template
         self.source_provider = source_provider
+        self.directive_marker = "@"
+        self.directives = {
+            "mapped": Mapped
+        }
 
     def get_metadata(self, context: Context) -> Dict:
         if self.source_provider is not None:
@@ -43,7 +102,7 @@ class MetadataMapper:
         except Exception as e:
             raise MetadataMapperError(
                 f"failed to cache source keys: {e}"
-            )
+            ) from e
 
         for name, source in sources.items():
             log.info("Querying source '%s': %s", name, source)
@@ -65,9 +124,15 @@ class MetadataMapper:
 
     def _cache_source_keys(self, context: Context, sources: Dict[str, Source]):
         for value, debug_path in _walk_values(self.template):
-            if isinstance(value, dict) and "@mapped" in value:
-                source, key = self._get_mapped_key(value, context, debug_path)
-                sources[source].add_key(key)
+            if isinstance(value, dict):
+                directive = self._get_directive(
+                    context,
+                    sources,
+                    value,
+                    debug_path
+                )
+                if directive is not None:
+                    directive.prepare()
 
     def _replace_template(
         self,
@@ -77,10 +142,14 @@ class MetadataMapper:
         debug_path: str = "$",
     ):
         if isinstance(template, dict):
-            # TODO(reweeden): Implement functions as objects dynamically
-            if "@mapped" in template:
-                source, key = self._get_mapped_key(template, context, debug_path)
-                return sources[source].get_value(key)
+            directive = self._get_directive(
+                context,
+                sources,
+                template,
+                debug_path
+            )
+            if directive is not None:
+                return directive.call()
 
             return {
                 k: self._replace_template(
@@ -103,26 +172,70 @@ class MetadataMapper:
             ]
         return template
 
-    def _get_mapped_key(self, value: dict, context: Context, debug_path: str) -> Tuple[str, str]:
-        config = value["@mapped"]
-        source = config.get("source")
-        if source is None:
+    def _get_directive(
+        self,
+        context: Context,
+        sources: Dict[str, Source],
+        value: dict,
+        debug_path: str,
+    ) -> Optional[TemplateDirective]:
+        directive_names = [
+            key for key in value
+            if key.startswith(self.directive_marker)
+        ]
+        if not directive_names:
+            return None
+
+        if len(directive_names) > 1:
             raise TemplateError(
-                "@mapped attribute missing key 'source'",
+                "multiple directives found in config: "
+                f"{', '.join(repr(d) for d in directive_names)}",
                 debug_path
             )
 
-        key = config.get("key")
-        if key is None:
+        directive_name = directive_names[0]
+
+        cls = self.directives.get(directive_name[1:])
+        if cls is None:
             raise TemplateError(
-                "@mapped attribute missing key 'key'",
+                f"invalid directive '{directive_name}'",
                 debug_path
             )
 
-        if callable(key):
-            key = key(context)
+        config = value[directive_name]
+        argspec = inspect.getfullargspec(cls.__init__)
 
-        return source, key
+        # Ignore the `self`, `context`, and `sources` parameters
+        required_keys = set(
+            argspec.args[3:-len(argspec.defaults)]
+            if argspec.defaults else
+            argspec.args[3:]
+        )
+        config_keys = set(config.keys())
+        diff = required_keys - config_keys
+
+        if diff:
+            s = ""
+            if len(diff) > 1:
+                s = "s"
+            raise TemplateError(
+                f"{directive_name} directive missing key{s}: "
+                f"{', '.join(repr(d) for d in sorted(diff))}",
+                debug_path
+            )
+
+        # For forward compatibility, ignore any unexpected keys
+        all_keys = set(argspec.args[2:])
+        kwargs = {
+            k: v
+            for k, v in config.items()
+            if k in all_keys
+        }
+
+        try:
+            return cls(context, sources, **kwargs)
+        except Exception as e:
+            raise TemplateError(str(e), debug_path) from e
 
 
 def _walk_values(obj, debug_path: str = "$"):

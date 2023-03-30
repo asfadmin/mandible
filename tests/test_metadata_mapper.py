@@ -15,20 +15,25 @@ from mandible.metadata_mapper.storage import LocalFile
 
 
 @pytest.fixture
-def config():
+def fixed_name_file_config():
+    return {
+        "storage": {
+            "class": "LocalFile",
+            "filters": {
+                "name": r"fixed_name_file\.json"
+            }
+        },
+        "format": {
+            "class": "Json",
+        }
+    }
+
+
+@pytest.fixture
+def config(fixed_name_file_config):
     return {
         "sources": {
-            "fixed_name_file": {
-                "storage": {
-                    "class": "LocalFile",
-                    "filters": {
-                        "name": r"fixed_name_file\.json"
-                    }
-                },
-                "format": {
-                    "class": "Json",
-                }
-            },
+            "fixed_name_file": fixed_name_file_config,
             "name_match_file": {
                 "storage": {
                     "class": "LocalFile",
@@ -168,7 +173,7 @@ def test_constant_mapping_empty_context():
     assert mapper.get_metadata(Context()) == template
 
 
-def test_empty_context():
+def test_empty_context(fixed_name_file_config):
     mapper = MetadataMapper(
         template={
             "foo": {
@@ -179,22 +184,18 @@ def test_empty_context():
             }
         },
         source_provider=ConfigSourceProvider({
-            "fixed_name_file": {
-                "storage": {
-                    "class": "LocalFile",
-                    "filters": {
-                        "name": r"fixed_name_file\.json"
-                    }
-                },
-                "format": {
-                    "class": "Json",
-                }
-            }
+            "fixed_name_file": fixed_name_file_config
         })
     )
     context = Context()
 
-    with pytest.raises(Exception, match="fixed_name_file"):
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            "failed to query source 'fixed_name_file': "
+            "no files matched filters"
+        )
+    ):
         mapper.get_metadata(context)
 
 
@@ -217,7 +218,7 @@ def test_basic(mapper, context):
 def test_mapped_key_callable(config, context):
     mapper = MetadataMapper(
         template={
-            "foo": {
+            "bar": {
                 "@mapped": {
                     "source": "name_match_file",
                     "key": lambda ctx: ctx.meta["foo"]
@@ -229,7 +230,7 @@ def test_mapped_key_callable(config, context):
     context.meta["foo"] = "bar"
 
     assert mapper.get_metadata(context) == {
-        "foo": "value for bar"
+        "bar": "value for bar"
     }
 
 
@@ -321,6 +322,7 @@ def test_basic_s3_file(s3_resource, config, context):
     }
 
 
+# TODO(reweeden): There is already a test_empty_context which checks this
 @pytest.mark.xml
 def test_no_matching_files(config):
     mapper = MetadataMapper(
@@ -338,8 +340,7 @@ def test_no_matching_files(config):
         mapper.get_metadata(Context())
 
 
-@pytest.mark.xml
-def test_source_missing_key(config, context):
+def test_source_non_existent_key(context, fixed_name_file_config):
     mapper = MetadataMapper(
         template={
             "foo": {
@@ -349,7 +350,9 @@ def test_source_missing_key(config, context):
                 }
             }
         },
-        source_provider=ConfigSourceProvider(config["sources"])
+        source_provider=ConfigSourceProvider({
+            "fixed_name_file": fixed_name_file_config
+        })
     )
 
     with pytest.raises(
@@ -357,6 +360,51 @@ def test_source_missing_key(config, context):
         match=(
             "failed to query source 'fixed_name_file': "
             "key not found 'does not exist'"
+        )
+    ):
+        mapper.get_metadata(context)
+
+
+def test_mapped_non_existent_source(context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {
+                    "source": "does not exist",
+                    "key": "foo"
+                }
+            }
+        },
+        source_provider=ConfigSourceProvider({})
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            r"failed to process template at \$\.foo: "
+            "source 'does not exist' does not exist"
+        )
+    ):
+        mapper.get_metadata(context)
+
+
+def test_mapped_missing_key(context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {
+                    "source": "fixed_name_file",
+                }
+            }
+        },
+        source_provider=ConfigSourceProvider({})
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            r"failed to process template at \$\.foo: "
+            "@mapped directive missing key: 'key'"
         )
     ):
         mapper.get_metadata(context)
@@ -378,7 +426,7 @@ def test_mapped_missing_source(context):
         MetadataMapperError,
         match=(
             r"failed to process template at \$\.foo: "
-            "@mapped attribute missing key 'source'"
+            "@mapped directive missing key: 'source'"
         )
     ):
         mapper.get_metadata(context)
@@ -406,7 +454,88 @@ def test_mapped_missing_source_path(context):
         MetadataMapperError,
         match=(
             r"failed to process template at \$\.foo\.bar\[2\]: "
-            "@mapped attribute missing key 'source'"
+            "@mapped directive missing key: 'source'"
+        )
+    ):
+        mapper.get_metadata(context)
+
+
+def test_mapped_missing_source_and_key(context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {}
+            }
+        },
+        source_provider=ConfigSourceProvider({})
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            r"failed to process template at \$\.foo: "
+            "@mapped directive missing keys: 'key', 'source'"
+        )
+    ):
+        mapper.get_metadata(context)
+
+
+def test_mapped_extra_parameter(context, fixed_name_file_config):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {
+                    "source": "fixed_name_file",
+                    "key": "foo",
+                    "does_not_exist": "does not exist",
+                    "does_not_exist_2": "does not exist",
+                }
+            }
+        },
+        source_provider=ConfigSourceProvider({
+            "fixed_name_file": fixed_name_file_config
+        })
+    )
+
+    mapper.get_metadata(context) == {"foo": "value for foo"}
+
+
+def test_invalid_directive(context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@does_not_exist": {}
+            }
+        },
+        source_provider=ConfigSourceProvider({})
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            r"failed to process template at \$\.foo: "
+            "invalid directive '@does_not_exist'"
+        )
+    ):
+        mapper.get_metadata(context)
+
+
+def test_multiple_directives(context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": {},
+                "@invalid": {}
+            }
+        },
+        source_provider=ConfigSourceProvider({})
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            r"failed to process template at \$\.foo: "
+            "multiple directives found in config: '@mapped', '@invalid'"
         )
     ):
         mapper.get_metadata(context)
