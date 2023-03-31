@@ -36,6 +36,11 @@ class Storage(ABC):
 
     def get_file_from_context(self, context: Context) -> Dict[str, Any]:
         """Return the file from the context which matches all filters."""
+
+        # Special error message to make debugging empty context easier
+        if not context.files:
+            raise StorageError("no files in context")
+
         for info in context.files:
             if self._matches_filters(info):
                 return info

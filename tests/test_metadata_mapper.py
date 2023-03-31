@@ -193,7 +193,7 @@ def test_empty_context(fixed_name_file_config):
         MetadataMapperError,
         match=(
             "failed to query source 'fixed_name_file': "
-            "no files matched filters"
+            "no files in context"
         )
     ):
         mapper.get_metadata(context)
@@ -342,22 +342,39 @@ def test_basic_s3_file(s3_resource, config, context):
     }
 
 
-# TODO(reweeden): There is already a test_empty_context which checks this
-@pytest.mark.xml
-def test_no_matching_files(config):
+def test_no_matching_files(context):
     mapper = MetadataMapper(
-        template=config["template"],
-        source_provider=ConfigSourceProvider(config["sources"])
+        template={
+            "foo": {
+                "@mapped": {
+                    "source": "source_file",
+                    "key": "foo"
+                }
+            }
+        },
+        source_provider=ConfigSourceProvider({
+            "source_file": {
+                "storage": {
+                    "class": "LocalFile",
+                    "filters": {
+                        "name": "does not exist"
+                    }
+                },
+                "format": {
+                    "class": "Json"
+                }
+            }
+        })
     )
 
     with pytest.raises(
         MetadataMapperError,
         match=(
-            "failed to query source 'fixed_name_file': "
+            "failed to query source 'source_file': "
             "no files matched filters"
         )
     ):
-        mapper.get_metadata(Context())
+        mapper.get_metadata(context)
 
 
 def test_source_non_existent_key(context, fixed_name_file_config):
