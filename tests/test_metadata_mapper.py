@@ -234,6 +234,26 @@ def test_mapped_key_callable(config, context):
     }
 
 
+def test_custom_directive(context, fixed_name_file_config):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "#mapped": {
+                    "source": "fixed_name_file",
+                    "key": "foo"
+                }
+            },
+        },
+        source_provider=ConfigSourceProvider({
+            "fixed_name_file": fixed_name_file_config
+        }),
+        directive_marker="#"
+    )
+    assert mapper.get_metadata(context) == {
+        "foo": "value for foo"
+    }
+
+
 @pytest.mark.xml
 def test_basic_py_source_provider(config, context):
     mapper = MetadataMapper(

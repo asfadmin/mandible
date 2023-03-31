@@ -81,10 +81,16 @@ class Mapped(TemplateDirective):
 
 
 class MetadataMapper:
-    def __init__(self, template, source_provider: SourceProvider = None):
+    def __init__(
+        self,
+        template,
+        source_provider: SourceProvider = None,
+        *,
+        directive_marker: str = "@"
+    ):
         self.template = template
         self.source_provider = source_provider
-        self.directive_marker = "@"
+        self.directive_marker = directive_marker
         self.directives = {
             "mapped": Mapped
         }
