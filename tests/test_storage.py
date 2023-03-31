@@ -67,10 +67,20 @@ def test_local_file_creation():
 
 
 def test_local_file_name_match_error():
-    context = Context()
+    context = Context(
+        files=[{"name": "local_file"}]
+    )
     storage = LocalFile(filters={"name": "foo.*"})
 
     with pytest.raises(StorageError, match="no files matched filters"):
+        storage.open_file(context)
+
+
+def test_local_file_empty_context_error():
+    context = Context()
+    storage = LocalFile(filters={"name": "foo.*"})
+
+    with pytest.raises(StorageError, match="no files in context"):
         storage.open_file(context)
 
 
