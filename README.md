@@ -1,4 +1,6 @@
 # Mandible
+[![Test](https://github.com/asfadmin/mandible/actions/workflows/test.yml/badge.svg)](https://github.com/asfadmin/mandible/actions/workflows/test.yml)
+
 A generic framework for writing satellite data ingest systems
 
 ## Installing
