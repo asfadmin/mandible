@@ -320,7 +320,8 @@ def test_basic_s3_file(s3_resource, config, context):
     s3_resource.Object("test", "fixed_name_file.json").put(
         Body=open(context.files[0]["path"]).read()
     )
-    context.files[0]["s3uri"] = "s3://test/fixed_name_file.json"
+    context.files[0]["bucket"] = "test"
+    context.files[0]["key"] = "fixed_name_file.json"
 
     config["sources"]["fixed_name_file"]["storage"]["class"] = "S3File"
 

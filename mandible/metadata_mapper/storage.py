@@ -74,4 +74,4 @@ class LocalFile(Storage):
 class S3File(Storage):
     def _open_file(self, info: Dict) -> IO[bytes]:
         s3 = s3fs.S3FileSystem(anon=False)
-        return s3.open(info["s3uri"])
+        return s3.open(f"s3://{info['bucket']}/{info['key']}")

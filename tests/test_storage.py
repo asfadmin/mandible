@@ -93,7 +93,8 @@ def test_s3_file_s3uri(s3_resource):
     context = Context(
         files=[{
             "name": "s3_file",
-            "s3uri": "s3://test-bucket/bucket_file.txt"
+            "bucket": "test-bucket",
+            "key": "bucket_file.txt"
         }]
     )
     storage = S3File(filters={"name": "s3_file"})
@@ -118,7 +119,6 @@ def test_s3_file_filters(s3_resource):
             "size": len(contents),
             "type": type,
             "uri": f"https://example.asf.alaska.edu/{name}",
-            "s3uri": f"s3://{bucket.name}/{name}",
             "bucket": bucket.name,
             "key": name
         }
