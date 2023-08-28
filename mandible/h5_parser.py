@@ -26,10 +26,6 @@ class H5parser(dict):
 
 
 def normalize(node_val):
-    if isinstance(node_val, np.integer):
-        return int(node_val)
-    if isinstance(node_val, np.floating):
-        return float(node_val)
     if isinstance(node_val, np.ndarray):
         value = node_val.tolist()
         if isinstance(value[0], bytes):
@@ -37,3 +33,5 @@ def normalize(node_val):
         return value
     if isinstance(node_val, bytes):
         return node_val.decode("utf-8")
+
+    return node_val
