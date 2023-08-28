@@ -19,36 +19,35 @@ def h5_test_file(tmp_path):
     with h5py.File(filename, "w") as hf:
         group_1 = hf.create_group("test")
         group_2 = hf.create_group("test/long/path/metadata")
-        group_1.create_dataset("tester", data=dataset_1)
-        group_2.create_dataset("test_meta", data=dataset_2)
+        group_types = hf.create_group("types")
+        group_1.create_dataset("float_array", data=dataset_1)
+        group_2.create_dataset("string", data=dataset_2)
+
+        group_types.create_dataset("string", data="Hello World")
+        group_types.create_dataset("integer", data=10)
+        group_types.create_dataset("unsigned_integer", dtype=np.uint, data=20)
+        group_types.create_dataset("float", data=10.5)
+        group_types.create_dataset("float16", dtype=np.float16, data=20.5)
+        group_types.create_dataset("boolean", data=True)
     yield filename
     filename.unlink()
 
 
 def test_h5_parser_parent_key(h5_test_file):
-    groups = ["test/long/path/metadata/test_meta", "/test/tester"]
+    groups = ["test/long/path/metadata/string", "/test/float_array"]
     data = H5parser(groups)
     data.read_file(h5_test_file)
     assert data == {
-        "test/long/path/metadata/test_meta": "Testing",
-        "/test/tester": [
-            0.0,
-            0.1,
-            0.2,
-            0.3,
-            0.4,
-            0.5
-        ]
+        "test/long/path/metadata/string": "Testing",
+        "/test/float_array": [0.0, 0.1, 0.2, 0.3, 0.4, 0.5],
     }
 
 
 def test_h5_parser_single_key(h5_test_file):
-    groups = ["test/long/path/metadata/test_meta"]
+    groups = ["test/long/path/metadata/string"]
     data = H5parser(groups)
     data.read_file(h5_test_file)
-    assert data == {
-        "test/long/path/metadata/test_meta": "Testing"
-    }
+    assert data == {"test/long/path/metadata/string": "Testing"}
 
 
 def test_h5_parser_no_group(h5_test_file):
@@ -59,7 +58,23 @@ def test_h5_parser_no_group(h5_test_file):
 
 
 def test_h5_praser_group_missing(h5_test_file):
-    groups = ["test/long/path/metadata/test_meta", "thing", "here"]
+    groups = ["test/long/path/metadata/string", "thing", "here"]
     with pytest.raises(KeyError, match="thing"):
         data = H5parser(groups)
         data.read_file(h5_test_file)
+
+
+def test_h5_parser_types(h5_test_file):
+    expected = {
+        "types/string": "Hello World",
+        "types/integer": 10,
+        "types/unsigned_integer": 20,
+        "types/float": 10.5,
+        "types/float16": 20.5,
+        "types/boolean": True,
+    }
+    groups = list(expected)
+    data = H5parser(groups)
+    data.read_file(h5_test_file)
+
+    assert data == expected
