@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 try:
@@ -78,3 +80,5 @@ def test_h5_parser_types(h5_test_file):
     data.read_file(h5_test_file)
 
     assert data == expected
+    # Check that types are JSON serializable
+    assert json.loads(json.dumps(data)) == expected
