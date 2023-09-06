@@ -384,7 +384,7 @@ def test_source_non_existent_key(context, fixed_name_file_config):
             "foo": {
                 "@mapped": {
                     "source": "fixed_name_file",
-                    "key": "does not exist",
+                    "key": "does_not_exist",
                 }
             }
         },
@@ -397,8 +397,8 @@ def test_source_non_existent_key(context, fixed_name_file_config):
         MetadataMapperError,
         match=(
             "failed to query source 'fixed_name_file': "
-            "key not found 'does not exist'"
-        )
+            "key not found 'does_not_exist'"
+        ),
     ):
         mapper.get_metadata(context)
 

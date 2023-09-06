@@ -19,12 +19,14 @@ s3fs = "^0.4.2"
 
 # Optional
 h5py = { version = "^3.6.0", optional = true }
+jsonpath-ng = { version = "^1.5.3", optional = true }
 lxml = { version = "^4.9.2", optional = true }
 numpy = { version = "^1.21.6", optional = true }
 
 [tool.poetry.extras]
-all = ["h5py", "numpy", "lxml"]
+all = ["h5py", "numpy", "jsonpath-ng", "lxml"]
 h5 = ["h5py", "numpy"]
+jsonpath = ["jsonpath-ng"]
 xml = ["lxml"]
 
 
@@ -39,6 +41,7 @@ pytest-mock = "^3.8.2"
 [tool.pytest.ini_options]
 markers = [
     "h5: requires the 'h5' extra to be installed",
+    "jsonpath: requires the 'jsonpath' extra to be installed",
     "xml: requires the 'xml' extra to be installed",
 ]
 

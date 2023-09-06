@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import IO, Any, ContextManager, Dict, Iterable, Type
 
+from mandible import jsonpath
+
 
 class FormatError(Exception):
     def __init__(self, reason: str):
@@ -30,6 +32,12 @@ class Format(ABC):
                 key: self._eval_key_wrapper(data, key)
                 for key in keys
             }
+
+    def get_value(self, file: IO[bytes], key: str):
+        """Convenience function for getting a single value"""
+
+        with self._parse_data(file) as data:
+            return self._eval_key_wrapper(data, key)
 
     def _eval_key_wrapper(self, data, key: str):
         try:
@@ -92,8 +100,4 @@ class Json(Format):
 
     @staticmethod
     def _eval_key(data: dict, key: str):
-        val = data
-        for key in key.split("."):
-            val = val[key]
-
-        return val
+        return jsonpath.get_key(data, key)
