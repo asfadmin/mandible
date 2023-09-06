@@ -18,8 +18,9 @@ STORAGE_REGISTRY: Dict[str, Type["Storage"]] = {}
 @dataclass
 class Storage(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls):
-        STORAGE_REGISTRY[cls.__name__] = cls
+    def __init_subclass__(cls, register: bool = True):
+        if register:
+            STORAGE_REGISTRY[cls.__name__] = cls
 
     # Begin class definition
     filters: Dict[str, str] = field(default_factory=dict)

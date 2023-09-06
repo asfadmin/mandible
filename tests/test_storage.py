@@ -8,13 +8,23 @@ from mandible.metadata_mapper.storage import (
     STORAGE_REGISTRY,
     LocalFile,
     S3File,
+    Storage,
     StorageError,
 )
 
 
 def test_registry():
-    assert STORAGE_REGISTRY.get("LocalFile") is LocalFile
-    assert STORAGE_REGISTRY.get("S3File") is S3File
+    assert STORAGE_REGISTRY == {
+        "LocalFile": LocalFile,
+        "S3File": S3File,
+    }
+
+
+def test_registry_intermediate_class():
+    class Foo(Storage, register=False):
+        pass
+
+    assert "Foo" not in STORAGE_REGISTRY
 
 
 def test_registry_error():

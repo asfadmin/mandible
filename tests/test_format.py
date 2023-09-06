@@ -2,7 +2,14 @@ import io
 
 import pytest
 
-from mandible.metadata_mapper.format import FORMAT_REGISTRY, H5, FormatError, Json, Xml
+from mandible.metadata_mapper.format import (
+    FORMAT_REGISTRY,
+    H5,
+    Format,
+    FormatError,
+    Json,
+    Xml,
+)
 
 try:
     import h5py
@@ -11,9 +18,18 @@ except ImportError:
 
 
 def test_registry():
-    assert FORMAT_REGISTRY.get("H5") is H5
-    assert FORMAT_REGISTRY.get("Json") is Json
-    assert FORMAT_REGISTRY.get("Xml") is Xml
+    assert FORMAT_REGISTRY == {
+        "H5": H5,
+        "Json": Json,
+        "Xml": Xml,
+    }
+
+
+def test_registry_intermediate_class():
+    class Foo(Format, register=False):
+        pass
+
+    assert "Foo" not in FORMAT_REGISTRY
 
 
 def test_registry_error():

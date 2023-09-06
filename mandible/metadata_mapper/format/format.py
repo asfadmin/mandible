@@ -19,10 +19,9 @@ FORMAT_REGISTRY: Dict[str, Type["Format"]] = {}
 @dataclass
 class Format(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls):
-        name = cls.__name__
-        if not name.startswith("_"):
-            FORMAT_REGISTRY[name] = cls
+    def __init_subclass__(cls, register: bool = True):
+        if register:
+            FORMAT_REGISTRY[cls.__name__] = cls
 
     # Begin class definition
     def get_values(self, file: IO[bytes], keys: Iterable[str]):
@@ -53,7 +52,7 @@ class Format(ABC):
 
 # Define placeholders for when extras are not installed
 
-class _PlaceholderBase(Format):
+class _PlaceholderBase(Format, register=False):
     """
     Base class for defining placeholder implementations for classes that
     require extra dependencies to be installed
