@@ -8,6 +8,9 @@ except ImportError:
 def get_key(data: dict, key: str):
     # Fall back to simple dot paths
     if jsonpath_ng is None:
+        if key == "$":
+            return data
+
         val = data
         for key in key.split("."):
             val = val[key]

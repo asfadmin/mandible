@@ -3,7 +3,7 @@ import logging
 from typing import Dict, Optional
 
 from .context import Context
-from .directive import Mapped, TemplateDirective
+from .directive import Mapped, Reformatted, TemplateDirective
 from .exception import MetadataMapperError, TemplateError
 from .source import Source, SourceProvider
 
@@ -22,7 +22,8 @@ class MetadataMapper:
         self.source_provider = source_provider
         self.directive_marker = directive_marker
         self.directives = {
-            "mapped": Mapped
+            "mapped": Mapped,
+            "reformatted": Reformatted,
         }
 
     def get_metadata(self, context: Context) -> Dict:
