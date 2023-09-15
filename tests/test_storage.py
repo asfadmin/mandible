@@ -6,6 +6,7 @@ import pytest
 from mandible.metadata_mapper.context import Context
 from mandible.metadata_mapper.storage import (
     STORAGE_REGISTRY,
+    Dummy,
     LocalFile,
     S3File,
     Storage,
@@ -15,6 +16,7 @@ from mandible.metadata_mapper.storage import (
 
 def test_registry():
     assert STORAGE_REGISTRY == {
+        "Dummy": Dummy,
         "LocalFile": LocalFile,
         "S3File": S3File,
     }
