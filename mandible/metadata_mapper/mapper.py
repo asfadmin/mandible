@@ -61,14 +61,18 @@ class MetadataMapper:
     def _cache_source_keys(self, context: Context, sources: Dict[str, Source]):
         for value, debug_path in _walk_values(self.template):
             if isinstance(value, dict):
+                directive_name = self._get_directive_name(value, debug_path)
+                if directive_name is None:
+                    continue
+
                 directive = self._get_directive(
+                    directive_name,
                     context,
                     sources,
-                    value,
-                    debug_path
+                    value[directive_name],
+                    f"{debug_path}.{directive_name}",
                 )
-                if directive is not None:
-                    directive.prepare()
+                directive.prepare()
 
     def _replace_template(
         self,
@@ -78,13 +82,27 @@ class MetadataMapper:
         debug_path: str = "$",
     ):
         if isinstance(template, dict):
-            directive = self._get_directive(
-                context,
-                sources,
+            directive_name = self._get_directive_name(
                 template,
                 debug_path
             )
-            if directive is not None:
+            if directive_name is not None:
+                debug_path = f"{debug_path}.{directive_name}"
+                directive = self._get_directive(
+                    directive_name,
+                    context,
+                    sources,
+                    {
+                        k: self._replace_template(
+                            context,
+                            v,
+                            sources,
+                            debug_path=f"{debug_path}.{k}",
+                        )
+                        for k, v in template[directive_name].items()
+                    },
+                    debug_path
+                )
                 return directive.call()
 
             return {
@@ -96,6 +114,7 @@ class MetadataMapper:
                 )
                 for k, v in template.items()
             }
+
         if isinstance(template, list):
             return [
                 self._replace_template(
@@ -106,15 +125,14 @@ class MetadataMapper:
                 )
                 for i, v in enumerate(template)
             ]
+
         return template
 
-    def _get_directive(
+    def _get_directive_name(
         self,
-        context: Context,
-        sources: Dict[str, Source],
         value: dict,
         debug_path: str,
-    ) -> Optional[TemplateDirective]:
+    ) -> Optional[str]:
         directive_names = [
             key for key in value
             if key.startswith(self.directive_marker)
@@ -129,8 +147,16 @@ class MetadataMapper:
                 debug_path
             )
 
-        directive_name = directive_names[0]
+        return directive_names[0]
 
+    def _get_directive(
+        self,
+        directive_name: str,
+        context: Context,
+        sources: Dict[str, Source],
+        config: dict,
+        debug_path: str,
+    ) -> TemplateDirective:
         cls = self.directives.get(directive_name[1:])
         if cls is None:
             raise TemplateError(
@@ -138,7 +164,6 @@ class MetadataMapper:
                 debug_path
             )
 
-        config = value[directive_name]
         argspec = inspect.getfullargspec(cls.__init__)
 
         # Ignore the `self`, `context`, and `sources` parameters
@@ -155,7 +180,7 @@ class MetadataMapper:
             if len(diff) > 1:
                 s = "s"
             raise TemplateError(
-                f"{directive_name} directive missing key{s}: "
+                f"missing key{s}: "
                 f"{', '.join(repr(d) for d in sorted(diff))}",
                 debug_path
             )

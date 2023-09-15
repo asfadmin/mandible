@@ -419,7 +419,7 @@ def test_mapped_non_existent_source(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
+            r"failed to process template at \$\.foo\.@mapped: "
             "source 'does not exist' does not exist"
         )
     ):
@@ -441,8 +441,8 @@ def test_mapped_missing_key(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
-            "@mapped directive missing key: 'key'"
+            r"failed to process template at \$\.foo\.@mapped: "
+            "missing key: 'key'"
         )
     ):
         mapper.get_metadata(context)
@@ -463,8 +463,8 @@ def test_mapped_missing_source(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
-            "@mapped directive missing key: 'source'"
+            r"failed to process template at \$\.foo\.@mapped: "
+            "missing key: 'source'"
         )
     ):
         mapper.get_metadata(context)
@@ -491,8 +491,8 @@ def test_mapped_missing_source_path(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo\.bar\[2\]: "
-            "@mapped directive missing key: 'source'"
+            r"failed to process template at \$\.foo\.bar\[2\]\.@mapped: "
+            "missing key: 'source'"
         )
     ):
         mapper.get_metadata(context)
@@ -511,8 +511,8 @@ def test_mapped_missing_source_and_key(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
-            "@mapped directive missing keys: 'key', 'source'"
+            r"failed to process template at \$\.foo\.@mapped: "
+            "missing keys: 'key', 'source'"
         )
     ):
         mapper.get_metadata(context)
@@ -551,7 +551,7 @@ def test_invalid_directive(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
+            r"failed to process template at \$\.foo\.@does_not_exist: "
             "invalid directive '@does_not_exist'"
         )
     ):
