@@ -61,6 +61,19 @@ def test_h5():
 
 
 @pytest.mark.h5
+def test_h5_empty_key():
+    file = io.BytesIO()
+    with h5py.File(file, "w") as f:
+        f["foo"] = "foo value"
+        f["bar"] = "bar value"
+
+    format = H5()
+
+    with pytest.raises(FormatError, match="cannot be an empty string"):
+        format.get_value(file, "")
+
+
+@pytest.mark.h5
 def test_h5_key_error():
     file = io.BytesIO()
     with h5py.File(file, "w"):
@@ -93,6 +106,21 @@ def test_json():
         "bar": "bar value",
         "list": ["list", "value"],
         "nested.qux": "qux nested value"
+    }
+
+
+def test_json_dollar_key():
+    file = io.BytesIO(b"""
+    {
+        "foo": "foo value",
+        "bar": "bar value"
+    }
+    """)
+    format = Json()
+
+    assert format.get_value(file, "$") == {
+        "foo": "foo value",
+        "bar": "bar value",
     }
 
 
@@ -131,6 +159,19 @@ def test_xml():
         "./list/v[2]": "value",
         "./nested/qux": "qux nested value"
     }
+
+
+@pytest.mark.xml
+def test_xml_empty_key():
+    file = io.BytesIO(b"""
+    <root>
+        <foo>foo value</foo>
+        <bar>bar value</bar>
+    </root>
+    """)
+    format = Xml()
+
+    assert format.get_values(file, "") == {}
 
 
 @pytest.mark.xml
