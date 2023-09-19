@@ -2,7 +2,14 @@ import io
 
 import pytest
 
-from mandible.metadata_mapper.format import FORMAT_REGISTRY, H5, FormatError, Json, Xml
+from mandible.metadata_mapper.format import (
+    FORMAT_REGISTRY,
+    H5,
+    Format,
+    FormatError,
+    Json,
+    Xml,
+)
 
 try:
     import h5py
@@ -11,9 +18,18 @@ except ImportError:
 
 
 def test_registry():
-    assert FORMAT_REGISTRY.get("H5") is H5
-    assert FORMAT_REGISTRY.get("Json") is Json
-    assert FORMAT_REGISTRY.get("Xml") is Xml
+    assert FORMAT_REGISTRY == {
+        "H5": H5,
+        "Json": Json,
+        "Xml": Xml,
+    }
+
+
+def test_registry_intermediate_class():
+    class Foo(Format, register=False):
+        pass
+
+    assert "Foo" not in FORMAT_REGISTRY
 
 
 def test_registry_error():
@@ -42,6 +58,19 @@ def test_h5():
         "list": ["list", "value"],
         "nested/qux": "qux nested value"
     }
+
+
+@pytest.mark.h5
+def test_h5_empty_key():
+    file = io.BytesIO()
+    with h5py.File(file, "w") as f:
+        f["foo"] = "foo value"
+        f["bar"] = "bar value"
+
+    format = H5()
+
+    with pytest.raises(FormatError, match="cannot be an empty string"):
+        format.get_value(file, "")
 
 
 @pytest.mark.h5
@@ -80,6 +109,21 @@ def test_json():
     }
 
 
+def test_json_dollar_key():
+    file = io.BytesIO(b"""
+    {
+        "foo": "foo value",
+        "bar": "bar value"
+    }
+    """)
+    format = Json()
+
+    assert format.get_value(file, "$") == {
+        "foo": "foo value",
+        "bar": "bar value",
+    }
+
+
 def test_json_key_error():
     file = io.BytesIO(b"{}")
     format = Json()
@@ -115,6 +159,19 @@ def test_xml():
         "./list/v[2]": "value",
         "./nested/qux": "qux nested value"
     }
+
+
+@pytest.mark.xml
+def test_xml_empty_key():
+    file = io.BytesIO(b"""
+    <root>
+        <foo>foo value</foo>
+        <bar>bar value</bar>
+    </root>
+    """)
+    format = Xml()
+
+    assert format.get_values(file, "") == {}
 
 
 @pytest.mark.xml

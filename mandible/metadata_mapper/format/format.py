@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import IO, Any, ContextManager, Dict, Iterable, Type
 
+from mandible import jsonpath
+
 
 class FormatError(Exception):
     def __init__(self, reason: str):
@@ -19,10 +21,9 @@ FORMAT_REGISTRY: Dict[str, Type["Format"]] = {}
 @dataclass
 class Format(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls):
-        name = cls.__name__
-        if not name.startswith("_"):
-            FORMAT_REGISTRY[name] = cls
+    def __init_subclass__(cls, register: bool = True):
+        if register:
+            FORMAT_REGISTRY[cls.__name__] = cls
 
     # Begin class definition
     def get_values(self, file: IO[bytes], keys: Iterable[str]):
@@ -31,6 +32,12 @@ class Format(ABC):
                 key: self._eval_key_wrapper(data, key)
                 for key in keys
             }
+
+    def get_value(self, file: IO[bytes], key: str):
+        """Convenience function for getting a single value"""
+
+        with self._parse_data(file) as data:
+            return self._eval_key_wrapper(data, key)
 
     def _eval_key_wrapper(self, data, key: str):
         try:
@@ -53,7 +60,7 @@ class Format(ABC):
 
 # Define placeholders for when extras are not installed
 
-class _PlaceholderBase(Format):
+class _PlaceholderBase(Format, register=False):
     """
     Base class for defining placeholder implementations for classes that
     require extra dependencies to be installed
@@ -93,8 +100,4 @@ class Json(Format):
 
     @staticmethod
     def _eval_key(data: dict, key: str):
-        val = data
-        for key in key.split("."):
-            val = val[key]
-
-        return val
+        return jsonpath.get_key(data, key)

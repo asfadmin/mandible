@@ -7,7 +7,7 @@ from mandible.metadata_mapper.source import (
     Source,
     SourceProviderError,
 )
-from mandible.metadata_mapper.storage import LocalFile
+from mandible.metadata_mapper.storage import STORAGE_REGISTRY, LocalFile
 
 
 @pytest.fixture
@@ -140,11 +140,12 @@ def test_config_source_provider_invalid_storage():
         provider.get_sources()
 
 
-def test_config_source_provider_invalid_storage_kwargs():
+@pytest.mark.parametrize("cls_name", STORAGE_REGISTRY.keys())
+def test_config_source_provider_invalid_storage_kwargs(cls_name):
     provider = ConfigSourceProvider({
         "source": {
             "storage": {
-                "class": "S3File",
+                "class": cls_name,
                 "invalid_arg": 1
             }
         }
@@ -154,7 +155,7 @@ def test_config_source_provider_invalid_storage_kwargs():
         SourceProviderError,
         match=(
             "failed to create source 'source': "
-            r"(Storage\.)?__init__\(\) got an unexpected keyword argument "
+            rf"({cls_name}\.)?__init__\(\) got an unexpected keyword argument "
             "'invalid_arg'"
         )
     ):

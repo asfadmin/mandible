@@ -1,7 +1,8 @@
+import io
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import IO, Any, Dict, Type
+from typing import IO, Any, Dict, Type, Union
 
 import s3fs
 
@@ -15,12 +16,41 @@ class StorageError(Exception):
 STORAGE_REGISTRY: Dict[str, Type["Storage"]] = {}
 
 
-@dataclass
 class Storage(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls):
-        STORAGE_REGISTRY[cls.__name__] = cls
+    def __init_subclass__(cls, register: bool = True):
+        if register:
+            STORAGE_REGISTRY[cls.__name__] = cls
 
+    @abstractmethod
+    def open_file(self, context: Context) -> IO[bytes]:
+        """Get a filelike object to access the data."""
+        pass
+
+
+@dataclass
+class Dummy(Storage):
+    """A dummy storage that returns a hardcoded byte stream.
+
+    Used for testing.
+    """
+
+    data: Union[str, bytes]
+
+    def open_file(self, context: Context) -> IO[bytes]:
+        if isinstance(self.data, str):
+            data = self.data.encode()
+        else:
+            data = self.data
+
+        return io.BytesIO(data)
+
+
+@dataclass
+class FilteredStorage(Storage, register=False):
+    """A storage which matches a set of filters on the context's files and
+    returns data from the matching file.
+    """
     # Begin class definition
     filters: Dict[str, str] = field(default_factory=dict)
 
@@ -66,12 +96,14 @@ class Storage(ABC):
         pass
 
 
-class LocalFile(Storage):
+@dataclass
+class LocalFile(FilteredStorage):
     def _open_file(self, info: Dict) -> IO[bytes]:
         return open(info["path"], "rb")
 
 
-class S3File(Storage):
+@dataclass
+class S3File(FilteredStorage):
     def _open_file(self, info: Dict) -> IO[bytes]:
         s3 = s3fs.S3FileSystem(anon=False)
         return s3.open(f"s3://{info['bucket']}/{info['key']}")

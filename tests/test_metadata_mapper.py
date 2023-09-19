@@ -384,7 +384,7 @@ def test_source_non_existent_key(context, fixed_name_file_config):
             "foo": {
                 "@mapped": {
                     "source": "fixed_name_file",
-                    "key": "does not exist",
+                    "key": "does_not_exist",
                 }
             }
         },
@@ -397,8 +397,8 @@ def test_source_non_existent_key(context, fixed_name_file_config):
         MetadataMapperError,
         match=(
             "failed to query source 'fixed_name_file': "
-            "key not found 'does not exist'"
-        )
+            "key not found 'does_not_exist'"
+        ),
     ):
         mapper.get_metadata(context)
 
@@ -419,7 +419,7 @@ def test_mapped_non_existent_source(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
+            r"failed to process template at \$\.foo\.@mapped: "
             "source 'does not exist' does not exist"
         )
     ):
@@ -441,8 +441,8 @@ def test_mapped_missing_key(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
-            "@mapped directive missing key: 'key'"
+            r"failed to process template at \$\.foo\.@mapped: "
+            "missing key: 'key'"
         )
     ):
         mapper.get_metadata(context)
@@ -463,8 +463,8 @@ def test_mapped_missing_source(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
-            "@mapped directive missing key: 'source'"
+            r"failed to process template at \$\.foo\.@mapped: "
+            "missing key: 'source'"
         )
     ):
         mapper.get_metadata(context)
@@ -491,8 +491,8 @@ def test_mapped_missing_source_path(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo\.bar\[2\]: "
-            "@mapped directive missing key: 'source'"
+            r"failed to process template at \$\.foo\.bar\[2\]\.@mapped: "
+            "missing key: 'source'"
         )
     ):
         mapper.get_metadata(context)
@@ -511,8 +511,8 @@ def test_mapped_missing_source_and_key(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
-            "@mapped directive missing keys: 'key', 'source'"
+            r"failed to process template at \$\.foo\.@mapped: "
+            "missing keys: 'key', 'source'"
         )
     ):
         mapper.get_metadata(context)
@@ -551,7 +551,7 @@ def test_invalid_directive(context):
     with pytest.raises(
         MetadataMapperError,
         match=(
-            r"failed to process template at \$\.foo: "
+            r"failed to process template at \$\.foo\.@does_not_exist: "
             "invalid directive '@does_not_exist'"
         )
     ):
@@ -574,6 +574,254 @@ def test_multiple_directives(context):
         match=(
             r"failed to process template at \$\.foo: "
             "multiple directives found in config: '@mapped', '@invalid'"
+        )
+    ):
+        mapper.get_metadata(context)
+
+
+def test_reformatted_json_field_in_json():
+    mapper = MetadataMapper(
+        template={
+            "@reformatted": {
+                "format": "Json",
+                "value": {
+                    "@mapped": {
+                        "source": "file",
+                        "key": "some-field"
+                    },
+                },
+                "key": "foo"
+            },
+        },
+        source_provider=ConfigSourceProvider({
+            "file": {
+                "storage": {
+                    "class": "Dummy",
+                    "data": br"""
+                    {
+                        "some-field": "{\"foo\": \"bar\"}"
+                    }
+                    """
+                },
+                "format": {
+                    "class": "Json",
+                }
+            }
+        })
+    )
+
+    context = Context()
+
+    assert mapper.get_metadata(context) == "bar"
+
+
+@pytest.mark.xml
+def test_reformatted_json_field_in_xml():
+    mapper = MetadataMapper(
+        template={
+            "@reformatted": {
+                "format": "Json",
+                "value": {
+                    "@mapped": {
+                        "source": "file",
+                        "key": "/root/json-field"
+                    },
+                },
+                "key": "foo"
+            },
+        },
+        source_provider=ConfigSourceProvider({
+            "file": {
+                "storage": {
+                    "class": "Dummy",
+                    "data": b"""
+                    <root>
+                        <json-field>{"foo": "bar"}</json-field>
+                    </root>
+                    """
+                },
+                "format": {
+                    "class": "Xml",
+                }
+            }
+        })
+    )
+
+    context = Context()
+
+    assert mapper.get_metadata(context) == "bar"
+
+
+@pytest.mark.xml
+def test_reformatted_json_field_in_xml_get_entire_value():
+    mapper = MetadataMapper(
+        template={
+            "@reformatted": {
+                "format": "Json",
+                "value": {
+                    "@mapped": {
+                        "source": "file",
+                        "key": "/root/json-field"
+                    },
+                },
+                "key": "$",
+            },
+        },
+        source_provider=ConfigSourceProvider({
+            "file": {
+                "storage": {
+                    "class": "Dummy",
+                    "data": b"""
+                    <root>
+                        <json-field>{"foo": "bar"}</json-field>
+                    </root>
+                    """
+                },
+                "format": {
+                    "class": "Xml",
+                }
+            }
+        })
+    )
+
+    context = Context()
+
+    assert mapper.get_metadata(context) == {"foo": "bar"}
+
+
+@pytest.mark.xml
+def test_reformatted_xml_field_in_json():
+    mapper = MetadataMapper(
+        template={
+            "@reformatted": {
+                "format": "Xml",
+                "value": {
+                    "@mapped": {
+                        "source": "file",
+                        "key": "foo"
+                    },
+                },
+                "key": "/root/field"
+            },
+        },
+        source_provider=ConfigSourceProvider({
+            "file": {
+                "storage": {
+                    "class": "Dummy",
+                    "data": b"""
+                    {
+                        "foo": "<root><field>bar</field></root>"
+                    }
+                    """
+                },
+                "format": {
+                    "class": "Json",
+                }
+            }
+        })
+    )
+
+    context = Context()
+
+    assert mapper.get_metadata(context) == "bar"
+
+
+def test_reformatted_bad_type():
+    mapper = MetadataMapper(
+        template={
+            "@reformatted": {
+                "format": "Json",
+                "value": {
+                    "@mapped": {
+                        "source": "file",
+                        "key": "foo"
+                    },
+                },
+                "key": "$"
+            },
+        },
+        source_provider=ConfigSourceProvider({
+            "file": {
+                "storage": {
+                    "class": "Dummy",
+                    "data": b'{"foo": true}'
+                },
+                "format": {
+                    "class": "Json",
+                }
+            }
+        })
+    )
+
+    context = Context()
+
+    with pytest.raises(MetadataMapperError, match="but got 'bool'"):
+        mapper.get_metadata(context)
+
+
+@pytest.mark.xml
+def test_reformatted_nested():
+    mapper = MetadataMapper(
+        template={
+            "@reformatted": {
+                "format": "Xml",
+                "value": {
+                    "@reformatted": {
+                        "format": "Json",
+                        "value": '{"foo": "<root><field>bar</field></root>"}',
+                        "key": "foo"
+                    },
+                },
+                "key": "/root/field"
+            },
+        },
+        source_provider=ConfigSourceProvider({
+            "file": {
+                "storage": {
+                    "class": "Dummy",
+                    "data": b"""
+                    {
+                        "foo": "<root><field>bar</field></root>"
+                    }
+                    """
+                },
+                "format": {
+                    "class": "Json",
+                }
+            }
+        })
+    )
+
+    context = Context()
+
+    assert mapper.get_metadata(context) == "bar"
+
+
+def test_reformatted_nested_missing_parameter():
+    mapper = MetadataMapper(
+        template={
+            "@reformatted": {
+                "format": "Json",
+                "value": {
+                    "@reformatted": {
+                        "format": "Json",
+                        "key": "foo"
+                    },
+                },
+                "key": "/root/field"
+            },
+        },
+        source_provider=ConfigSourceProvider({})
+    )
+
+    context = Context()
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            "failed to process template at "
+            r"\$\.@reformatted\.value\.@reformatted: "
+            "missing key: 'value'"
         )
     ):
         mapper.get_metadata(context)
