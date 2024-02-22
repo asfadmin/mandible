@@ -6,6 +6,7 @@ from .context import Context
 from .directive import Mapped, Reformatted, TemplateDirective
 from .exception import MetadataMapperError, TemplateError
 from .source import Source, SourceProvider
+from .types import Template
 
 log = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ log = logging.getLogger(__name__)
 class MetadataMapper:
     def __init__(
         self,
-        template,
+        template: Template,
         source_provider: SourceProvider = None,
         *,
         directive_marker: str = "@"
@@ -26,7 +27,7 @@ class MetadataMapper:
             "reformatted": Reformatted,
         }
 
-    def get_metadata(self, context: Context) -> Dict:
+    def get_metadata(self, context: Context) -> Template:
         if self.source_provider is not None:
             sources = self.source_provider.get_sources()
         else:
@@ -78,7 +79,7 @@ class MetadataMapper:
     def _replace_template(
         self,
         context: Context,
-        template,
+        template: Template,
         sources: Dict[str, Source],
         debug_path: str = "$",
     ):
@@ -200,7 +201,7 @@ class MetadataMapper:
             raise TemplateError(str(e), debug_path) from e
 
 
-def _walk_values(obj, debug_path: str = "$"):
+def _walk_values(obj: Any, debug_path: str = "$"):
     yield obj, debug_path
     if isinstance(obj, dict):
         for key, val in obj.items():
