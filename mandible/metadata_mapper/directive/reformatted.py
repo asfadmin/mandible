@@ -1,36 +1,31 @@
 import io
-from typing import Any, Dict
+from dataclasses import dataclass
+from typing import Any
 
-from ..context import Context
 from ..exception import MetadataMapperError
 from ..format import FORMAT_REGISTRY
-from ..source import Source
 from .directive import Key, TemplateDirective, get_key
 
 
+@dataclass
 class Reformatted(TemplateDirective):
     """A value mapped to the template from a metadata Source.
 
     The directive will be replaced by looking at the specified Source and
     extracting the defined key.
     """
-    def __init__(
-        self,
-        context: Context,
-        sources: Dict[str, Source],
-        format: str,
-        value: Any,
-        key: Key
-    ):
-        super().__init__(context, sources)
 
-        format_cls = FORMAT_REGISTRY.get(format)
+    format: str
+    value: Any
+    key: Key
+
+    def __post_init__(self):
+        format_cls = FORMAT_REGISTRY.get(self.format)
         if format_cls is None:
-            raise MetadataMapperError(f"format '{format}' does not exist")
+            raise MetadataMapperError(f"format '{self.format}' does not exist")
 
-        self.format = format_cls()
-        self.value = value
-        self.key = get_key(key, context)
+        self.format_obj = format_cls()
+        self.key_str = get_key(self.key, self.context)
 
     def call(self):
         if isinstance(self.value, bytes):
@@ -43,7 +38,7 @@ class Reformatted(TemplateDirective):
                 f"'{type(self.value).__name__}'",
             )
 
-        return self.format.get_value(
+        return self.format_obj.get_value(
             io.BytesIO(value),
-            self.key
+            self.key_str,
         )

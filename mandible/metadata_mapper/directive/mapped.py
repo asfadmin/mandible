@@ -1,34 +1,30 @@
-from typing import Dict
+from dataclasses import dataclass
 
-from ..context import Context
 from ..exception import MetadataMapperError
-from ..source import Source
-from .directive import Key, TemplateDirective, get_key
+from ..types import Key
+from .directive import TemplateDirective, get_key
 
 
+@dataclass
 class Mapped(TemplateDirective):
     """A value mapped to the template from a metadata Source.
 
     The directive will be replaced by looking at the specified Source and
     extracting the defined key.
     """
-    def __init__(
-        self,
-        context: Context,
-        sources: Dict[str, Source],
-        source: str,
-        key: Key
-    ):
-        super().__init__(context, sources)
 
-        if source not in sources:
-            raise MetadataMapperError(f"source '{source}' does not exist")
+    source: str
+    key: Key
 
-        self.source = sources[source]
-        self.key = get_key(key, context)
+    def __post_init__(self):
+        if self.source not in self.sources:
+            raise MetadataMapperError(f"source '{self.source}' does not exist")
+
+        self.source_obj = self.sources[self.source]
+        self.key_str = get_key(self.key, self.context)
 
     def call(self):
-        return self.source.get_value(self.key)
+        return self.source_obj.get_value(self.key_str)
 
     def prepare(self):
-        self.source.add_key(self.key)
+        self.source_obj.add_key(self.key_str)

@@ -1,9 +1,9 @@
 import inspect
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from .context import Context
-from .directive import Mapped, Reformatted, TemplateDirective
+from .directive import DIRECTIVE_REGISTRY, TemplateDirective
 from .exception import MetadataMapperError, TemplateError
 from .source import Source, SourceProvider
 from .types import Template
@@ -17,15 +17,11 @@ class MetadataMapper:
         template: Template,
         source_provider: SourceProvider = None,
         *,
-        directive_marker: str = "@"
+        directive_marker: str = "@",
     ):
         self.template = template
         self.source_provider = source_provider
         self.directive_marker = directive_marker
-        self.directives = {
-            "mapped": Mapped,
-            "reformatted": Reformatted,
-        }
 
     def get_metadata(self, context: Context) -> Template:
         if self.source_provider is not None:
@@ -159,7 +155,7 @@ class MetadataMapper:
         config: dict,
         debug_path: str,
     ) -> TemplateDirective:
-        cls = self.directives.get(directive_name[1:])
+        cls = DIRECTIVE_REGISTRY.get(directive_name[1:])
         if cls is None:
             raise TemplateError(
                 f"invalid directive '{directive_name}'",
