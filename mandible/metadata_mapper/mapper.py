@@ -155,7 +155,7 @@ class MetadataMapper:
         config: dict,
         debug_path: str,
     ) -> TemplateDirective:
-        cls = DIRECTIVE_REGISTRY.get(directive_name[1:])
+        cls = DIRECTIVE_REGISTRY.get(directive_name[len(self.directive_marker):])
         if cls is None:
             raise TemplateError(
                 f"invalid directive '{directive_name}'",
