@@ -1,4 +1,13 @@
-from mandible.metadata_mapper.builder import build, mapped, reformatted
+from mandible.metadata_mapper.builder import (
+    add,
+    build,
+    floordiv,
+    mapped,
+    mul,
+    reformatted,
+    sub,
+    truediv,
+)
 
 
 def test_build_noop():
@@ -62,5 +71,265 @@ def test_build_reformatted():
                 },
             },
             "key": "foo",
+        },
+    }
+
+
+def test_build_add():
+    template = add(
+        left=1,
+        right=2,
+    )
+
+    assert build(template) == {
+        "@add": {
+            "left": 1,
+            "right": 2,
+        },
+    }
+
+
+def test_build_add_automatic():
+    template = mapped(
+        source="some_source",
+        key="some.key",
+    ) + 10
+
+    assert build(template) == {
+        "@add": {
+            "left": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+            "right": 10,
+        },
+    }
+
+
+def test_build_add_automatic_right():
+    template = 10 + mapped(
+        source="some_source",
+        key="some.key",
+    )
+
+    assert build(template) == {
+        "@add": {
+            "left": 10,
+            "right": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+        },
+    }
+
+
+def test_build_floordiv():
+    template = floordiv(
+        left=1,
+        right=2,
+    )
+
+    assert build(template) == {
+        "@floordiv": {
+            "left": 1,
+            "right": 2,
+        },
+    }
+
+
+def test_build_floordiv_automatic():
+    template = mapped(
+        source="some_source",
+        key="some.key",
+    ) // 10
+
+    assert build(template) == {
+        "@floordiv": {
+            "left": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+            "right": 10,
+        },
+    }
+
+
+def test_build_floordiv_automatic_right():
+    template = 10 // mapped(
+        source="some_source",
+        key="some.key",
+    )
+
+    assert build(template) == {
+        "@floordiv": {
+            "left": 10,
+            "right": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+        },
+    }
+
+
+def test_build_mul():
+    template = mul(
+        left=1,
+        right=2,
+    )
+
+    assert build(template) == {
+        "@mul": {
+            "left": 1,
+            "right": 2,
+        },
+    }
+
+
+def test_build_mul_automatic():
+    template = mapped(
+        source="some_source",
+        key="some.key",
+    ) * 10
+
+    assert build(template) == {
+        "@mul": {
+            "left": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+            "right": 10,
+        },
+    }
+
+
+def test_build_mul_automatic_right():
+    template = 10 * mapped(
+        source="some_source",
+        key="some.key",
+    )
+
+    assert build(template) == {
+        "@mul": {
+            "left": 10,
+            "right": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+        },
+    }
+
+
+def test_build_sub():
+    template = sub(
+        left=1,
+        right=2,
+    )
+
+    assert build(template) == {
+        "@sub": {
+            "left": 1,
+            "right": 2,
+        },
+    }
+
+
+def test_build_sub_automatic():
+    template = mapped(
+        source="some_source",
+        key="some.key",
+    ) - 10
+
+    assert build(template) == {
+        "@sub": {
+            "left": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+            "right": 10,
+        },
+    }
+
+
+def test_build_sub_automatic_right():
+    template = 10 - mapped(
+        source="some_source",
+        key="some.key",
+    )
+
+    assert build(template) == {
+        "@sub": {
+            "left": 10,
+            "right": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+        },
+    }
+
+
+def test_build_truediv():
+    template = truediv(
+        left=1,
+        right=2,
+    )
+
+    assert build(template) == {
+        "@truediv": {
+            "left": 1,
+            "right": 2,
+        },
+    }
+
+
+def test_build_truediv_automatic():
+    template = mapped(
+        source="some_source",
+        key="some.key",
+    ) / 10
+
+    assert build(template) == {
+        "@truediv": {
+            "left": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+            "right": 10,
+        },
+    }
+
+
+def test_build_truediv_automatic_right():
+    template = 10 / mapped(
+        source="some_source",
+        key="some.key",
+    )
+
+    assert build(template) == {
+        "@truediv": {
+            "left": 10,
+            "right": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
         },
     }

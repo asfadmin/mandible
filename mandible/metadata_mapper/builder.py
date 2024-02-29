@@ -1,9 +1,21 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Callable, Dict, Type, TypeVar
 
-from .directive import Mapped, Reformatted
+from .directive import (
+    Add,
+    FloorDiv,
+    Mapped,
+    Mul,
+    Reformatted,
+    Sub,
+    TemplateDirective,
+    TrueDiv,
+)
 from .types import Key, Template
+
+# For testing purposes to ensure we implement builders for all directives
+_DIRECTIVE_BUILDER_REGISTRY: Dict[str, Callable[..., "DirectiveBuilder"]] = {}
 
 
 @dataclass
@@ -34,7 +46,54 @@ class DirectiveBuilder(Builder):
             },
         }
 
+    def __add__(self, other: Any) -> "DirectiveBuilder":
+        return add(self, other)
 
+    def __radd__(self, other: Any) -> "DirectiveBuilder":
+        return add(other, self)
+
+    def __floordiv__(self, other: Any) -> "DirectiveBuilder":
+        return floordiv(self, other)
+
+    def __rfloordiv__(self, other: Any) -> "DirectiveBuilder":
+        return floordiv(other, self)
+
+    def __mul__(self, other: Any) -> "DirectiveBuilder":
+        return mul(self, other)
+
+    def __rmul__(self, other: Any) -> "DirectiveBuilder":
+        return mul(other, self)
+
+    def __sub__(self, other: Any) -> "DirectiveBuilder":
+        return sub(self, other)
+
+    def __rsub__(self, other: Any) -> "DirectiveBuilder":
+        return sub(other, self)
+
+    def __truediv__(self, other: Any) -> "DirectiveBuilder":
+        return truediv(self, other)
+
+    def __rtruediv__(self, other: Any) -> "DirectiveBuilder":
+        return truediv(other, self)
+
+
+T = TypeVar("T")
+
+
+def _directive_builder(directive: Type["TemplateDirective"]) -> Callable[[T], T]:
+    directive_name = directive.directive_name
+    assert directive_name is not None
+
+    def decorator(func):
+        func.__doc__ = directive.__doc__
+
+        _DIRECTIVE_BUILDER_REGISTRY[directive_name] = func
+        return func
+
+    return decorator
+
+
+@_directive_builder(Mapped)
 def mapped(
     source: str,
     key: Key,
@@ -51,6 +110,7 @@ def mapped(
     )
 
 
+@_directive_builder(Reformatted)
 def reformatted(
     format: str,
     value: Any,
@@ -67,6 +127,75 @@ def reformatted(
             "key": key,
         },
     )
+
+#
+# Operations
+#
+
+
+def _binop_directive(directive_name: str, left: Any, right: Any):
+    return DirectiveBuilder(
+        directive_name,
+        {
+            "left": left,
+            "right": right,
+        },
+    )
+
+
+@_directive_builder(Add)
+def add(
+    left: Any,
+    right: Any,
+) -> DirectiveBuilder:
+    directive_name = Add.directive_name
+    assert directive_name is not None
+
+    return _binop_directive(directive_name, left, right)
+
+
+@_directive_builder(FloorDiv)
+def floordiv(
+    left: Any,
+    right: Any,
+) -> DirectiveBuilder:
+    directive_name = FloorDiv.directive_name
+    assert directive_name is not None
+
+    return _binop_directive(directive_name, left, right)
+
+
+@_directive_builder(Mul)
+def mul(
+    left: Any,
+    right: Any,
+) -> DirectiveBuilder:
+    directive_name = Mul.directive_name
+    assert directive_name is not None
+
+    return _binop_directive(directive_name, left, right)
+
+
+@_directive_builder(Sub)
+def sub(
+    left: Any,
+    right: Any,
+) -> DirectiveBuilder:
+    directive_name = Sub.directive_name
+    assert directive_name is not None
+
+    return _binop_directive(directive_name, left, right)
+
+
+@_directive_builder(TrueDiv)
+def truediv(
+    left: Any,
+    right: Any,
+) -> DirectiveBuilder:
+    directive_name = TrueDiv.directive_name
+    assert directive_name is not None
+
+    return _binop_directive(directive_name, left, right)
 
 
 def build(template: Any, directive_marker: str = "@") -> Template:
