@@ -1,3 +1,4 @@
 {
-  "bar": "value for bar"
+  "bar": "value for bar",
+  "list": ["A", "B", "C"]
 }

@@ -21,9 +21,11 @@ FORMAT_REGISTRY: Dict[str, Type["Format"]] = {}
 @dataclass
 class Format(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls, register: bool = True):
+    def __init_subclass__(cls, register: bool = True, **kwargs):
         if register:
             FORMAT_REGISTRY[cls.__name__] = cls
+
+        super().__init_subclass__(**kwargs)
 
     # Begin class definition
     def get_values(self, file: IO[bytes], keys: Iterable[str]):
