@@ -101,7 +101,12 @@ class MetadataMapper:
                     },
                     debug_path
                 )
-                return directive.call()
+                try:
+                    return directive.call()
+                except Exception as e:
+                    raise MetadataMapperError(
+                        f"failed to call directive at {debug_path}: {e}"
+                    ) from e
 
             return {
                 k: self._replace_template(
