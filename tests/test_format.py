@@ -69,7 +69,7 @@ def test_h5_empty_key():
 
     format = H5()
 
-    with pytest.raises(FormatError, match="cannot be an empty string"):
+    with pytest.raises(FormatError, match="key not found ''"):
         format.get_value(file, "")
 
 
