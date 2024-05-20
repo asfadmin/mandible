@@ -18,9 +18,11 @@ STORAGE_REGISTRY: Dict[str, Type["Storage"]] = {}
 
 class Storage(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls, register: bool = True):
+    def __init_subclass__(cls, register: bool = True, **kwargs):
         if register:
             STORAGE_REGISTRY[cls.__name__] = cls
+
+        super().__init_subclass__(**kwargs)
 
     @abstractmethod
     def open_file(self, context: Context) -> IO[bytes]:

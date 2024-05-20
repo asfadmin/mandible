@@ -1,11 +1,12 @@
 import inspect
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from .context import Context
-from .directive import Mapped, Reformatted, TemplateDirective
+from .directive import DIRECTIVE_REGISTRY, TemplateDirective
 from .exception import MetadataMapperError, TemplateError
 from .source import Source, SourceProvider
+from .types import Template
 
 log = logging.getLogger(__name__)
 
@@ -13,20 +14,16 @@ log = logging.getLogger(__name__)
 class MetadataMapper:
     def __init__(
         self,
-        template,
+        template: Template,
         source_provider: SourceProvider = None,
         *,
-        directive_marker: str = "@"
+        directive_marker: str = "@",
     ):
         self.template = template
         self.source_provider = source_provider
         self.directive_marker = directive_marker
-        self.directives = {
-            "mapped": Mapped,
-            "reformatted": Reformatted,
-        }
 
-    def get_metadata(self, context: Context) -> Dict:
+    def get_metadata(self, context: Context) -> Template:
         if self.source_provider is not None:
             sources = self.source_provider.get_sources()
         else:
@@ -78,7 +75,7 @@ class MetadataMapper:
     def _replace_template(
         self,
         context: Context,
-        template,
+        template: Template,
         sources: Dict[str, Source],
         debug_path: str = "$",
     ):
@@ -104,7 +101,12 @@ class MetadataMapper:
                     },
                     debug_path
                 )
-                return directive.call()
+                try:
+                    return directive.call()
+                except Exception as e:
+                    raise MetadataMapperError(
+                        f"failed to call directive at {debug_path}: {e}"
+                    ) from e
 
             return {
                 k: self._replace_template(
@@ -158,7 +160,7 @@ class MetadataMapper:
         config: dict,
         debug_path: str,
     ) -> TemplateDirective:
-        cls = self.directives.get(directive_name[1:])
+        cls = DIRECTIVE_REGISTRY.get(directive_name[len(self.directive_marker):])
         if cls is None:
             raise TemplateError(
                 f"invalid directive '{directive_name}'",
@@ -200,7 +202,7 @@ class MetadataMapper:
             raise TemplateError(str(e), debug_path) from e
 
 
-def _walk_values(obj, debug_path: str = "$"):
+def _walk_values(obj: Any, debug_path: str = "$"):
     yield obj, debug_path
     if isinstance(obj, dict):
         for key, val in obj.items():

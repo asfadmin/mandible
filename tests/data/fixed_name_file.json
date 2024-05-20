@@ -2,5 +2,7 @@
   "foo": "value for foo",
   "nested": {
     "key": "value for nested"
-  }
+  },
+  "integer": 10,
+  "list": [1, 2, 3]
 }

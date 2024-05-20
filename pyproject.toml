@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mandible"
-version = "0.4.0"
+version = "0.5.0"
 description = "A generic framework for writing satellite data ingest systems"
 authors = ["Rohan Weeden <reweeden@alaska.edu>", "Matt Perry <mperry37@alaska.edu>"]
 license = "APACHE-2"
@@ -33,7 +33,7 @@ xml = ["lxml"]
 [tool.poetry.group.dev.dependencies]
 boto3 = "^1.18"
 moto = "^4.0.1"
-pytest = "^7.1.2"
+pytest = "^8.0.2"
 pytest-cov = "^4.0.0"
 pytest-mock = "^3.8.2"
 
