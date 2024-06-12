@@ -1,6 +1,6 @@
 import pytest
 
-from mandible.metadata_mapper.format import H5, Json, Xml
+from mandible.metadata_mapper.format import FORMAT_REGISTRY, H5, Json, Xml, Zip
 from mandible.metadata_mapper.source import (
     ConfigSourceProvider,
     PySourceProvider,
@@ -14,7 +14,16 @@ from mandible.metadata_mapper.storage import STORAGE_REGISTRY, LocalFile
 def sources():
     return {
         "foo": Source(LocalFile(filters={"name": "foo"}), Json()),
-        "bar": Source(LocalFile(filters={"name": "bar"}), Json())
+        "bar": Source(LocalFile(filters={"name": "bar"}), Json()),
+        "baz": Source(
+            LocalFile(filters={"name": "baz"}),
+            Zip(
+                filters={
+                    "filename": "foo",
+                },
+                format=Json(),
+            ),
+        ),
     }
 
 
@@ -47,7 +56,24 @@ def test_config_source_provider(sources):
             "format": {
                 "class": "Json"
             }
-        }
+        },
+        "baz": {
+            "storage": {
+                "class": "LocalFile",
+                "filters": {
+                    "name": "baz",
+                },
+            },
+            "format": {
+                "class": "Zip",
+                "filters": {
+                    "filename": "foo",
+                },
+                "format": {
+                    "class": "Json",
+                },
+            },
+        },
     })
 
     assert provider.get_sources() == sources
@@ -200,24 +226,25 @@ def test_config_source_provider_invalid_format():
         provider.get_sources()
 
 
-def test_config_source_provider_invalid_format_kwargs():
+@pytest.mark.parametrize("cls_name", FORMAT_REGISTRY.keys())
+def test_config_source_provider_invalid_format_kwargs(cls_name):
     provider = ConfigSourceProvider({
         "source": {
             "storage": {
                 "class": "S3File"
             },
             "format": {
-                "class": "Json",
-                "invalid_arg": 1
-            }
-        }
+                "class": cls_name,
+                "invalid_arg": 1,
+            },
+        },
     })
 
     with pytest.raises(
         SourceProviderError,
         match=(
             "failed to create source 'source': "
-            r"(Format\.)?__init__\(\) got an unexpected keyword argument "
+            rf"({cls_name}\.)?__init__\(\) got an unexpected keyword argument "
             "'invalid_arg'"
         )
     ):

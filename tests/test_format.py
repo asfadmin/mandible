@@ -1,4 +1,5 @@
 import io
+import zipfile
 
 import pytest
 
@@ -9,6 +10,7 @@ from mandible.metadata_mapper.format import (
     FormatError,
     Json,
     Xml,
+    Zip,
 )
 
 try:
@@ -22,6 +24,7 @@ def test_registry():
         "H5": H5,
         "Json": Json,
         "Xml": Xml,
+        "Zip": Zip,
     }
 
 
@@ -130,6 +133,78 @@ def test_json_key_error():
 
     with pytest.raises(FormatError, match="key not found 'foo'"):
         format.get_values(file, ["foo"])
+
+
+def test_zip():
+    file = io.BytesIO()
+    with zipfile.ZipFile(file, "w") as f:
+        f.writestr(
+            "foo",
+            b"""
+            {
+                "foo": "foo value",
+                "bar": "bar value"
+            }
+            """,
+        )
+
+    format = Zip(
+        filters={
+            "filename": "foo",
+        },
+        format=Json(),
+    )
+
+    assert format.get_value(file, "$") == {
+        "foo": "foo value",
+        "bar": "bar value",
+    }
+
+
+def test_zip_filters():
+    file = io.BytesIO()
+    with zipfile.ZipFile(file, "w") as f:
+        f.writestr("unformatted.txt", "This is just some text")
+        f.writestr("foobar.txt", "This is some foo text")
+        f.writestr(
+            "foo",
+            b"""
+            {
+                "foo": "foo value",
+                "bar": "bar value"
+            }
+            """,
+        )
+
+    format = Zip(
+        filters={
+            "filename": "^foo$",
+        },
+        format=Json(),
+    )
+
+    assert format.get_value(file, "$") == {
+        "foo": "foo value",
+        "bar": "bar value",
+    }
+
+
+def test_zip_filters_bad_attribute():
+    file = io.BytesIO()
+    with zipfile.ZipFile(file, "w") as f:
+        f.writestr("unformatted.txt", "This is just some text/n")
+        f.writestr("foobar.txt", "This is some foo text")
+
+    format = Zip(
+        filters={
+            "filename": "^foo$",
+            "nonexistent_attr": True,
+        },
+        format=Json(),
+    )
+
+    with pytest.raises(FormatError, match="no archive members matched filters"):
+        format.get_value(file, "key")
 
 
 @pytest.mark.xml

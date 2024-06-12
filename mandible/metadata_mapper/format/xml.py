@@ -1,4 +1,5 @@
 import contextlib
+from dataclasses import dataclass
 from typing import IO, Any
 
 from lxml import etree
@@ -6,6 +7,7 @@ from lxml import etree
 from .format import Format
 
 
+@dataclass
 class Xml(Format):
     @staticmethod
     @contextlib.contextmanager

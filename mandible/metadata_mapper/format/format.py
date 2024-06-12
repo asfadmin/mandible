@@ -1,5 +1,7 @@
 import contextlib
 import json
+import re
+import zipfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import IO, Any, ContextManager, Dict, Iterable, Type
@@ -66,6 +68,7 @@ class Format(ABC):
 
 # Define placeholders for when extras are not installed
 
+@dataclass
 class _PlaceholderBase(Format, register=False):
     """
     Base class for defining placeholder implementations for classes that
@@ -86,11 +89,13 @@ class _PlaceholderBase(Format, register=False):
         pass
 
 
+@dataclass
 class H5(_PlaceholderBase):
     def __init__(self):
         super().__init__("h5py")
 
 
+@dataclass
 class Xml(_PlaceholderBase):
     def __init__(self):
         super().__init__("lxml")
@@ -98,6 +103,7 @@ class Xml(_PlaceholderBase):
 
 # Define formats that don't require extra dependencies
 
+@dataclass
 class Json(Format):
     @staticmethod
     @contextlib.contextmanager
@@ -107,3 +113,76 @@ class Json(Format):
     @staticmethod
     def _eval_key(data: dict, key: str):
         return jsonpath.get_key(data, key)
+
+
+@dataclass
+class Zip(Format):
+    filters: Dict[str, Any]
+    """Filter against any attributes of zipfile.ZipInfo objects"""
+    format: Format
+
+    def __post_init__(self):
+        self._compiled_filters = {
+            k: re.compile(v) if isinstance(v, str) else v
+            for k, v in self.filters.items()
+        }
+
+    def get_values(self, file: IO[bytes], keys: Iterable[str]):
+        with zipfile.ZipFile(file, "r") as zf:
+            file = self._get_file_from_archive(zf)
+            return self.format.get_values(file, keys)
+
+    def get_value(self, file: IO[bytes], key: str):
+        """Convenience function for getting a single value"""
+
+        with zipfile.ZipFile(file, "r") as zf:
+            file = self._get_file_from_archive(zf)
+            return self.format.get_value(file, key)
+
+    def _get_file_from_archive(self, zf: zipfile.ZipFile):
+        """Return the member from the archive which matches all filters."""
+
+        zipinfo_list = zf.infolist()
+
+        # Special error message to make debugging empty archive easier
+        if not zipinfo_list:
+            raise FormatError("no members in archive")
+
+        for zipinfo in zipinfo_list:
+            if self._matches_filters(zipinfo):
+                return zf.open(zipinfo, "r")
+
+        raise FormatError(f"no archive members matched filters {self.filters}")
+
+    def _matches_filters(self, zipinfo: zipfile.ZipInfo) -> bool:
+        for key, pattern in self._compiled_filters.items():
+            try:
+                value = getattr(zipinfo, key)
+            except AttributeError:
+                return False
+
+            # The is_dir method can't be accessed because we don't include a
+            # mechanism for calling it. We could add a special case, or a
+            # feature to call member functions automatically, but as there is
+            # no use case for matching a directory inside the archive, we just
+            # leave it unimplemented.
+
+            if isinstance(pattern, re.Pattern):
+                if not pattern.fullmatch(value):
+                    return False
+            elif value != pattern:
+                return False
+
+        return True
+
+    @staticmethod
+    def _parse_data(file: IO[bytes]):
+        raise NotImplementedError(
+            f"{Zip.__name__}._parse_data should not be called!"
+        )
+
+    @staticmethod
+    def _eval_key(data: dict, key: str):
+        raise NotImplementedError(
+            f"{Zip.__name__}._eval_key should not be called!"
+        )
