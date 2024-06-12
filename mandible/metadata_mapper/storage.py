@@ -54,7 +54,7 @@ class FilteredStorage(Storage, register=False):
     returns data from the matching file.
     """
     # Begin class definition
-    filters: Dict[str, str] = field(default_factory=dict)
+    filters: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         self._compiled_filters = {

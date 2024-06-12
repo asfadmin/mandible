@@ -28,20 +28,24 @@ class Format(ABC):
         super().__init_subclass__(**kwargs)
 
     # Begin class definition
-    def get_values(self, file: IO[bytes], keys: Iterable[str]):
+    def get_values(
+        self,
+        file: IO[bytes],
+        keys: Iterable[str],
+    ) -> Dict[str, Any]:
         with self._parse_data(file) as data:
             return {
                 key: self._eval_key_wrapper(data, key)
                 for key in keys
             }
 
-    def get_value(self, file: IO[bytes], key: str):
+    def get_value(self, file: IO[bytes], key: str) -> Any:
         """Convenience function for getting a single value"""
 
         with self._parse_data(file) as data:
             return self._eval_key_wrapper(data, key)
 
-    def _eval_key_wrapper(self, data, key: str):
+    def _eval_key_wrapper(self, data, key: str) -> Any:
         try:
             return self._eval_key(data, key)
         except KeyError as e:
@@ -56,7 +60,7 @@ class Format(ABC):
 
     @staticmethod
     @abstractmethod
-    def _eval_key(data, key: str):
+    def _eval_key(data, key: str) -> Any:
         pass
 
 
