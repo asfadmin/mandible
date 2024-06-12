@@ -5,11 +5,11 @@ import h5py
 
 from mandible.h5_parser import normalize
 
-from .format import Format
+from .format import SimpleFormat
 
 
 @dataclass
-class H5(Format):
+class H5(SimpleFormat):
     @staticmethod
     def _parse_data(file: IO[bytes]) -> ContextManager[Any]:
         return h5py.File(file, "r")

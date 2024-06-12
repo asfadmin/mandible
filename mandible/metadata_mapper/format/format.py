@@ -4,7 +4,7 @@ import re
 import zipfile
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import IO, Any, ContextManager, Dict, Iterable, Type
+from typing import IO, Any, ContextManager, Dict, Iterable, Type, TypeVar
 
 from mandible import jsonpath
 
@@ -30,11 +30,30 @@ class Format(ABC):
         super().__init_subclass__(**kwargs)
 
     # Begin class definition
+    @abstractmethod
     def get_values(
         self,
         file: IO[bytes],
         keys: Iterable[str],
     ) -> Dict[str, Any]:
+        """Get a list of values from a file"""
+        pass
+
+    @abstractmethod
+    def get_value(self, file: IO[bytes], key: str) -> Any:
+        """Convenience function for getting a single value"""
+        pass
+
+
+@dataclass
+class SimpleFormat(Format, ABC, register=False):
+    def get_values(
+        self,
+        file: IO[bytes],
+        keys: Iterable[str],
+    ) -> Dict[str, Any]:
+        """Get a list of values from a file"""
+
         with self._parse_data(file) as data:
             return {
                 key: self._eval_key_wrapper(data, key)
@@ -67,9 +86,11 @@ class Format(ABC):
 
 
 # Define placeholders for when extras are not installed
+T = TypeVar("T")
+
 
 @dataclass
-class _PlaceholderBase(Format, register=False):
+class _PlaceholderBase(SimpleFormat, register=False):
     """
     Base class for defining placeholder implementations for classes that
     require extra dependencies to be installed
@@ -81,11 +102,11 @@ class _PlaceholderBase(Format, register=False):
         )
 
     @staticmethod
-    def _parse_data(file: IO[bytes]) -> ContextManager[Any]:
+    def _parse_data(file: IO[bytes]) -> ContextManager[T]:
         pass
 
     @staticmethod
-    def _eval_key(data, key: str):
+    def _eval_key(data: T, key: str):
         pass
 
 
@@ -104,7 +125,7 @@ class Xml(_PlaceholderBase):
 # Define formats that don't require extra dependencies
 
 @dataclass
-class Json(Format):
+class Json(SimpleFormat):
     @staticmethod
     @contextlib.contextmanager
     def _parse_data(file: IO[bytes]):
@@ -128,6 +149,8 @@ class Zip(Format):
         }
 
     def get_values(self, file: IO[bytes], keys: Iterable[str]):
+        """Get a list of values from a file"""
+
         with zipfile.ZipFile(file, "r") as zf:
             file = self._get_file_from_archive(zf)
             return self.format.get_values(file, keys)
@@ -174,15 +197,3 @@ class Zip(Format):
                 return False
 
         return True
-
-    @staticmethod
-    def _parse_data(file: IO[bytes]):
-        raise NotImplementedError(
-            f"{Zip.__name__}._parse_data should not be called!"
-        )
-
-    @staticmethod
-    def _eval_key(data: dict, key: str):
-        raise NotImplementedError(
-            f"{Zip.__name__}._eval_key should not be called!"
-        )
