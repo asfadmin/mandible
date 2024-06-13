@@ -106,6 +106,8 @@ class LocalFile(FilteredStorage):
 
 @dataclass
 class S3File(FilteredStorage):
+    s3fs_kwargs: Dict[str, Any] = field(default_factory=dict)
+
     def _open_file(self, info: Dict) -> IO[bytes]:
-        s3 = s3fs.S3FileSystem(anon=False)
+        s3 = s3fs.S3FileSystem(anon=False, **self.s3fs_kwargs)
         return s3.open(f"s3://{info['bucket']}/{info['key']}")
