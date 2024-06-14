@@ -197,3 +197,27 @@ class Zip(Format):
                 return False
 
         return True
+
+
+@dataclass
+class ZipInfo(SimpleFormat):
+    @staticmethod
+    @contextlib.contextmanager
+    def _parse_data(file: IO[bytes]):
+        with zipfile.ZipFile(file, "r") as zf:
+            yield {
+                "infolist": [
+                    {
+                        k: getattr(info, k)
+                        for k in info.__slots__
+                        if not k.startswith("_")
+                    }
+                    for info in zf.infolist()
+                ],
+                "filename": zf.filename,
+                "comment": zf.comment,
+            }
+
+    @staticmethod
+    def _eval_key(data: dict, key: str):
+        return jsonpath.get_key(data, key)
