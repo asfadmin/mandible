@@ -116,10 +116,26 @@ class ConfigSourceProvider(SourceProvider):
         if cls is None:
             raise SourceProviderError(f"invalid {name_key} type '{cls_name}'")
 
+        return self._create_class(cls, class_config)
+
+    def _create_class(self, cls: Type[T], config: Dict[str, Any]) -> T:
         kwargs = {
-            k: v
-            for k, v in class_config.items()
+            k: self._convert_arg(k, v)
+            for k, v in config.items()
             if k != "class"
         }
 
         return cls(**kwargs)
+
+    def _convert_arg(self, name_key: str, arg: Any) -> Any:
+        if isinstance(arg, dict) and "class" in arg:
+            cls_name = arg["class"]
+
+            # Only support Format classes for now
+            format_cls = FORMAT_REGISTRY.get(cls_name)
+            if format_cls:
+                return self._create_class(format_cls, arg)
+
+            raise SourceProviderError(f"invalid {name_key} type '{cls_name}'")
+
+        return arg

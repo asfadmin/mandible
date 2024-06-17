@@ -1,4 +1,12 @@
-from .format import FORMAT_REGISTRY, Format, FormatError, Json
+from .format import (
+    FORMAT_REGISTRY,
+    Format,
+    FormatError,
+    Json,
+    SimpleFormat,
+    Zip,
+    ZipInfo,
+)
 
 try:
     from .h5 import H5
@@ -17,5 +25,8 @@ __all__ = (
     "FormatError",
     "H5",
     "Json",
+    "SimpleFormat",
     "Xml",
+    "Zip",
+    "ZipInfo",
 )

@@ -115,6 +115,31 @@ def test_s3_file_s3uri(s3_resource):
         assert f.read() == b"Some remote file content\n"
 
 
+def test_s3_file_s3fs_kwargs(s3_resource):
+    bucket = s3_resource.Bucket("test-bucket")
+    bucket.create()
+    obj = bucket.Object("bucket_file.txt")
+    obj.upload_fileobj(io.BytesIO(b"Some remote file content\n"))
+
+    context = Context(
+        files=[{
+            "name": "s3_file",
+            "bucket": "test-bucket",
+            "key": "bucket_file.txt"
+        }]
+    )
+    storage = S3File(
+        filters={"name": "s3_file"},
+        s3fs_kwargs={
+            "default_block_size": 64 * 1024,
+            "use_ssl": False,
+        },
+    )
+
+    with storage.open_file(context) as f:
+        assert f.read() == b"Some remote file content\n"
+
+
 def test_s3_file_filters(s3_resource):
     bucket = s3_resource.Bucket("test-bucket")
     bucket.create()

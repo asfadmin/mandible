@@ -1,12 +1,14 @@
 import contextlib
+from dataclasses import dataclass
 from typing import IO, Any
 
 from lxml import etree
 
-from .format import Format
+from .format import SimpleFormat
 
 
-class Xml(Format):
+@dataclass
+class Xml(SimpleFormat):
     @staticmethod
     @contextlib.contextmanager
     def _parse_data(file: IO[bytes]) -> Any:
