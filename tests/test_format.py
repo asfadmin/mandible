@@ -14,6 +14,7 @@ from mandible.metadata_mapper.format import (
     Zip,
     ZipInfo,
 )
+from mandible.metadata_mapper.key import Key
 
 try:
     import h5py
@@ -57,12 +58,12 @@ def test_h5():
 
     assert format.get_values(
         file,
-        ["/foo", "bar", "list", "nested/qux"]
+        [Key("/foo"), Key("bar"), Key("list"), Key("nested/qux")],
     ) == {
-        "/foo": "foo value",
-        "bar": "bar value",
-        "list": ["list", "value"],
-        "nested/qux": "qux nested value"
+        Key("/foo"): "foo value",
+        Key("bar"): "bar value",
+        Key("list"): ["list", "value"],
+        Key("nested/qux"): "qux nested value",
     }
 
 
@@ -76,7 +77,7 @@ def test_h5_empty_key():
     format = H5()
 
     with pytest.raises(FormatError, match="key not found ''"):
-        format.get_value(file, "")
+        format.get_value(file, Key(""))
 
 
 @pytest.mark.h5
@@ -88,7 +89,7 @@ def test_h5_key_error():
     format = H5()
 
     with pytest.raises(FormatError, match="key not found 'foo'"):
-        format.get_values(file, ["foo"])
+        format.get_values(file, [Key("foo")])
 
 
 def test_json():
@@ -106,12 +107,12 @@ def test_json():
 
     assert format.get_values(
         file,
-        ["foo", "bar", "list", "nested.qux"]
+        [Key("foo"), Key("bar"), Key("list"), Key("nested.qux")],
     ) == {
-        "foo": "foo value",
-        "bar": "bar value",
-        "list": ["list", "value"],
-        "nested.qux": "qux nested value"
+        Key("foo"): "foo value",
+        Key("bar"): "bar value",
+        Key("list"): ["list", "value"],
+        Key("nested.qux"): "qux nested value",
     }
 
 
@@ -124,7 +125,7 @@ def test_json_dollar_key():
     """)
     format = Json()
 
-    assert format.get_value(file, "$") == {
+    assert format.get_value(file, Key("$")) == {
         "foo": "foo value",
         "bar": "bar value",
     }
@@ -135,7 +136,7 @@ def test_json_key_error():
     format = Json()
 
     with pytest.raises(FormatError, match="key not found 'foo'"):
-        format.get_values(file, ["foo"])
+        format.get_values(file, [Key("foo")])
 
 
 def test_zip():
@@ -158,7 +159,7 @@ def test_zip():
         format=Json(),
     )
 
-    assert format.get_value(file, "$") == {
+    assert format.get_value(file, Key("$")) == {
         "foo": "foo value",
         "bar": "bar value",
     }
@@ -186,7 +187,7 @@ def test_zip_filters():
         format=Json(),
     )
 
-    assert format.get_value(file, "$") == {
+    assert format.get_value(file, Key("$")) == {
         "foo": "foo value",
         "bar": "bar value",
     }
@@ -207,7 +208,7 @@ def test_zip_filters_bad_attribute():
     )
 
     with pytest.raises(FormatError, match="no archive members matched filters"):
-        format.get_value(file, "key")
+        format.get_value(file, Key("key"))
 
 
 def test_zipinfo():
@@ -219,7 +220,7 @@ def test_zipinfo():
 
     format = ZipInfo()
 
-    assert format.get_value(file, "filename") is None
+    assert format.get_value(file, Key("filename")) is None
 
 
 @pytest.mark.jsonpath
@@ -232,8 +233,8 @@ def test_zipinfo_jsonpath():
 
     format = ZipInfo()
 
-    assert format.get_value(file, "infolist[1].compress_size") == 21
-    assert format.get_value(file, "infolist[1]") == {
+    assert format.get_value(file, Key("infolist[1].compress_size")) == 21
+    assert format.get_value(file, Key("infolist[1]")) == {
         "CRC": 3800794396,
         "comment": b"",
         "compress_size": 21,
@@ -272,15 +273,21 @@ def test_xml():
     """)
     format = Xml()
 
-    # TODO(reweeden): Selecting lists is not supported
     assert format.get_values(
         file,
-        ["/root/foo", "./bar", "./list/v[2]", "./nested/qux"]
+        [
+            Key("/root/foo"),
+            Key("./bar"),
+            Key("./list/v[2]"),
+            Key("./nested/qux"),
+            Key("./list/v", return_list=True),
+        ],
     ) == {
-        "/root/foo": "foo value",
-        "./bar": "bar value",
-        "./list/v[2]": "value",
-        "./nested/qux": "qux nested value"
+        Key("/root/foo"): "foo value",
+        Key("./bar"): "bar value",
+        Key("./list/v[2]"): "value",
+        Key("./nested/qux"): "qux nested value",
+        Key("./list/v", return_list=True): ["list", "value"],
     }
 
 
@@ -294,7 +301,8 @@ def test_xml_empty_key():
     """)
     format = Xml()
 
-    assert format.get_values(file, "") == {}
+    with pytest.raises(FormatError, match="'' Invalid expression"):
+        assert format.get_values(file, [Key("")]) == {}
 
 
 @pytest.mark.xml
@@ -314,15 +322,21 @@ def test_namespace_xml():
     """)
     format = Xml()
 
-    # TODO(reweeden): Selecting lists is not supported
     assert format.get_values(
         file,
-        ["/root/foo:foo", "./foo:bar", "./list/foo:v[2]", "./foo:nested/foo:qux"]
+        [
+            Key("/root/foo:foo"),
+            Key("./foo:bar"),
+            Key("./list/foo:v[2]"),
+            Key("./foo:nested/foo:qux"),
+            Key("./list/foo:v", return_list=True),
+        ],
     ) == {
-        "/root/foo:foo": "foo value",
-        "./foo:bar": "bar value",
-        "./list/foo:v[2]": "value",
-        "./foo:nested/foo:qux": "qux nested value"
+        Key("/root/foo:foo"): "foo value",
+        Key("./foo:bar"): "bar value",
+        Key("./list/foo:v[2]"): "value",
+        Key("./foo:nested/foo:qux"): "qux nested value",
+        Key("./list/foo:v", return_list=True): ["list", "value"],
     }
 
 
@@ -333,4 +347,4 @@ def test_xml_key_error():
     format = Xml()
 
     with pytest.raises(FormatError, match="key not found 'foo'"):
-        format.get_values(file, ["foo"])
+        format.get_values(file, [Key("foo")])

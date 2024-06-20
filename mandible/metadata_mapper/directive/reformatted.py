@@ -1,9 +1,10 @@
 import io
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
-from ..exception import MetadataMapperError
-from ..format import FORMAT_REGISTRY
+from mandible.metadata_mapper.exception import MetadataMapperError
+from mandible.metadata_mapper.format import FORMAT_REGISTRY
+
 from .directive import Key, TemplateDirective, get_key
 
 
@@ -18,6 +19,7 @@ class Reformatted(TemplateDirective):
     format: str
     value: Any
     key: Key
+    key_options: dict = field(default_factory=dict)
 
     def __post_init__(self):
         format_cls = FORMAT_REGISTRY.get(self.format)
@@ -25,7 +27,7 @@ class Reformatted(TemplateDirective):
             raise MetadataMapperError(f"format {repr(self.format)} does not exist")
 
         self.format_obj = format_cls()
-        self.key_str = get_key(self.key, self.context)
+        self.key_obj = get_key(self.key, self.context, self.key_options)
 
     def call(self):
         if isinstance(self.value, bytes):
@@ -40,5 +42,5 @@ class Reformatted(TemplateDirective):
 
         return self.format_obj.get_value(
             io.BytesIO(value),
-            self.key_str,
+            self.key_obj,
         )

@@ -37,6 +37,24 @@ def test_build_mapped():
     }
 
 
+def test_build_mapped_key_options():
+    template = mapped(
+        source="some_source",
+        key="some.key",
+        return_list=True,
+    )
+
+    assert build(template) == {
+        "@mapped": {
+            "source": "some_source",
+            "key": "some.key",
+            "key_options": {
+                "return_list": True,
+            },
+        },
+    }
+
+
 def test_build_directive_marker():
     template = mapped(
         source="some_source",
@@ -71,6 +89,34 @@ def test_build_reformatted():
                 },
             },
             "key": "foo",
+        },
+    }
+
+
+def test_build_reformatted_key_options():
+    template = reformatted(
+        format="Json",
+        value=mapped(
+            source="some_source",
+            key="some.key",
+        ),
+        key="foo",
+        return_list=True,
+    )
+
+    assert build(template) == {
+        "@reformatted": {
+            "format": "Json",
+            "value": {
+                "@mapped": {
+                    "source": "some_source",
+                    "key": "some.key",
+                },
+            },
+            "key": "foo",
+            "key_options": {
+                "return_list": True,
+            },
         },
     }
 

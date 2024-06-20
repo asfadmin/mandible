@@ -7,6 +7,7 @@ from mandible.internal import Registry
 
 from .context import Context
 from .format import FORMAT_REGISTRY, Format
+from .key import Key
 from .storage import STORAGE_REGISTRY, Storage
 
 log = logging.getLogger(__name__)
@@ -20,10 +21,10 @@ class Source:
     format: Format
 
     def __post_init__(self):
-        self._keys: Set[str] = set()
-        self._values: Dict[str, Any] = {}
+        self._keys: Set[Key] = set()
+        self._values: Dict[Key, Any] = {}
 
-    def add_key(self, key: str):
+    def add_key(self, key: Key):
         self._keys.add(key)
 
     def query_all_values(self, context: Context):
@@ -41,7 +42,7 @@ class Source:
             )
             self._values.update(new_values)
 
-    def get_value(self, key: str):
+    def get_value(self, key: Key):
         return self._values[key]
 
 

@@ -2,18 +2,19 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import ClassVar, Dict, Optional, Type
 
-from ..context import Context
-from ..source import Source
-from ..types import Key
+from mandible.metadata_mapper.context import Context
+from mandible.metadata_mapper.key import Key
+from mandible.metadata_mapper.source import Source
+from mandible.metadata_mapper.types import Key as KeyType
 
 DIRECTIVE_REGISTRY: Dict[str, Type["TemplateDirective"]] = {}
 
 
-def get_key(key: Key, context: Context) -> str:
+def get_key(key: KeyType, context: Context, key_options: dict) -> Key:
     if callable(key):
         key = key(context)
 
-    return key
+    return Key(key, **key_options)
 
 
 @dataclass

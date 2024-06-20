@@ -4,6 +4,7 @@ from typing import IO, Any, ContextManager
 import h5py
 import numpy as np
 
+from mandible.metadata_mapper.key import Key
 
 from .format import SimpleFormat
 
@@ -15,8 +16,8 @@ class H5(SimpleFormat):
         return h5py.File(file, "r")
 
     @staticmethod
-    def _eval_key(data, key: str):
-        return normalize(data[key][()])
+    def _eval_key(data, key: Key) -> Any:
+        return normalize(data[key.key][()])
 
 
 def normalize(node_val: Any) -> Any:

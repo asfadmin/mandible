@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import IO, Any, ContextManager, Dict, Iterable, Type, TypeVar
 
 from mandible import jsonpath
+from mandible.metadata_mapper.key import Key
 
 T = TypeVar("T")
 
@@ -36,13 +37,13 @@ class Format(ABC):
     def get_values(
         self,
         file: IO[bytes],
-        keys: Iterable[str],
-    ) -> Dict[str, Any]:
+        keys: Iterable[Key],
+    ) -> Dict[Key, Any]:
         """Get a list of values from a file"""
         pass
 
     @abstractmethod
-    def get_value(self, file: IO[bytes], key: str) -> Any:
+    def get_value(self, file: IO[bytes], key: Key) -> Any:
         """Convenience function for getting a single value"""
         pass
 
@@ -52,8 +53,8 @@ class SimpleFormat(Format, ABC, register=False):
     def get_values(
         self,
         file: IO[bytes],
-        keys: Iterable[str],
-    ) -> Dict[str, Any]:
+        keys: Iterable[Key],
+    ) -> Dict[Key, Any]:
         """Get a list of values from a file"""
 
         with self._parse_data(file) as data:
@@ -62,19 +63,19 @@ class SimpleFormat(Format, ABC, register=False):
                 for key in keys
             }
 
-    def get_value(self, file: IO[bytes], key: str) -> Any:
+    def get_value(self, file: IO[bytes], key: Key) -> Any:
         """Convenience function for getting a single value"""
 
         with self._parse_data(file) as data:
             return self._eval_key_wrapper(data, key)
 
-    def _eval_key_wrapper(self, data, key: str) -> Any:
+    def _eval_key_wrapper(self, data, key: Key) -> Any:
         try:
             return self._eval_key(data, key)
         except KeyError as e:
-            raise FormatError(f"key not found {repr(key)}") from e
+            raise FormatError(f"key not found {repr(key.key)}") from e
         except Exception as e:
-            raise FormatError(f"{repr(key)} {e}") from e
+            raise FormatError(f"{repr(key.key)} {e}") from e
 
     @staticmethod
     @abstractmethod
@@ -83,7 +84,7 @@ class SimpleFormat(Format, ABC, register=False):
 
     @staticmethod
     @abstractmethod
-    def _eval_key(data: T, key: str) -> Any:
+    def _eval_key(data: T, key: Key) -> Any:
         pass
 
 
@@ -107,7 +108,7 @@ class _PlaceholderBase(SimpleFormat, register=False):
         pass
 
     @staticmethod
-    def _eval_key(data: T, key: str):
+    def _eval_key(data: T, key: Key):
         pass
 
 
@@ -133,7 +134,7 @@ class Json(SimpleFormat):
         yield json.load(file)
 
     @staticmethod
-    def _eval_key(data: dict, key: str):
+    def _eval_key(data: dict, key: Key):
         return jsonpath.get_key(data, key)
 
 
@@ -149,14 +150,18 @@ class Zip(Format):
             for k, v in self.filters.items()
         }
 
-    def get_values(self, file: IO[bytes], keys: Iterable[str]):
+    def get_values(
+        self,
+        file: IO[bytes],
+        keys: Iterable[Key],
+    ) -> Dict[Key, Any]:
         """Get a list of values from a file"""
 
         with zipfile.ZipFile(file, "r") as zf:
             file = self._get_file_from_archive(zf)
             return self.format.get_values(file, keys)
 
-    def get_value(self, file: IO[bytes], key: str):
+    def get_value(self, file: IO[bytes], key: Key) -> Any:
         """Convenience function for getting a single value"""
 
         with zipfile.ZipFile(file, "r") as zf:
@@ -220,5 +225,5 @@ class ZipInfo(SimpleFormat):
             }
 
     @staticmethod
-    def _eval_key(data: dict, key: str):
+    def _eval_key(data: dict, key: Key) -> Any:
         return jsonpath.get_key(data, key)
