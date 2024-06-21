@@ -8,6 +8,8 @@ from typing import IO, Any, ContextManager, Dict, Iterable, Type, TypeVar
 
 from mandible import jsonpath
 
+T = TypeVar("T")
+
 
 class FormatError(Exception):
     def __init__(self, reason: str):
@@ -76,17 +78,16 @@ class SimpleFormat(Format, ABC, register=False):
 
     @staticmethod
     @abstractmethod
-    def _parse_data(file: IO[bytes]) -> ContextManager[Any]:
+    def _parse_data(file: IO[bytes]) -> ContextManager[T]:
         pass
 
     @staticmethod
     @abstractmethod
-    def _eval_key(data, key: str) -> Any:
+    def _eval_key(data: T, key: str) -> Any:
         pass
 
 
 # Define placeholders for when extras are not installed
-T = TypeVar("T")
 
 
 @dataclass
@@ -128,7 +129,7 @@ class Xml(_PlaceholderBase):
 class Json(SimpleFormat):
     @staticmethod
     @contextlib.contextmanager
-    def _parse_data(file: IO[bytes]):
+    def _parse_data(file: IO[bytes]) -> dict:
         yield json.load(file)
 
     @staticmethod
@@ -162,7 +163,7 @@ class Zip(Format):
             file = self._get_file_from_archive(zf)
             return self.format.get_value(file, key)
 
-    def _get_file_from_archive(self, zf: zipfile.ZipFile):
+    def _get_file_from_archive(self, zf: zipfile.ZipFile) -> IO[bytes]:
         """Return the member from the archive which matches all filters."""
 
         zipinfo_list = zf.infolist()
@@ -203,7 +204,7 @@ class Zip(Format):
 class ZipInfo(SimpleFormat):
     @staticmethod
     @contextlib.contextmanager
-    def _parse_data(file: IO[bytes]):
+    def _parse_data(file: IO[bytes]) -> dict:
         with zipfile.ZipFile(file, "r") as zf:
             yield {
                 "infolist": [
