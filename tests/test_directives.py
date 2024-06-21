@@ -1,10 +1,16 @@
-from mandible.metadata_mapper import Context
+from unittest import mock
+
+import pytest
+
+from mandible.metadata_mapper import Context, Source
 from mandible.metadata_mapper.builder import _DIRECTIVE_BUILDER_REGISTRY
 from mandible.metadata_mapper.directive import (
     DIRECTIVE_REGISTRY,
     Add,
     FloorDiv,
+    Mapped,
     Mul,
+    Reformatted,
     Sub,
     TrueDiv,
 )
@@ -16,6 +22,35 @@ def test_all_directives_have_builder_class():
 
     assert directive_names <= builder_names, \
         "Some directives don't have a builder class!"
+
+
+def test_mapped_mutually_exclusive_key_options():
+    with pytest.raises(ValueError, match="cannot set both"):
+        Mapped(
+            context=Context(),
+            sources={"source": mock.create_autospec(Source)},
+            source="source",
+            key="key",
+            key_options={
+                "return_list": True,
+                "return_first": True,
+            },
+        )
+
+
+def test_reformatted_mutually_exclusive_key_options():
+    with pytest.raises(ValueError, match="cannot set both"):
+        Reformatted(
+            context=Context(),
+            sources={},
+            format="Json",
+            value="value",
+            key="key",
+            key_options={
+                "return_list": True,
+                "return_first": True,
+            },
+        )
 
 
 def test_add():

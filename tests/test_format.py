@@ -281,6 +281,7 @@ def test_xml():
             Key("./list/v[2]"),
             Key("./nested/qux"),
             Key("./list/v", return_list=True),
+            Key("./list/v", return_first=True),
         ],
     ) == {
         Key("/root/foo"): "foo value",
@@ -288,6 +289,7 @@ def test_xml():
         Key("./list/v[2]"): "value",
         Key("./nested/qux"): "qux nested value",
         Key("./list/v", return_list=True): ["list", "value"],
+        Key("./list/v", return_first=True): "list",
     }
 
 
@@ -330,6 +332,7 @@ def test_namespace_xml():
             Key("./list/foo:v[2]"),
             Key("./foo:nested/foo:qux"),
             Key("./list/foo:v", return_list=True),
+            Key("./list/foo:v", return_first=True),
         ],
     ) == {
         Key("/root/foo:foo"): "foo value",
@@ -337,6 +340,7 @@ def test_namespace_xml():
         Key("./list/foo:v[2]"): "value",
         Key("./foo:nested/foo:qux"): "qux nested value",
         Key("./list/foo:v", return_list=True): ["list", "value"],
+        Key("./list/foo:v", return_first=True): "list",
     }
 
 
