@@ -18,7 +18,7 @@ class Mapped(TemplateDirective):
 
     def __post_init__(self):
         if self.source not in self.sources:
-            raise MetadataMapperError(f"source '{self.source}' does not exist")
+            raise MetadataMapperError(f"source {repr(self.source)} does not exist")
 
         self.source_obj = self.sources[self.source]
         self.key_str = get_key(self.key, self.context)

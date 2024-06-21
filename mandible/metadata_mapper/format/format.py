@@ -72,9 +72,9 @@ class SimpleFormat(Format, ABC, register=False):
         try:
             return self._eval_key(data, key)
         except KeyError as e:
-            raise FormatError(f"key not found '{key}'") from e
+            raise FormatError(f"key not found {repr(key)}") from e
         except Exception as e:
-            raise FormatError(f"'{key}' {e}") from e
+            raise FormatError(f"{repr(key)} {e}") from e
 
     @staticmethod
     @abstractmethod

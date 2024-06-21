@@ -34,7 +34,7 @@ class Source:
             keys = list(self._keys)
             new_values = self.format.get_values(file, keys)
             log.debug(
-                "%s: using keys %s, got new values %s",
+                "%s: using keys %r, got new values %r",
                 self,
                 keys,
                 new_values
@@ -93,7 +93,7 @@ class ConfigSourceProvider(SourceProvider):
             )
         except Exception as e:
             raise SourceProviderError(
-                f"failed to create source '{key}': {e}"
+                f"failed to create source {repr(key)}: {e}",
             ) from e
 
     def _create_from_registry(
@@ -104,7 +104,7 @@ class ConfigSourceProvider(SourceProvider):
     ) -> T:
         class_config = config.get(name_key)
         if class_config is None:
-            raise SourceProviderError(f"missing key '{name_key}' in config")
+            raise SourceProviderError(f"missing key {repr(name_key)} in config")
 
         cls_name = class_config.get("class")
         if cls_name is None:
@@ -114,7 +114,7 @@ class ConfigSourceProvider(SourceProvider):
 
         cls = registry.get(cls_name)
         if cls is None:
-            raise SourceProviderError(f"invalid {name_key} type '{cls_name}'")
+            raise SourceProviderError(f"invalid {name_key} type {repr(cls_name)}")
 
         return self._create_class(cls, class_config)
 
@@ -136,6 +136,6 @@ class ConfigSourceProvider(SourceProvider):
             if format_cls:
                 return self._create_class(format_cls, arg)
 
-            raise SourceProviderError(f"invalid {name_key} type '{cls_name}'")
+            raise SourceProviderError(f"invalid {name_key} type {repr(cls_name)}")
 
         return arg
