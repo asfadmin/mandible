@@ -4,6 +4,8 @@ from typing import IO, Any
 
 from lxml import etree
 
+from mandible.metadata_mapper.key import Key
+
 from .format import SimpleFormat
 
 
@@ -15,12 +17,9 @@ class Xml(SimpleFormat):
         yield etree.parse(file)
 
     @staticmethod
-    def _eval_key(data: etree.ElementTree, key: str):
+    def _eval_key(data: etree.ElementTree, key: Key) -> Any:
         nsmap = data.getroot().nsmap
-        elements = data.xpath(key, namespaces=nsmap)
-        if not elements:
-            raise KeyError(key)
+        elements = data.xpath(key.key, namespaces=nsmap)
+        values = [element.text for element in elements]
 
-        # TODO(reweeden): Add a way to return the whole list here and not just
-        # the first element.
-        return elements[0].text
+        return key.resolve_list_match(values)

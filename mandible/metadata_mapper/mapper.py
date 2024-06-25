@@ -39,12 +39,12 @@ class MetadataMapper:
             ) from e
 
         for name, source in sources.items():
-            log.info("Querying source '%s': %s", name, source)
+            log.info("Querying source %r: %s", name, source)
             try:
                 source.query_all_values(context)
             except Exception as e:
                 raise MetadataMapperError(
-                    f"failed to query source '{name}': {e}"
+                    f"failed to query source {repr(name)}: {e}",
                 ) from e
 
         try:
@@ -163,7 +163,7 @@ class MetadataMapper:
         cls = DIRECTIVE_REGISTRY.get(directive_name[len(self.directive_marker):])
         if cls is None:
             raise TemplateError(
-                f"invalid directive '{directive_name}'",
+                f"invalid directive {repr(directive_name)}",
                 debug_path
             )
 

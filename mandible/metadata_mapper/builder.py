@@ -97,16 +97,21 @@ def _directive_builder(directive: Type["TemplateDirective"]) -> Callable[[T], T]
 def mapped(
     source: str,
     key: Key,
+    **key_options,
 ) -> DirectiveBuilder:
     directive_name = Mapped.directive_name
     assert directive_name is not None
 
+    params = {
+        "source": source,
+        "key": key,
+    }
+    if key_options:
+        params["key_options"] = key_options
+
     return DirectiveBuilder(
         directive_name,
-        {
-            "source": source,
-            "key": key,
-        },
+        params,
     )
 
 
@@ -115,17 +120,22 @@ def reformatted(
     format: str,
     value: Any,
     key: Key,
+    **key_options,
 ) -> DirectiveBuilder:
     directive_name = Reformatted.directive_name
     assert directive_name is not None
 
+    params = {
+        "format": format,
+        "value": value,
+        "key": key,
+    }
+    if key_options:
+        params["key_options"] = key_options
+
     return DirectiveBuilder(
         directive_name,
-        {
-            "format": format,
-            "value": value,
-            "key": key,
-        },
+        params,
     )
 
 #

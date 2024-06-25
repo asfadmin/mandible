@@ -1,0 +1,60 @@
+{
+  "description": "A store inventory",
+  "meta": {
+    "summary": {
+      "complete": false,
+      "total": 5
+    },
+    "pi": 3.14159,
+    "null": null
+  },
+  "inventory": [
+    {
+      "name": "Apple",
+      "price": 2.99,
+      "in_stock": true,
+      "categories": ["produce", "fruit"],
+      "attributes": {
+        "color": "red",
+        "weight": 0.245
+      }
+    },
+    {
+      "name": "Banana",
+      "price": 0.99,
+      "in_stock": true,
+      "categories": ["produce", "fruit"],
+      "attributes": {
+        "color": "yellow",
+        "weight": 0.123
+      }
+    },
+    {
+      "name": "Tomato",
+      "price": 0.99,
+      "in_stock": true,
+      "categories": ["produce", "vegetable"],
+      "attributes": {
+        "color": "red",
+        "weight": 0.123
+      }
+    },
+    {
+      "name": "Artichoke",
+      "price": 3.99,
+      "in_stock": false,
+      "categories": ["produce", "vegetable"],
+      "attributes": {
+        "color": "green",
+        "weight": 0.67
+      }
+    },
+    {
+      "name": "Scotch Tape",
+      "price": 5.99,
+      "in_stock": true,
+      "categories": ["office_supplies"],
+      "attributes": {}
+    }
+  ]
+}
