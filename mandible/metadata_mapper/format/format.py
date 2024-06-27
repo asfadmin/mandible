@@ -49,7 +49,13 @@ class Format(ABC):
 
 
 @dataclass
-class SimpleFormat(Format, ABC, register=False):
+class FileFormat(Format, ABC, register=False):
+    """A Format for querying files from a standard data file.
+
+    Simple, single format data types such as 'json' that can be queried
+    directly.
+    """
+
     def get_values(
         self,
         file: IO[bytes],
@@ -57,7 +63,7 @@ class SimpleFormat(Format, ABC, register=False):
     ) -> Dict[Key, Any]:
         """Get a list of values from a file"""
 
-        with self._parse_data(file) as data:
+        with self.parse_data(file) as data:
             return {
                 key: self._eval_key_wrapper(data, key)
                 for key in keys
@@ -66,12 +72,12 @@ class SimpleFormat(Format, ABC, register=False):
     def get_value(self, file: IO[bytes], key: Key) -> Any:
         """Convenience function for getting a single value"""
 
-        with self._parse_data(file) as data:
+        with self.parse_data(file) as data:
             return self._eval_key_wrapper(data, key)
 
     def _eval_key_wrapper(self, data, key: Key) -> Any:
         try:
-            return self._eval_key(data, key)
+            return self.eval_key(data, key)
         except KeyError as e:
             if key.default is not RAISE_EXCEPTION:
                 return key.default
@@ -81,12 +87,27 @@ class SimpleFormat(Format, ABC, register=False):
 
     @staticmethod
     @abstractmethod
-    def _parse_data(file: IO[bytes]) -> ContextManager[T]:
+    def parse_data(file: IO[bytes]) -> ContextManager[T]:
+        """Parse the binary stream into a queryable data structure.
+
+        The return type can be anything, but must be compatible with the input
+        to `eval_key`.
+
+        :param file: The binary stream to parse
+        :returns: A queryable data structure that will be passed to `eval_key`
+        """
         pass
 
     @staticmethod
     @abstractmethod
-    def _eval_key(data: T, key: Key) -> Any:
+    def eval_key(data: T, key: Key) -> Any:
+        """Query the parsed data for a key.
+
+        :param data: Object returned by `parse_data`
+        :param key: The key to extract
+        :returns: The value associated with the key
+        :raises: KeyError
+        """
         pass
 
 
@@ -94,7 +115,7 @@ class SimpleFormat(Format, ABC, register=False):
 
 
 @dataclass
-class _PlaceholderBase(SimpleFormat, register=False):
+class _PlaceholderBase(FileFormat, register=False):
     """
     Base class for defining placeholder implementations for classes that
     require extra dependencies to be installed
@@ -106,11 +127,11 @@ class _PlaceholderBase(SimpleFormat, register=False):
         )
 
     @staticmethod
-    def _parse_data(file: IO[bytes]) -> ContextManager[T]:
+    def parse_data(file: IO[bytes]) -> ContextManager[T]:
         pass
 
     @staticmethod
-    def _eval_key(data: T, key: Key):
+    def eval_key(data: T, key: Key):
         pass
 
 
@@ -129,19 +150,25 @@ class Xml(_PlaceholderBase):
 # Define formats that don't require extra dependencies
 
 @dataclass
-class Json(SimpleFormat):
+class Json(FileFormat):
     @staticmethod
     @contextlib.contextmanager
-    def _parse_data(file: IO[bytes]) -> dict:
+    def parse_data(file: IO[bytes]) -> dict:
         yield json.load(file)
 
     @staticmethod
-    def _eval_key(data: dict, key: Key):
+    def eval_key(data: dict, key: Key):
         return jsonpath.get_key(data, key)
 
 
 @dataclass
-class Zip(Format):
+class ZipMember(Format):
+    """A member from a zip archive.
+
+    :param filters: A set of filters used to select the desired archive member
+    :param format: The Format of the archive member
+    """
+
     filters: Dict[str, Any]
     """Filter against any attributes of zipfile.ZipInfo objects"""
     format: Format
@@ -208,10 +235,12 @@ class Zip(Format):
 
 
 @dataclass
-class ZipInfo(SimpleFormat):
+class ZipInfo(FileFormat):
+    """Query Zip headers and directory information."""
+
     @staticmethod
     @contextlib.contextmanager
-    def _parse_data(file: IO[bytes]) -> dict:
+    def parse_data(file: IO[bytes]) -> dict:
         with zipfile.ZipFile(file, "r") as zf:
             yield {
                 "infolist": [
@@ -227,5 +256,5 @@ class ZipInfo(SimpleFormat):
             }
 
     @staticmethod
-    def _eval_key(data: dict, key: Key) -> Any:
+    def eval_key(data: dict, key: Key) -> Any:
         return jsonpath.get_key(data, key)

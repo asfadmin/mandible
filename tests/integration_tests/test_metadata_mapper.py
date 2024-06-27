@@ -5,10 +5,10 @@ import pytest
 from mandible.metadata_mapper import (
     ConfigSourceProvider,
     Context,
+    FileSource,
     MetadataMapper,
     MetadataMapperError,
     PySourceProvider,
-    Source,
 )
 from mandible.metadata_mapper.format import Json, Xml
 from mandible.metadata_mapper.storage import LocalFile
@@ -123,7 +123,7 @@ def test_basic_py_source_provider(config, context):
     mapper = MetadataMapper(
         template=config["template"],
         source_provider=PySourceProvider({
-            "fixed_name_file": Source(
+            "fixed_name_file": FileSource(
                 storage=LocalFile(
                     filters={
                         "name": "fixed_name_file.json",
@@ -131,7 +131,7 @@ def test_basic_py_source_provider(config, context):
                 ),
                 format=Json(),
             ),
-            "fixed_xml_file": Source(
+            "fixed_xml_file": FileSource(
                 storage=LocalFile(
                     filters={
                         "name": "fixed_xml_file.xml",
@@ -139,7 +139,7 @@ def test_basic_py_source_provider(config, context):
                 ),
                 format=Xml(),
             ),
-            "namespace_xml_file": Source(
+            "namespace_xml_file": FileSource(
                 storage=LocalFile(
                     filters={
                         "name": "xml_with_namespace.xml",
@@ -147,7 +147,7 @@ def test_basic_py_source_provider(config, context):
                 ),
                 format=Xml(),
             ),
-            "name_match_file": Source(
+            "name_match_file": FileSource(
                 storage=LocalFile(
                     filters={
                         "name": r".*match_me\.json",
@@ -155,7 +155,7 @@ def test_basic_py_source_provider(config, context):
                 ),
                 format=Json(),
             ),
-            "name_match_file2": Source(
+            "name_match_file2": FileSource(
                 storage=LocalFile(
                     filters={
                         "name": re.compile(r".*match_me\.json"),

@@ -11,8 +11,8 @@ from mandible.metadata_mapper.format import (
     FormatError,
     Json,
     Xml,
-    Zip,
     ZipInfo,
+    ZipMember,
 )
 from mandible.metadata_mapper.key import Key
 
@@ -27,8 +27,8 @@ def test_registry():
         "H5": H5,
         "Json": Json,
         "Xml": Xml,
-        "Zip": Zip,
         "ZipInfo": ZipInfo,
+        "ZipMember": ZipMember,
     }
 
 
@@ -180,7 +180,7 @@ def test_zip():
             """,
         )
 
-    format = Zip(
+    format = ZipMember(
         filters={
             "filename": "foo",
         },
@@ -208,7 +208,7 @@ def test_zip_filters():
             """,
         )
 
-    format = Zip(
+    format = ZipMember(
         filters={
             "filename": "^foo$",
         },
@@ -227,7 +227,7 @@ def test_zip_filters_bad_attribute():
         f.writestr("unformatted.txt", "This is just some text/n")
         f.writestr("foobar.txt", "This is some foo text")
 
-    format = Zip(
+    format = ZipMember(
         filters={
             "filename": "^foo$",
             "nonexistent_attr": True,

@@ -24,6 +24,7 @@ class Storage(ABC):
 
         super().__init_subclass__(**kwargs)
 
+    # Begin class definition
     @abstractmethod
     def open_file(self, context: Context) -> IO[bytes]:
         """Get a filelike object to access the data."""

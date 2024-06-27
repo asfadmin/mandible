@@ -1,11 +1,11 @@
 from .format import (
     FORMAT_REGISTRY,
+    FileFormat,
     Format,
     FormatError,
     Json,
-    SimpleFormat,
-    Zip,
     ZipInfo,
+    ZipMember,
 )
 
 try:
@@ -21,12 +21,12 @@ except ImportError:
 
 __all__ = (
     "FORMAT_REGISTRY",
+    "FileFormat",
     "Format",
     "FormatError",
     "H5",
     "Json",
-    "SimpleFormat",
     "Xml",
-    "Zip",
     "ZipInfo",
+    "ZipMember",
 )

@@ -1,23 +1,39 @@
+from dataclasses import dataclass
+
 import pytest
 
-from mandible.metadata_mapper.format import FORMAT_REGISTRY, H5, Json, Xml, Zip
+from mandible.metadata_mapper import Context, FileSource
+from mandible.metadata_mapper.format import FORMAT_REGISTRY, H5, Json, Xml, ZipMember
 from mandible.metadata_mapper.source import (
     ConfigSourceProvider,
     PySourceProvider,
     Source,
     SourceProviderError,
 )
-from mandible.metadata_mapper.storage import STORAGE_REGISTRY, LocalFile
+from mandible.metadata_mapper.storage import (
+    STORAGE_REGISTRY,
+    FilteredStorage,
+    LocalFile,
+)
+
+
+@dataclass
+class DummySource(Source):
+    arg1: str
+    storage: FilteredStorage
+
+    def query_all_values(self, context: Context):
+        pass
 
 
 @pytest.fixture
 def sources():
     return {
-        "foo": Source(LocalFile(filters={"name": "foo"}), Json()),
-        "bar": Source(LocalFile(filters={"name": "bar"}), Json()),
-        "baz": Source(
+        "foo": FileSource(LocalFile(filters={"name": "foo"}), Json()),
+        "bar": FileSource(LocalFile(filters={"name": "bar"}), Json()),
+        "baz": FileSource(
             LocalFile(filters={"name": "baz"}),
-            Zip(
+            ZipMember(
                 filters={
                     "filename": "foo",
                 },
@@ -65,7 +81,7 @@ def test_config_source_provider(sources):
                 },
             },
             "format": {
-                "class": "Zip",
+                "class": "ZipMember",
                 "filters": {
                     "filename": "foo",
                 },
@@ -77,6 +93,47 @@ def test_config_source_provider(sources):
     })
 
     assert provider.get_sources() == sources
+
+
+def test_config_source_provider_source_type():
+    provider = ConfigSourceProvider({
+        "foo": {
+            "class": "DummySource",
+            "arg1": "foobar",
+            "storage": {
+                "class": "LocalFile",
+            },
+        },
+    })
+
+    assert provider.get_sources() == {
+        "foo": DummySource(
+            arg1="foobar",
+            storage=LocalFile(),
+        ),
+    }
+
+
+def test_config_source_provider_wrong_base_class_type():
+    provider = ConfigSourceProvider({
+        "foo": {
+            "class": "DummySource",
+            "arg1": "foobar",
+            "storage": {
+                # Dummy storage is not a FilteredStorage
+                "class": "Dummy",
+            },
+        },
+    })
+
+    with pytest.raises(
+        SourceProviderError,
+        match=(
+            "failed to create source 'foo': invalid storage type 'Dummy' must "
+            "be a subclass of 'FilteredStorage'"
+        ),
+    ):
+        provider.get_sources()
 
 
 @pytest.mark.h5
@@ -119,9 +176,9 @@ def test_config_source_provider_all_formats():
     })
 
     assert provider.get_sources() == {
-        "json": Source(LocalFile(filters={"name": "foo"}), Json()),
-        "xml": Source(LocalFile(filters={"name": "bar"}), Xml()),
-        "h5": Source(LocalFile(filters={"name": "baz"}), H5())
+        "json": FileSource(LocalFile(filters={"name": "foo"}), Json()),
+        "xml": FileSource(LocalFile(filters={"name": "bar"}), Xml()),
+        "h5": FileSource(LocalFile(filters={"name": "baz"}), H5()),
     }
 
 
@@ -142,7 +199,10 @@ def test_config_source_provider_missing_storage():
 
     with pytest.raises(
         SourceProviderError,
-        match="failed to create source 'source': missing key 'storage'"
+        match=(
+            r"failed to create source 'source': (FileSource\.)?__init__\(\) "
+            "missing 1 required positional argument: 'storage'"
+        ),
     ):
         provider.get_sources()
 
@@ -199,7 +259,10 @@ def test_config_source_provider_missing_format():
 
     with pytest.raises(
         SourceProviderError,
-        match="failed to create source 'source': missing key 'format'"
+        match=(
+            r"failed to create source 'source': (FileSource\.)?__init__\(\) "
+            "missing 1 required positional argument: 'format'"
+        ),
     ):
         provider.get_sources()
 
