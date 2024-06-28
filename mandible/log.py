@@ -8,6 +8,8 @@ from typing import Type
 
 class JSONFormatter(logging.Formatter):
     def format(self, record):
+        if hasattr(record, 'extra') and record.extra:
+            record.__dict__.update(record.extra)
         log_record = {
             "timestamp": self.formatTime(record, self.datefmt),
             "level": record.levelname,
@@ -24,15 +26,8 @@ def log_with_extra(func):
     def wrapper(event, context, *args, **kwargs):
         extra = inject_cumulus_extras(event, context)
         # Inject context into the logger
-        original_factory = logging.getLogRecordFactory()
-
-        def record_factory(*args, **kwargs):
-            record = original_factory(*args, **kwargs)
-            for key, value in extra.items():
-                setattr(record, key, value)
-            return record
-
-        logging.setLogRecordFactory(record_factory)
+        log = logging.getLogger(__name__)
+        log.extra = extra
         return func(event, context, *args, **kwargs)
     return wrapper
 
