@@ -20,13 +20,16 @@ class JSONFormatter(logging.Formatter):
 
 
 def log_with_extra(extra=None):
-    if not isinstance(extra, dict):
-        raise TypeError("Extra must be a dictionary.")
+    if extra is not None and not (isinstance(extra, dict) or callable(extra)):
+        raise TypeError("Extra must be a dictionary or callable.")
 
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            kwargs['extra'] = extra
+            if callable(extra):
+                kwargs['extra'] = extra()
+            else:
+                kwargs['extra'] = extra
             return func(*args, **kwargs)
         return wrapper
     return decorator
