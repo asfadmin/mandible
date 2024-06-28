@@ -25,13 +25,23 @@ def log_with_extra(extra=None):
 
     def decorator(func):
         @wraps(func)
-        def wrapper(event, context):
+        def wrapper(event, context, *args, **kwargs):
             kwargs = {"extra": {}}
             if callable(extra):
                 kwargs["extra"].update(extra(event, context))
             else:
                 kwargs["extra"] = extra
-            return func(event, context, **kwargs)
+
+            original_factory = logging.getLogRecordFactory()
+
+            def record_factory(*args, **kwargs):
+                record = original_factory(*args, **kwargs)
+                for key, value in kwargs["extra"].items():
+                    setattr(record, key, value)
+                return record
+
+            logging.setLogRecordFactory(record_factory)
+            return func(event, context, *args, **kwargs)
         return wrapper
     return decorator
 
@@ -55,7 +65,6 @@ def init_json_formatter():
     log = logging.getLogger(__name__)
     handler = logging.StreamHandler()
     formatter = JSONFormatter()
-
     handler.setFormatter(formatter)
     log.addHandler(handler)
 
