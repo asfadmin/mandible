@@ -19,31 +19,22 @@ class JSONFormatter(logging.Formatter):
         return json.dumps(log_record)
 
 
-def log_with_extra(extra=None):
-    if extra is not None and not (isinstance(extra, dict) or callable(extra)):
-        raise TypeError("Extra must be a dictionary or callable.")
+def log_with_extra(func):
+    @wraps(func)
+    def wrapper(event, context, *args, **kwargs):
+        extra = inject_cumulus_extras(event, context)
+        # Inject context into the logger
+        original_factory = logging.getLogRecordFactory()
 
-    def decorator(func):
-        @wraps(func)
-        def wrapper(event, context, *args, **kwargs):
-            kwargs = {"extra": {}}
-            if callable(extra):
-                kwargs["extra"].update(extra(event, context))
-            else:
-                kwargs["extra"] = extra
+        def record_factory(*args, **kwargs):
+            record = original_factory(*args, **kwargs)
+            for key, value in extra.items():
+                setattr(record, key, value)
+            return record
 
-            original_factory = logging.getLogRecordFactory()
-
-            def record_factory(*args, **kwargs):
-                record = original_factory(*args, **kwargs)
-                for key, value in kwargs["extra"].items():
-                    setattr(record, key, value)
-                return record
-
-            logging.setLogRecordFactory(record_factory)
-            return func(event, context, *args, **kwargs)
-        return wrapper
-    return decorator
+        logging.setLogRecordFactory(record_factory)
+        return func(event, context, *args, **kwargs)
+    return wrapper
 
 
 def inject_cumulus_extras(event: dict, context: dict) -> dict:
