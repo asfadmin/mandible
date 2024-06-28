@@ -25,17 +25,18 @@ def log_with_extra(extra=None):
 
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(event, context):
+            kwargs = {"extra": {}}
             if callable(extra):
-                kwargs["extra"] = extra()
+                kwargs["extra"].update(extra(event, context))
             else:
                 kwargs["extra"] = extra
-            return func(*args, **kwargs)
+            return func(event, context, **kwargs)
         return wrapper
     return decorator
 
 
-def inject_cumulus_extras(event, context: dict) -> dict:
+def inject_cumulus_extras(event: dict, context: dict) -> dict:
     return {
         "daac_version": os.getenv("DAAC_VERSION"),
         "core_Version": os.getenv("CORE_VERSION"),
