@@ -31,6 +31,16 @@ def log_with_extra(extra=None):
         return wrapper
     return decorator
 
+
+def init_json_formatter():
+    log = logging.getLogger(__name__)
+    handler = logging.StreamHandler()
+    formatter = JSONFormatter()
+
+    handler.setFormatter(formatter)
+    log.addHandler(handler)
+
+
 def init_root_logger():
     """Set up log levels for lambda using the environment variable"""
     level = os.getenv("LOG_LEVEL", logging.INFO)
