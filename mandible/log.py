@@ -40,8 +40,8 @@ def inject_cumulus_extras(event: dict, context: dict) -> dict:
     return {
         "daac_version": os.getenv("DAAC_VERSION"),
         "core_Version": os.getenv("CORE_VERSION"),
-        "step_function_name": event.get("cumulus_meta").get("execution_name"),
-        "cumulus_version": event.get("cumulus_meta").get("cumulus_version"),
+        "step_function_name": event.get("cumulus_meta", {}).get("execution_name"),
+        "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
         "aws_request_id": context.get("aws_request_id"),
         "function_name": context.get("function_name"),
         "memory_limit_in_mb": context.get("memory_limit_in_mb"),
