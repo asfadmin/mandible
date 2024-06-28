@@ -9,64 +9,58 @@ from typing import Type
 class JSONFormatter(logging.Formatter):
     def format(self, record):
         log_record = {
-            "timestamp": self.formatTime(record, self.datefmt),
+            "aws_request_id": getattr(record, "aws_request_id", None),
+            "cirrus_core_version": getattr(record, "cirrus_core_version", None),
+            "cirrus_daac_version": getattr(record, "cirrus_daac_version", None),
+            "cumulus_version": getattr(record, "cumulus_version", None),
+            "function_name": getattr(record, "function_name", None),
+            "granule_name": getattr(record, "granule_name", None),
+            "invoked_function_arn": getattr(record, "invoked_function_arn", None),
             "level": record.levelname,
+            "log_group_name": getattr(record, "log_group_name", None),
+            "log_stream_name": getattr(record, "log_stream_name", None),
+            "memory_limit_in_mb": getattr(record, "memory_limit_in_mb", None),
             "message": record.getMessage(),
-            "line_no": record.lineno,
-            "exception": self.formatException(record.exc_info) if record.exc_info else None,
-            "extra": record.__dict__.get("extra", {})
+            "step_function_name": getattr(record, "step_function_name", None),
+            "time": self.formatTime(record, self.datefmt),
+
         }
         return json.dumps(log_record)
 
 
-def log_with_extra(extra=None):
-    if extra is not None and not (isinstance(extra, dict) or callable(extra)):
-        raise TypeError("Extra must be a dictionary or callable.")
+def log_with_extra(func):
+    @wraps(func)
+    def wrapper(event, context, *args, **kwargs):
+        extra = inject_cumulus_extras(event, context)
+        # Inject context into the logger
+        original_factory = logging.getLogRecordFactory()
 
-    def decorator(func):
-        @wraps(func)
-        def wrapper(event, context, *args, **kwargs):
-            kwargs = {"extra": {}}
-            if callable(extra):
-                kwargs["extra"].update(extra(event, context))
-            else:
-                kwargs["extra"] = extra
+        def record_factory(*args, **kwargs):
+            record = original_factory(*args, **kwargs)
+            for key, value in extra.items():
+                setattr(record, key, value)
+            return record
 
-            original_factory = logging.getLogRecordFactory()
-
-            def record_factory(*args, **kwargs):
-                record = original_factory(*args, **kwargs)
-                for key, value in kwargs["extra"].items():
-                    setattr(record, key, value)
-                return record
-
-            logging.setLogRecordFactory(record_factory)
-            return func(event, context, *args, **kwargs)
-        return wrapper
-    return decorator
+        logging.setLogRecordFactory(record_factory)
+        return func(event, context, *args, **kwargs)
+    return wrapper
 
 
 def inject_cumulus_extras(event: dict, context: dict) -> dict:
+    event = event.get("cma", {}).get("event", {})
     return {
-        "daac_version": os.getenv("DAAC_VERSION"),
-        "core_Version": os.getenv("CORE_VERSION"),
-        "step_function_name": event.get("cumulus_meta", {}).get("execution_name"),
-        "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
         "aws_request_id": context.aws_request_id,
+        "cirrus_daac_version": os.getenv("DAAC_VERSION"),
+        "cirrus_core_version": os.getenv("CORE_VERSION"),
+        "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
         "function_name": context.function_name,
-        "memory_limit_in_mb": context.memory_limit_in_mb,
+        "granule_name": event.get("payload", {}).get("granules", [{}])[0].get("granuleId"),
         "invoked_function_arn": context.invoked_function_arn,
         "log_group_name": context.log_group_name,
         "log_stream_name": context.log_stream_name,
+        "memory_limit_in_mb": context.memory_limit_in_mb,
+        "step_function_name": event.get("cumulus_meta", {}).get("execution_name"),
     }
-
-
-def init_json_formatter():
-    log = logging.getLogger(__name__)
-    handler = logging.StreamHandler()
-    formatter = JSONFormatter()
-    handler.setFormatter(formatter)
-    log.addHandler(handler)
 
 
 def init_root_logger():
