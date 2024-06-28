@@ -8,8 +8,6 @@ from typing import Type
 
 class JSONFormatter(logging.Formatter):
     def format(self, record):
-        if hasattr(record, "extra") and record.extra:
-            record.__dict__.update(record.extra)
         log_record = {
             "message": record.getMessage(),
             "level": record.levelname,
