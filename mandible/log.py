@@ -8,15 +8,22 @@ from typing import Type
 
 class JSONFormatter(logging.Formatter):
     def format(self, record):
-        if hasattr(record, 'extra') and record.extra:
+        if hasattr(record, "extra") and record.extra:
             record.__dict__.update(record.extra)
         log_record = {
-            "timestamp": self.formatTime(record, self.datefmt),
-            "level": record.levelname,
             "message": record.getMessage(),
-            "line_no": record.lineno,
-            "exception": self.formatException(record.exc_info) if record.exc_info else None,
-            "extra": record.__dict__.get("extra", {})
+            "level": record.levelname,
+            "time": self.formatTime(record, self.datefmt),
+            "function_name": getattr(record, "function_name", None),
+            "memory_limit_in_mb": getattr(record, "memory_limit_in_mb", None),
+            "invoked_function_arn": getattr(record, "invoked_function_arn", None),
+            "aws_request_id": getattr(record, "aws_request_id", None),
+            "log_group_name": getattr(record, "log_group_name", None),
+            "log_stream_name": getattr(record, "log_stream_name", None),
+            "cumulus_version": getattr(record, "cumulus_version", None),
+            "step_function_name": getattr(record, "step_function_name", None),
+            "core_version": getattr(record, "core_version", None),
+            "daac_version": getattr(record, "daac_version", None)
         }
         return json.dumps(log_record)
 
@@ -26,8 +33,15 @@ def log_with_extra(func):
     def wrapper(event, context, *args, **kwargs):
         extra = inject_cumulus_extras(event, context)
         # Inject context into the logger
-        log = logging.getLogger(__name__)
-        log.extra = extra
+        original_factory = logging.getLogRecordFactory()
+
+        def record_factory(*args, **kwargs):
+            record = original_factory(*args, **kwargs)
+            for key, value in extra.items():
+                setattr(record, key, value)
+            return record
+
+        logging.setLogRecordFactory(record_factory)
         return func(event, context, *args, **kwargs)
     return wrapper
 
@@ -35,7 +49,7 @@ def log_with_extra(func):
 def inject_cumulus_extras(event: dict, context: dict) -> dict:
     return {
         "daac_version": os.getenv("DAAC_VERSION"),
-        "core_Version": os.getenv("CORE_VERSION"),
+        "core_version": os.getenv("CORE_VERSION"),
         "step_function_name": event.get("cumulus_meta", {}).get("execution_name"),
         "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
         "aws_request_id": context.aws_request_id,
@@ -45,14 +59,6 @@ def inject_cumulus_extras(event: dict, context: dict) -> dict:
         "log_group_name": context.log_group_name,
         "log_stream_name": context.log_stream_name,
     }
-
-
-def init_json_formatter():
-    log = logging.getLogger(__name__)
-    handler = logging.StreamHandler()
-    formatter = JSONFormatter()
-    handler.setFormatter(formatter)
-    log.addHandler(handler)
 
 
 def init_root_logger():
