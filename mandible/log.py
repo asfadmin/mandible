@@ -2,7 +2,9 @@ import json
 import logging
 import os
 from contextlib import contextmanager
+from functools import wraps
 from typing import Type
+
 
 class JSONFormatter(logging.Formatter):
     def format(self, record):
@@ -17,6 +19,17 @@ class JSONFormatter(logging.Formatter):
         return json.dumps(log_record)
 
 
+def log_with_extra(extra=None):
+    if not isinstance(extra, dict):
+        raise TypeError("Extra must be a dictionary.")
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            kwargs['extra'] = extra
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 def init_root_logger():
     """Set up log levels for lambda using the environment variable"""
