@@ -51,7 +51,7 @@ def inject_cumulus_extras(event: dict, context: dict) -> dict:
         "core_version": os.getenv("CORE_VERSION"),
         "step_function_name": event.get("cma", {}).get("event", {}).get("cumulus_meta", {}).get("execution_name"),
         "cumulus_version": event.get("cma", {}).get("event", {}).get("cumulus_meta", {}).get("cumulus_version"),
-        "granule_name": event.get("cma", {}).get("event", {}).get("granules", [{}])[0].get("granuleId"),
+        "granule_name": event.get("cma", {}).get("event", {}.get("payload"), {}).get("granules", [{}])[0].get("granuleId"),
         "aws_request_id": context.aws_request_id,
         "function_name": context.function_name,
         "memory_limit_in_mb": context.memory_limit_in_mb,
