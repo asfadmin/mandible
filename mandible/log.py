@@ -20,6 +20,7 @@ class JSONFormatter(logging.Formatter):
             "log_stream_name": getattr(record, "log_stream_name", None),
             "cumulus_version": getattr(record, "cumulus_version", None),
             "step_function_name": getattr(record, "step_function_name", None),
+            "granule_name": getattr(record, "granule_name", None),
             "core_version": getattr(record, "core_version", None),
             "daac_version": getattr(record, "daac_version", None)
         }
