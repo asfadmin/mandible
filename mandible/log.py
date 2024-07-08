@@ -1,66 +1,41 @@
-import json
 import logging
 import os
 from contextlib import contextmanager
-from functools import wraps
 from typing import Type
 
 
-class JSONFormatter(logging.Formatter):
-    def format(self, record):
-        log_record = {
-            "aws_request_id": getattr(record, "aws_request_id", None),
-            "cirrus_core_version": getattr(record, "cirrus_core_version", None),
-            "cirrus_daac_version": getattr(record, "cirrus_daac_version", None),
-            "cumulus_version": getattr(record, "cumulus_version", None),
-            "function_name": getattr(record, "function_name", None),
-            "granule_name": getattr(record, "granule_name", None),
-            "invoked_function_arn": getattr(record, "invoked_function_arn", None),
-            "level": record.levelname,
-            "log_group_name": getattr(record, "log_group_name", None),
-            "log_stream_name": getattr(record, "log_stream_name", None),
-            "memory_limit_in_mb": getattr(record, "memory_limit_in_mb", None),
-            "message": record.getMessage(),
-            "step_function_name": getattr(record, "step_function_name", None),
-            "time": self.formatTime(record, self.datefmt),
-
-        }
-        return json.dumps(log_record)
-
-
-def log_with_extra(func):
-    @wraps(func)
-    def wrapper(event, context, *args, **kwargs):
-        extra = inject_cumulus_extras(event, context)
-        # Inject context into the logger
-        original_factory = logging.getLogRecordFactory()
-
-        def record_factory(*args, **kwargs):
-            record = original_factory(*args, **kwargs)
-            for key, value in extra.items():
-                setattr(record, key, value)
-            return record
-
-        logging.setLogRecordFactory(record_factory)
-        return func(event, context, *args, **kwargs)
-    return wrapper
-
-
-def inject_cumulus_extras(event: dict, context: dict) -> dict:
+def _build_cumulus_extras_from_cma(event: dict) -> dict:
     event = event.get("cma", {}).get("event", {})
     return {
-        "aws_request_id": context.aws_request_id,
         "cirrus_daac_version": os.getenv("DAAC_VERSION"),
         "cirrus_core_version": os.getenv("CORE_VERSION"),
         "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
-        "function_name": context.function_name,
         "granule_name": event.get("payload", {}).get("granules", [{}])[0].get("granuleId"),
-        "invoked_function_arn": context.invoked_function_arn,
-        "log_group_name": context.log_group_name,
-        "log_stream_name": context.log_stream_name,
-        "memory_limit_in_mb": context.memory_limit_in_mb,
-        "step_function_name": event.get("cumulus_meta", {}).get("execution_name"),
+        "workflow_execution_name": event.get("cumulus_meta", {}).get("execution_name"),
     }
+
+
+def init_cma_log_record_factory(event: dict, record_builder: callable = _build_cumulus_extras_from_cma) -> None:
+    """
+        configures the logging record factory and can be overwritten by providing a function that takes the event dict
+        as an input and returns a dict of log records.
+        Relies on the JSON formatter setting provided by AWS.
+        By default this provides:
+            "cirrus_daac_version": os.getenv("DAAC_VERSION"),
+            "cirrus_core_version": os.getenv("CORE_VERSION"),
+            "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
+            "granule_name": event.get("payload", {}).get("granules", [{}])[0].get("granuleId"),
+            "workflow_execution_name": event.get("cumulus_meta", {}).get("execution_name"),
+    """
+    extra = record_builder(event)
+    original_factory = logging.getLogRecordFactory()
+
+    def record_factory(*args, **kwargs):
+        record = original_factory(*args, **kwargs)
+        for key, value in extra.items():
+            setattr(record, key, value)
+        return record
+    logging.setLogRecordFactory(record_factory)
 
 
 def init_root_logger():
