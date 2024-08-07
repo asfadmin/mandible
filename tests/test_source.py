@@ -5,6 +5,7 @@ import pytest
 
 from mandible.metadata_mapper.context import Context
 from mandible.metadata_mapper.format import Format
+from mandible.metadata_mapper.key import Key
 from mandible.metadata_mapper.source import Source
 from mandible.metadata_mapper.storage import Storage
 
@@ -27,8 +28,8 @@ def mock_storage():
 def test_source(mock_context, mock_format, mock_storage):
     mock_storage.open_file.return_value = io.BytesIO(b"mock data")
     mock_format.get_values.return_value = {
-        "foo": "foo value",
-        "bar": "bar value"
+        Key("foo"): "foo value",
+        Key("bar"): "bar value",
     }
 
     source = Source(
@@ -36,16 +37,16 @@ def test_source(mock_context, mock_format, mock_storage):
         mock_format
     )
 
-    source.add_key("foo")
-    source.add_key("bar")
+    source.add_key(Key("foo"))
+    source.add_key(Key("bar"))
 
     with pytest.raises(KeyError):
-        source.get_value("foo")
+        source.get_value(Key("foo"))
 
     source.query_all_values(mock_context)
 
-    assert source.get_value("foo") == "foo value"
-    assert source.get_value("bar") == "bar value"
+    assert source.get_value(Key("foo")) == "foo value"
+    assert source.get_value(Key("bar")) == "bar value"
 
 
 def test_source_query_no_keys(mock_context, mock_format, mock_storage):
