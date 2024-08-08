@@ -1,3 +1,6 @@
+RAISE_EXCEPTION = object()
+
+
 class MetadataMapperError(Exception):
     """A generic error raised by the MetadataMapper"""
 
