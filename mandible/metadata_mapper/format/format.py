@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import IO, Any, ContextManager, Dict, Iterable, Type, TypeVar
 
 from mandible import jsonpath
-from mandible.metadata_mapper.key import Key
+from mandible.metadata_mapper.key import RAISE_EXCEPTION, Key
 
 T = TypeVar("T")
 
@@ -73,6 +73,8 @@ class SimpleFormat(Format, ABC, register=False):
         try:
             return self._eval_key(data, key)
         except KeyError as e:
+            if key.default is not RAISE_EXCEPTION:
+                return key.default
             raise FormatError(f"key not found {repr(key.key)}") from e
         except Exception as e:
             raise FormatError(f"{repr(key.key)} {e}") from e

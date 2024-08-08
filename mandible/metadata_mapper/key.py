@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, List
 
+RAISE_EXCEPTION = object()
+
 
 @dataclass(frozen=True)
 class Key:
@@ -9,6 +11,7 @@ class Key:
     # Optional arguments
     return_list: bool = False
     return_first: bool = False
+    default: Any = RAISE_EXCEPTION
 
     def __post_init__(self):
         if self.return_list and self.return_first:
