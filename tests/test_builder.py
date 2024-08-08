@@ -55,6 +55,24 @@ def test_build_mapped_key_options():
     }
 
 
+def test_build_mapped_optional_key():
+    template = mapped(
+        source="some_source",
+        key="some.key",
+        default="some value",
+    )
+
+    assert build(template) == {
+        "@mapped": {
+            "source": "some_source",
+            "key": "some.key",
+            "key_options": {
+                "default": "some value",
+            },
+        },
+    }
+
+
 def test_build_directive_marker():
     template = mapped(
         source="some_source",
