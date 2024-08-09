@@ -68,6 +68,17 @@ def test_h5():
 
 
 @pytest.mark.h5
+def test_h5_optional_key():
+    file = io.BytesIO()
+    with h5py.File(file, "w") as f:
+        f["foo"] = "foo value"
+
+    format = H5()
+
+    assert format.get_value(file, Key("bar", default=None)) is None
+
+
+@pytest.mark.h5
 def test_h5_empty_key():
     file = io.BytesIO()
     with h5py.File(file, "w") as f:
@@ -129,6 +140,17 @@ def test_json_dollar_key():
         "foo": "foo value",
         "bar": "bar value",
     }
+
+
+def test_json_optional_key():
+    file = io.BytesIO(b"""
+    {
+        "foo": "foo value"
+    }
+    """)
+    format = Json()
+
+    assert format.get_value(file, Key("bar", default=None)) is None
 
 
 def test_json_key_error():
@@ -305,6 +327,19 @@ def test_xml_empty_key():
 
     with pytest.raises(FormatError, match="'' Invalid expression"):
         assert format.get_values(file, [Key("")]) == {}
+
+
+@pytest.mark.xml
+def test_xml_optional_key():
+    file = io.BytesIO(b"""
+    <root>
+        <foo>foo value</foo>
+    </root>
+    """)
+
+    format = Xml()
+
+    assert format.get_value(file, Key("bar", default=None)) is None
 
 
 @pytest.mark.xml
