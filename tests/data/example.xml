@@ -70,5 +70,13 @@
       </categories>
       <attributes></attributes>
     </item>
+    <item>
+      <name>Oreo</name>
+      <in_stock>true</in_stock>
+      <categories>
+        <value>dessert</value>
+      </categories>
+      <attributes></attributes>
+    </item>
   </inventory>
 </root>

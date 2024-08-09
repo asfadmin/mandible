@@ -45,6 +45,11 @@ def template():
             "null": mapped("json", "meta.null"),
             # JSONPath only queries
             "banana_price": mapped("json", "inventory[?name = 'Banana'].price"),
+            "oreo_price": mapped(
+                "json",
+                "inventory[?name = 'Oreo'].price",
+                default=4.49,
+            ),
             "first_red_item": mapped(
                 "json",
                 "inventory[?attributes.color = 'red'].name",
@@ -62,6 +67,11 @@ def template():
             "complete": mapped("xml", "./meta/summary/complete"),
             "null": mapped("xml", "./meta/null"),
             "banana_price": mapped("xml", "./inventory/item[name='Banana']/price"),
+            "oreo_price": mapped(
+                "xml",
+                "./inventory/item[name='Oreo']/price",
+                default=4.49,
+            ),
             "first_red_item": mapped(
                 "xml",
                 "./inventory/item[attributes/color='red']/name",
@@ -102,8 +112,9 @@ def test_full_example(context, sources, template):
             "complete": False,
             "null": None,
             "banana_price": 0.99,
+            "oreo_price": 4.49,
             "first_red_item": "Apple",
-            "in_stock_items": ["Apple", "Banana", "Tomato", "Scotch Tape"],
+            "in_stock_items": ["Apple", "Banana", "Tomato", "Scotch Tape", "Oreo"],
         },
         "XmlMd": {
             "description": "A store inventory",
@@ -111,7 +122,8 @@ def test_full_example(context, sources, template):
             "complete": "false",
             "null": None,
             "banana_price": "0.99",
+            "oreo_price": 4.49,
             "first_red_item": "Apple",
-            "in_stock_items": ["Apple", "Banana", "Tomato", "Scotch Tape"],
+            "in_stock_items": ["Apple", "Banana", "Tomato", "Scotch Tape", "Oreo"],
         },
     }

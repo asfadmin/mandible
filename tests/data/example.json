@@ -55,6 +55,12 @@
       "in_stock": true,
       "categories": ["office_supplies"],
       "attributes": {}
+    },
+    {
+      "name": "Oreo",
+      "in_stock": true,
+      "categories": ["dessert"],
+      "attributes": {}
     }
   ]
 }
