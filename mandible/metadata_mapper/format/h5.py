@@ -6,17 +6,17 @@ import numpy as np
 
 from mandible.metadata_mapper.key import Key
 
-from .format import SimpleFormat
+from .format import FileFormat
 
 
 @dataclass
-class H5(SimpleFormat):
+class H5(FileFormat):
     @staticmethod
-    def _parse_data(file: IO[bytes]) -> ContextManager[Any]:
+    def parse_data(file: IO[bytes]) -> ContextManager[Any]:
         return h5py.File(file, "r")
 
     @staticmethod
-    def _eval_key(data, key: Key) -> Any:
+    def eval_key(data, key: Key) -> Any:
         return normalize(data[key.key][()])
 
 

@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from mandible.metadata_mapper import Context, Source
+from mandible.metadata_mapper import Context, FileSource
 from mandible.metadata_mapper.builder import _DIRECTIVE_BUILDER_REGISTRY
 from mandible.metadata_mapper.directive import (
     DIRECTIVE_REGISTRY,
@@ -28,7 +28,7 @@ def test_mapped_mutually_exclusive_key_options():
     with pytest.raises(ValueError, match="cannot set both"):
         Mapped(
             context=Context(),
-            sources={"source": mock.create_autospec(Source)},
+            sources={"source": mock.create_autospec(FileSource)},
             source="source",
             key="key",
             key_options={

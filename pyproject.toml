@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mandible"
-version = "0.6.1"
+version = "0.7.0"
 description = "A generic framework for writing satellite data ingest systems"
 authors = ["Rohan Weeden <reweeden@alaska.edu>", "Matt Perry <mperry37@alaska.edu>"]
 license = "APACHE-2"

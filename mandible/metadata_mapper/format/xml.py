@@ -6,18 +6,18 @@ from lxml import etree
 
 from mandible.metadata_mapper.key import Key
 
-from .format import SimpleFormat
+from .format import FileFormat
 
 
 @dataclass
-class Xml(SimpleFormat):
+class Xml(FileFormat):
     @staticmethod
     @contextlib.contextmanager
-    def _parse_data(file: IO[bytes]) -> Any:
+    def parse_data(file: IO[bytes]) -> Any:
         yield etree.parse(file)
 
     @staticmethod
-    def _eval_key(data: etree.ElementTree, key: Key) -> Any:
+    def eval_key(data: etree.ElementTree, key: Key) -> Any:
         nsmap = data.getroot().nsmap
         elements = data.xpath(key.key, namespaces=nsmap)
         values = [element.text for element in elements]

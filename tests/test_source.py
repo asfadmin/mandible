@@ -1,10 +1,11 @@
 import io
+from dataclasses import dataclass
 from unittest import mock
 
 import pytest
 
+from mandible.metadata_mapper import FileSource, Format
 from mandible.metadata_mapper.context import Context
-from mandible.metadata_mapper.format import Format
 from mandible.metadata_mapper.key import Key
 from mandible.metadata_mapper.source import Source
 from mandible.metadata_mapper.storage import Storage
@@ -32,9 +33,9 @@ def test_source(mock_context, mock_format, mock_storage):
         Key("bar"): "bar value",
     }
 
-    source = Source(
+    source = FileSource(
         mock_storage,
-        mock_format
+        mock_format,
     )
 
     source.add_key(Key("foo"))
@@ -50,12 +51,33 @@ def test_source(mock_context, mock_format, mock_storage):
 
 
 def test_source_query_no_keys(mock_context, mock_format, mock_storage):
-    source = Source(
+    source = FileSource(
         mock_storage,
-        mock_format
+        mock_format,
     )
 
     source.query_all_values(mock_context)
 
     mock_storage.open_file.assert_not_called()
     mock_format.get_values.assert_not_called()
+
+
+def test_custom_source(mock_context):
+    @dataclass
+    class CustomSource(Source):
+        arg1: str
+
+        def query_all_values(self, context: Context):
+            self._values.update({
+                key: key.key
+                for key in self._keys
+            })
+
+    source = CustomSource("foo")
+    source.add_key(Key("hello"))
+
+    source.query_all_values(mock_context)
+
+    assert source._values == {
+        Key("hello"): "hello",
+    }
