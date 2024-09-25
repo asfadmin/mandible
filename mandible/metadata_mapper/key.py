@@ -27,6 +27,8 @@ class Key:
             raise KeyError(self.key)
 
         if not self.return_first and len(values) != 1:
+            print(type(values))
+            print(f"HERE ARE THE VALUES {values}")
             raise ValueError(
                 "returned multiple values (try setting return_list=True)",
             )
