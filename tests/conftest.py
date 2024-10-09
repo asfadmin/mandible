@@ -3,7 +3,7 @@ from pathlib import Path
 
 import boto3
 import pytest
-from moto import mock_s3
+from moto import mock_aws
 
 
 @pytest.fixture
@@ -18,7 +18,7 @@ def aws_credentials():
 
 @pytest.fixture
 def s3_resource(aws_credentials):
-    with mock_s3():
+    with mock_aws():
         yield boto3.resource("s3")
 
 
