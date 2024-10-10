@@ -1,5 +1,3 @@
-from mandible.metadata_mapper.key import Key
-
 try:
     import jsonpath_ng
     import jsonpath_ng.ext
@@ -7,19 +5,17 @@ except ImportError:
     jsonpath_ng = None
 
 
-def get_key(data: dict, key: Key):
+def get(data: dict, path: str) -> list:
     # Fall back to simple dot paths
     if jsonpath_ng is None:
-        if key.key == "$":
-            return data
+        if path == "$":
+            return [data]
 
         val = data
-        for part in key.key.split("."):
+        for part in path.split("."):
             val = val[part]
 
-        return val
+        return [val]
 
-    expr = jsonpath_ng.ext.parse(key.key)
-    values = [match.value for match in expr.find(data)]
-
-    return key.resolve_list_match(values)
+    expr = jsonpath_ng.ext.parse(path)
+    return [match.value for match in expr.find(data)]
