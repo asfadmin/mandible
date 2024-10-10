@@ -6,12 +6,12 @@ A generic framework for writing satellite data ingest systems
 ## Installing
 Mandible can be installed from GitHub using `pip`.
 ```
-$ pip install git+https://github.com/asfadmin/mandible@v0.2.0
+$ pip install git+https://github.com/asfadmin/mandible@v0.7.1
 ```
 
 To install with all extra dependencies:
 ```
-$ pip install git+https://github.com/asfadmin/mandible@v0.2.0#egg=mandible[all]
+$ pip install git+https://github.com/asfadmin/mandible@v0.7.1#egg=mandible[all]
 ```
 
 To install the latest development version:
