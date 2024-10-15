@@ -158,7 +158,9 @@ class Json(FileFormat):
 
     @staticmethod
     def eval_key(data: dict, key: Key):
-        return jsonpath.get_key(data, key)
+        values = jsonpath.get(data, key.key)
+
+        return key.resolve_list_match(values)
 
 
 @dataclass
@@ -257,4 +259,6 @@ class ZipInfo(FileFormat):
 
     @staticmethod
     def eval_key(data: dict, key: Key) -> Any:
-        return jsonpath.get_key(data, key)
+        values = jsonpath.get(data, key.key)
+
+        return key.resolve_list_match(values)
