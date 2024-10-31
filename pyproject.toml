@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mandible"
-version = "0.8.0"
+version = "0.8.1"
 description = "A generic framework for writing satellite data ingest systems"
 authors = ["Rohan Weeden <reweeden@alaska.edu>", "Matt Perry <mperry37@alaska.edu>"]
 license = "APACHE-2"
@@ -21,7 +21,9 @@ s3fs = ">=0.4.2"
 h5py = { version = "^3.6.0", optional = true }
 jsonpath-ng = { version = "^1.4.0", optional = true }
 lxml = { version = "^4.9.2", optional = true }
-numpy = { version = "^1.21.6", optional = true }
+# Numpy is pinned to a minimum version by h5py. Unpinning here means our
+# requirements will always match those of h5py.
+numpy = { version = "*", optional = true }
 
 [tool.poetry.extras]
 all = ["h5py", "numpy", "jsonpath-ng", "lxml"]
