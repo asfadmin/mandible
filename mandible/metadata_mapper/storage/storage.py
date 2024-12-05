@@ -6,7 +6,7 @@ from typing import IO, Any, Union
 
 import s3fs
 
-from .context import Context
+from mandible.metadata_mapper.context import Context
 
 
 class StorageError(Exception):
