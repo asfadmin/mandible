@@ -6,7 +6,7 @@ from typing import IO, Any, Dict, Type, Union
 
 import s3fs
 
-from .context import Context
+from mandible.metadata_mapper.context import Context
 
 
 class StorageError(Exception):
@@ -54,7 +54,6 @@ class FilteredStorage(Storage, register=False):
     """A storage which matches a set of filters on the context's files and
     returns data from the matching file.
     """
-    # Begin class definition
     filters: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
