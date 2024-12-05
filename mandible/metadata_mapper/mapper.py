@@ -5,7 +5,8 @@ from typing import Any, Optional
 from .context import Context
 from .directive import DIRECTIVE_REGISTRY, TemplateDirective
 from .exception import MetadataMapperError, TemplateError
-from .source import Source, SourceProvider
+from .source import Source
+from .source_provider import SourceProvider
 from .types import Template
 
 log = logging.getLogger(__name__)
