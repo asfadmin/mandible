@@ -2,7 +2,7 @@ import io
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import IO, Any, Dict, Type, Union
+from typing import IO, Any, Dict, Optional, Type, Union
 
 import s3fs
 
@@ -57,10 +57,17 @@ class FilteredStorage(Storage, register=False):
     filters: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
-        self._compiled_filters = {
-            k: re.compile(v) if isinstance(v, str) else v
-            for k, v in self.filters.items()
-        }
+        self._compiled_filters_cache: Optional[Dict[str, Any]] = None
+
+    @property
+    def _compiled_filters(self) -> Dict[str, Any]:
+        if self._compiled_filters_cache is None:
+            self._compiled_filters_cache = {
+                k: re.compile(v) if isinstance(v, str) else v
+                for k, v in self.filters.items()
+            }
+
+        return self._compiled_filters_cache
 
     def open_file(self, context: Context) -> IO[bytes]:
         file = self.get_file_from_context(context)

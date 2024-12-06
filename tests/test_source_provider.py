@@ -3,11 +3,12 @@ from dataclasses import dataclass
 import pytest
 
 from mandible.metadata_mapper import Context, FileSource
+from mandible.metadata_mapper.context import ContextValue
 from mandible.metadata_mapper.format import FORMAT_REGISTRY, H5, Json, Xml, ZipMember
-from mandible.metadata_mapper.source import (
+from mandible.metadata_mapper.source import Source
+from mandible.metadata_mapper.source_provider import (
     ConfigSourceProvider,
     PySourceProvider,
-    Source,
     SourceProviderError,
 )
 from mandible.metadata_mapper.storage import (
@@ -186,6 +187,50 @@ def test_config_source_provider_empty():
     provider = ConfigSourceProvider({})
 
     assert provider.get_sources() == {}
+
+
+def test_config_source_provider_context_values():
+    provider = ConfigSourceProvider({
+        "arg": {
+            "storage": {
+                "class": "LocalFile",
+                "filters": "$.meta.filters",
+            },
+            "format": {
+                "class": "Json",
+            },
+        },
+        "arg_nested": {
+            "storage": {
+                "class": "LocalFile",
+                "filters": {
+                    "name": "$.meta.name_filter",
+                    "dollar": "$$.meta.not-replaced",
+                },
+            },
+            "format": {
+                "class": "Json",
+            },
+        },
+    })
+
+    assert provider.get_sources() == {
+        "arg": FileSource(
+            LocalFile(
+                filters=ContextValue("$.meta.filters"),
+            ),
+            Json(),
+        ),
+        "arg_nested": FileSource(
+            LocalFile(
+                filters={
+                    "name": ContextValue("$.meta.name_filter"),
+                    "dollar": "$.meta.not-replaced",
+                },
+            ),
+            Json(),
+        ),
+    }
 
 
 def test_config_source_provider_missing_storage():
