@@ -31,6 +31,33 @@ class Storage(ABC):
         pass
 
 
+# Define placeholders for when extras are not installed
+
+
+@dataclass
+class _PlaceholderBase(Storage, register=False):
+    """
+    Base class for defining placeholder implementations for classes that
+    require extra dependencies to be installed
+    """
+    def __init__(self, dep: str):
+        raise Exception(
+            f"{dep} must be installed to use the {self.__class__.__name__} "
+            "format class"
+        )
+
+    def open_file(self, context: Context) -> IO[bytes]:
+        pass
+
+
+@dataclass
+class HttpRequest(_PlaceholderBase):
+    def __init__(self):
+        super().__init__("requests")
+
+
+# Define storages that don't require extra dependencies
+
 @dataclass
 class Dummy(Storage):
     """A dummy storage that returns a hardcoded byte stream.
