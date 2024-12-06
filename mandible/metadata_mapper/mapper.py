@@ -2,9 +2,9 @@ import inspect
 import logging
 from typing import Any, Optional
 
-from .context import Context
+from .context import Context, replace_context_values
 from .directive import DIRECTIVE_REGISTRY, TemplateDirective
-from .exception import MetadataMapperError, TemplateError
+from .exception import ContextValueError, MetadataMapperError, TemplateError
 from .source import Source
 from .source_provider import SourceProvider
 from .types import Template
@@ -29,6 +29,18 @@ class MetadataMapper:
             sources = self.source_provider.get_sources()
         else:
             sources = {}
+
+        for name, source in sources.items():
+            try:
+                sources[name] = replace_context_values(source, context)
+            except ContextValueError as e:
+                e.source_name = name
+                raise
+            except Exception as e:
+                raise MetadataMapperError(
+                    f"failed to inject context values into source "
+                    f"{repr(name)}: {e}",
+                ) from e
 
         try:
             self._prepare_directives(context, sources)

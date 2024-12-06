@@ -2,6 +2,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Optional, TypeVar
 
+from .context import ContextValue
 from .format import FORMAT_REGISTRY
 from .source import SOURCE_REGISTRY, FileSource, Source
 from .storage import STORAGE_REGISTRY
@@ -118,7 +119,22 @@ class ConfigSourceProvider(SourceProvider):
         return cls(**kwargs)
 
     def _convert_arg(self, parent_cls: type[Any], key: str, arg: Any) -> Any:
-        if isinstance(arg, dict) and "class" in arg:
-            return self._create_object(parent_cls, key, arg)
+        if isinstance(arg, dict):
+            if "class" in arg:
+                return self._create_object(parent_cls, key, arg)
+
+            return {
+                k: self._convert_arg(parent_cls, k, v)
+                for k, v in arg.items()
+            }
+
+        if isinstance(arg, list):
+            return [self._convert_arg(parent_cls, key, v) for v in arg]
+
+        if isinstance(arg, str) and arg.startswith("$"):
+            if arg.startswith("$$"):
+                return arg[1:]
+
+            return ContextValue(arg)
 
         return arg
