@@ -31,7 +31,7 @@ class MetadataMapper:
             sources = {}
 
         try:
-            self._cache_source_keys(context, sources)
+            self._prepare_directives(context, sources)
         except TemplateError:
             raise
         except Exception as e:
@@ -57,7 +57,7 @@ class MetadataMapper:
                 f"failed to evaluate template: {e}"
             ) from e
 
-    def _cache_source_keys(self, context: Context, sources: dict[str, Source]):
+    def _prepare_directives(self, context: Context, sources: dict[str, Source]):
         for value, debug_path in _walk_values(self.template):
             if isinstance(value, dict):
                 directive_name = self._get_directive_name(value, debug_path)

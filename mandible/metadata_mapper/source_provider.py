@@ -12,8 +12,8 @@ T = TypeVar("T")
 
 REGISTRY_TYPE_MAP = {
     "Format": FORMAT_REGISTRY,
-    "Storage": STORAGE_REGISTRY,
     "Source": SOURCE_REGISTRY,
+    "Storage": STORAGE_REGISTRY,
 }
 
 

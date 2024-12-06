@@ -101,12 +101,16 @@ class FilteredStorage(Storage, register=False):
 
 @dataclass
 class LocalFile(FilteredStorage):
+    """A storage which reads from the file system"""
+
     def _open_file(self, info: dict) -> IO[bytes]:
         return open(info["path"], "rb")
 
 
 @dataclass
 class S3File(FilteredStorage):
+    """A storage which reads from an AWS S3 object"""
+
     s3fs_kwargs: dict[str, Any] = field(default_factory=dict)
 
     def _open_file(self, info: dict) -> IO[bytes]:
