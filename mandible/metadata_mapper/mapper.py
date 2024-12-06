@@ -2,7 +2,7 @@ import inspect
 import logging
 from typing import Any, Dict, Optional
 
-from .context import Context
+from .context import Context, replace_context_values
 from .directive import DIRECTIVE_REGISTRY, TemplateDirective
 from .exception import MetadataMapperError, TemplateError
 from .source import Source
@@ -29,6 +29,11 @@ class MetadataMapper:
             sources = self.source_provider.get_sources()
         else:
             sources = {}
+
+        sources = {
+            k: replace_context_values(source, context)
+            for k, source in sources.items()
+        }
 
         try:
             self._prepare_directives(context, sources)
