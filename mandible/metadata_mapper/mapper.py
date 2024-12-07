@@ -1,6 +1,6 @@
 import inspect
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from .context import Context
 from .directive import DIRECTIVE_REGISTRY, TemplateDirective
@@ -56,7 +56,7 @@ class MetadataMapper:
                 f"failed to evaluate template: {e}"
             ) from e
 
-    def _cache_source_keys(self, context: Context, sources: Dict[str, Source]):
+    def _cache_source_keys(self, context: Context, sources: dict[str, Source]):
         for value, debug_path in _walk_values(self.template):
             if isinstance(value, dict):
                 directive_name = self._get_directive_name(value, debug_path)
@@ -76,7 +76,7 @@ class MetadataMapper:
         self,
         context: Context,
         template: Template,
-        sources: Dict[str, Source],
+        sources: dict[str, Source],
         debug_path: str = "$",
     ):
         if isinstance(template, dict):
@@ -156,7 +156,7 @@ class MetadataMapper:
         self,
         directive_name: str,
         context: Context,
-        sources: Dict[str, Source],
+        sources: dict[str, Source],
         config: dict,
         debug_path: str,
     ) -> TemplateDirective:

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import Any, List
+from typing import Any, TypeVar, Union
 
+T = TypeVar("T")
 RAISE_EXCEPTION = object()
 
 
@@ -19,7 +20,7 @@ class Key:
                 "cannot set both 'return_list' and 'return_first' to True",
             )
 
-    def resolve_list_match(self, values: List[Any]) -> Any:
+    def resolve_list_match(self, values: list[T]) -> Union[list[T], T]:
         if self.return_list:
             return values
 
