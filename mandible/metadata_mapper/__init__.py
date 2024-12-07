@@ -1,7 +1,8 @@
 from .context import Context
 from .format import Format
 from .mapper import MetadataMapper, MetadataMapperError
-from .source import ConfigSourceProvider, FileSource, PySourceProvider
+from .source import FileSource
+from .source_provider import ConfigSourceProvider, PySourceProvider
 
 __all__ = [
     "ConfigSourceProvider",
