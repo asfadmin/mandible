@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Type, TypeVar
+from typing import Any, TypeVar
 
 from .directive import (
     Add,
@@ -15,7 +16,7 @@ from .directive import (
 from .types import Key, Template
 
 # For testing purposes to ensure we implement builders for all directives
-_DIRECTIVE_BUILDER_REGISTRY: Dict[str, Callable[..., "DirectiveBuilder"]] = {}
+_DIRECTIVE_BUILDER_REGISTRY: dict[str, Callable[..., "DirectiveBuilder"]] = {}
 
 
 @dataclass
@@ -33,7 +34,7 @@ class DirectiveBuilder(Builder):
     def __init__(
         self,
         name: str,
-        params: Dict[str, Any],
+        params: dict[str, Any],
     ):
         self.name = name
         self.params = params
@@ -80,7 +81,7 @@ class DirectiveBuilder(Builder):
 T = TypeVar("T")
 
 
-def _directive_builder(directive: Type["TemplateDirective"]) -> Callable[[T], T]:
+def _directive_builder(directive: type["TemplateDirective"]) -> Callable[[T], T]:
     directive_name = directive.directive_name
     assert directive_name is not None
 

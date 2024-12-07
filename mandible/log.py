@@ -1,7 +1,7 @@
 import logging
 import os
+from collections.abc import Callable
 from contextlib import contextmanager
-from typing import Callable, Type
 
 
 def _build_cumulus_extras_from_cma(event: dict) -> dict:
@@ -54,7 +54,7 @@ def init_root_logger():
 
 
 @contextmanager
-def log_errors(*exceptions: Type[BaseException]):
+def log_errors(*exceptions: type[BaseException]):
     exceptions = exceptions or (BaseException,)
     try:
         yield

@@ -1,5 +1,6 @@
+import contextlib
 from dataclasses import dataclass
-from typing import IO, Any, ContextManager
+from typing import IO, Any
 
 import h5py
 import numpy as np
@@ -12,7 +13,7 @@ from .format import FileFormat
 @dataclass
 class H5(FileFormat):
     @staticmethod
-    def parse_data(file: IO[bytes]) -> ContextManager[Any]:
+    def parse_data(file: IO[bytes]) -> contextlib.AbstractContextManager[Any]:
         return h5py.File(file, "r")
 
     @staticmethod

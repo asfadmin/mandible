@@ -3,8 +3,9 @@ import json
 import re
 import zipfile
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import IO, Any, ContextManager, Dict, Iterable, Type, TypeVar
+from typing import IO, Any, TypeVar
 
 from mandible import jsonpath
 from mandible.metadata_mapper.key import RAISE_EXCEPTION, Key
@@ -20,7 +21,7 @@ class FormatError(Exception):
         return self.reason
 
 
-FORMAT_REGISTRY: Dict[str, Type["Format"]] = {}
+FORMAT_REGISTRY: dict[str, type["Format"]] = {}
 
 
 @dataclass
@@ -38,7 +39,7 @@ class Format(ABC):
         self,
         file: IO[bytes],
         keys: Iterable[Key],
-    ) -> Dict[Key, Any]:
+    ) -> dict[Key, Any]:
         """Get a list of values from a file"""
         pass
 
@@ -60,7 +61,7 @@ class FileFormat(Format, ABC, register=False):
         self,
         file: IO[bytes],
         keys: Iterable[Key],
-    ) -> Dict[Key, Any]:
+    ) -> dict[Key, Any]:
         """Get a list of values from a file"""
 
         with self.parse_data(file) as data:
@@ -87,7 +88,7 @@ class FileFormat(Format, ABC, register=False):
 
     @staticmethod
     @abstractmethod
-    def parse_data(file: IO[bytes]) -> ContextManager[T]:
+    def parse_data(file: IO[bytes]) -> contextlib.AbstractContextManager[T]:
         """Parse the binary stream into a queryable data structure.
 
         The return type can be anything, but must be compatible with the input
@@ -127,7 +128,7 @@ class _PlaceholderBase(FileFormat, register=False):
         )
 
     @staticmethod
-    def parse_data(file: IO[bytes]) -> ContextManager[T]:
+    def parse_data(file: IO[bytes]) -> contextlib.AbstractContextManager[T]:
         pass
 
     @staticmethod
@@ -171,7 +172,7 @@ class ZipMember(Format):
     :param format: The Format of the archive member
     """
 
-    filters: Dict[str, Any]
+    filters: dict[str, Any]
     """Filter against any attributes of zipfile.ZipInfo objects"""
     format: Format
 
@@ -185,7 +186,7 @@ class ZipMember(Format):
         self,
         file: IO[bytes],
         keys: Iterable[Key],
-    ) -> Dict[Key, Any]:
+    ) -> dict[Key, Any]:
         """Get a list of values from a file"""
 
         with zipfile.ZipFile(file, "r") as zf:

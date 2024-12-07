@@ -1,14 +1,15 @@
-from typing import Callable, Dict, List, Set, Tuple, Union
+from collections.abc import Callable
+from typing import Union
 
 from .context import Context
 
 KeyFunc = Callable[[Context], str]
 Key = Union[str, KeyFunc]
 Template = Union[
-    Dict[str, "Template"],
-    List["Template"],
-    Tuple["Template", ...],
-    Set["Template"],
+    dict[str, "Template"],
+    list["Template"],
+    tuple["Template", ...],
+    set["Template"],
     str,
     int,
     float,

@@ -1,7 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Set, Type, TypeVar
+from typing import Any, Optional, TypeVar
 
 from .context import Context
 from .format import FORMAT_REGISTRY, Format
@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-SOURCE_REGISTRY: Dict[str, Type["Source"]] = {}
+SOURCE_REGISTRY: dict[str, type["Source"]] = {}
 
 REGISTRY_TYPE_MAP = {
     "Format": FORMAT_REGISTRY,
@@ -32,8 +32,8 @@ class Source(ABC):
 
     # Begin class definition
     def __post_init__(self):
-        self._keys: Set[Key] = set()
-        self._values: Dict[Key, Any] = {}
+        self._keys: set[Key] = set()
+        self._values: dict[Key, Any] = {}
 
     def add_key(self, key: Key):
         self._keys.add(key)
@@ -73,33 +73,33 @@ class SourceProviderError(Exception):
 
 class SourceProvider(ABC):
     @abstractmethod
-    def get_sources(self) -> Dict[str, Source]:
+    def get_sources(self) -> dict[str, Source]:
         pass
 
 
 class PySourceProvider(SourceProvider):
     """Dummy provider that passes sources through as a python object"""
 
-    def __init__(self, sources: Dict[str, Source]):
+    def __init__(self, sources: dict[str, Source]):
         self.sources = sources
 
-    def get_sources(self) -> Dict[str, Source]:
+    def get_sources(self) -> dict[str, Source]:
         return self.sources
 
 
 class ConfigSourceProvider(SourceProvider):
     """Provide sources from JSON object config"""
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: dict):
         self.config = config
 
-    def get_sources(self) -> Dict[str, Source]:
+    def get_sources(self) -> dict[str, Source]:
         return {
             key: self._create_source(key, config)
             for key, config in self.config.items()
         }
 
-    def _create_source(self, key: str, config: Dict) -> Source:
+    def _create_source(self, key: str, config: dict) -> Source:
         cls_name = config.get("class") or FileSource.__name__
         cls = SOURCE_REGISTRY.get(cls_name)
         if cls is None:
@@ -114,9 +114,9 @@ class ConfigSourceProvider(SourceProvider):
 
     def _create_object(
         self,
-        parent_cls: Type[Any],
+        parent_cls: type[Any],
         key: str,
-        config: Dict,
+        config: dict,
     ) -> Any:
         cls_name = config.get("class")
         if cls_name is None:
@@ -142,9 +142,9 @@ class ConfigSourceProvider(SourceProvider):
 
     def _get_class_from_registry(
         self,
-        base_cls: Type[Any],
+        base_cls: type[Any],
         cls_name: str,
-    ) -> Optional[Type[Any]]:
+    ) -> Optional[type[Any]]:
         cls = REGISTRY_TYPE_MAP.get(base_cls.__name__, {}).get(cls_name)
 
         if cls is None:
@@ -158,7 +158,7 @@ class ConfigSourceProvider(SourceProvider):
 
         return cls
 
-    def _instantiate_class(self, cls: Type[T], config: Dict[str, Any]) -> T:
+    def _instantiate_class(self, cls: type[T], config: dict[str, Any]) -> T:
         kwargs = {
             k: self._convert_arg(cls, k, v)
             for k, v in config.items()
@@ -167,7 +167,7 @@ class ConfigSourceProvider(SourceProvider):
 
         return cls(**kwargs)
 
-    def _convert_arg(self, parent_cls: Type[Any], key: str, arg: Any) -> Any:
+    def _convert_arg(self, parent_cls: type[Any], key: str, arg: Any) -> Any:
         if isinstance(arg, dict) and "class" in arg:
             return self._create_object(parent_cls, key, arg)
 

@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import ClassVar, Dict, Optional, Type
+from typing import ClassVar, Optional
 
 from mandible.metadata_mapper.context import Context
 from mandible.metadata_mapper.key import Key
 from mandible.metadata_mapper.source import Source
 from mandible.metadata_mapper.types import Key as KeyType
 
-DIRECTIVE_REGISTRY: Dict[str, Type["TemplateDirective"]] = {}
+DIRECTIVE_REGISTRY: dict[str, type["TemplateDirective"]] = {}
 
 
 def get_key(key: KeyType, context: Context, key_options: dict) -> Key:
@@ -42,7 +42,7 @@ class TemplateDirective(ABC):
     directive_name: ClassVar[Optional[str]] = None
 
     context: Context
-    sources: Dict[str, Source]
+    sources: dict[str, Source]
 
     @abstractmethod
     def call(self):

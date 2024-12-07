@@ -2,7 +2,7 @@ import io
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import IO, Any, Dict, Type, Union
+from typing import IO, Any, Union
 
 import s3fs
 
@@ -13,7 +13,7 @@ class StorageError(Exception):
     pass
 
 
-STORAGE_REGISTRY: Dict[str, Type["Storage"]] = {}
+STORAGE_REGISTRY: dict[str, type["Storage"]] = {}
 
 
 class Storage(ABC):
@@ -55,7 +55,7 @@ class FilteredStorage(Storage, register=False):
     returns data from the matching file.
     """
     # Begin class definition
-    filters: Dict[str, Any] = field(default_factory=dict)
+    filters: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         self._compiled_filters = {
@@ -67,7 +67,7 @@ class FilteredStorage(Storage, register=False):
         file = self.get_file_from_context(context)
         return self._open_file(file)
 
-    def get_file_from_context(self, context: Context) -> Dict[str, Any]:
+    def get_file_from_context(self, context: Context) -> dict[str, Any]:
         """Return the file from the context which matches all filters."""
 
         # Special error message to make debugging empty context easier
@@ -80,7 +80,7 @@ class FilteredStorage(Storage, register=False):
 
         raise StorageError(f"no files matched filters {self.filters}")
 
-    def _matches_filters(self, info: Dict[str, Any]) -> bool:
+    def _matches_filters(self, info: dict[str, Any]) -> bool:
         for key, pattern in self._compiled_filters.items():
             if key not in info:
                 return False
@@ -95,20 +95,20 @@ class FilteredStorage(Storage, register=False):
         return True
 
     @abstractmethod
-    def _open_file(self, info: Dict) -> IO[bytes]:
+    def _open_file(self, info: dict) -> IO[bytes]:
         pass
 
 
 @dataclass
 class LocalFile(FilteredStorage):
-    def _open_file(self, info: Dict) -> IO[bytes]:
+    def _open_file(self, info: dict) -> IO[bytes]:
         return open(info["path"], "rb")
 
 
 @dataclass
 class S3File(FilteredStorage):
-    s3fs_kwargs: Dict[str, Any] = field(default_factory=dict)
+    s3fs_kwargs: dict[str, Any] = field(default_factory=dict)
 
-    def _open_file(self, info: Dict) -> IO[bytes]:
+    def _open_file(self, info: dict) -> IO[bytes]:
         s3 = s3fs.S3FileSystem(anon=False, **self.s3fs_kwargs)
         return s3.open(f"s3://{info['bucket']}/{info['key']}")
