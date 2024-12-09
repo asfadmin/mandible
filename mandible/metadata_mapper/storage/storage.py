@@ -2,11 +2,11 @@ import io
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import IO, Any, Dict, Type, Union
+from typing import IO, Any, Dict, Optional, Type, Union
 
 import s3fs
 
-from .context import Context
+from mandible.metadata_mapper.context import Context
 
 
 class StorageError(Exception):
@@ -31,6 +31,33 @@ class Storage(ABC):
         pass
 
 
+# Define placeholders for when extras are not installed
+
+
+@dataclass
+class _PlaceholderBase(Storage, register=False):
+    """
+    Base class for defining placeholder implementations for classes that
+    require extra dependencies to be installed
+    """
+    def __init__(self, dep: str):
+        raise Exception(
+            f"{dep} must be installed to use the {self.__class__.__name__} "
+            "format class"
+        )
+
+    def open_file(self, context: Context) -> IO[bytes]:
+        pass
+
+
+@dataclass
+class HttpRequest(_PlaceholderBase):
+    def __init__(self):
+        super().__init__("requests")
+
+
+# Define storages that don't require extra dependencies
+
 @dataclass
 class Dummy(Storage):
     """A dummy storage that returns a hardcoded byte stream.
@@ -54,14 +81,20 @@ class FilteredStorage(Storage, register=False):
     """A storage which matches a set of filters on the context's files and
     returns data from the matching file.
     """
-    # Begin class definition
     filters: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
-        self._compiled_filters = {
-            k: re.compile(v) if isinstance(v, str) else v
-            for k, v in self.filters.items()
-        }
+        self._compiled_filters_cache: Optional[Dict[str, Any]] = None
+
+    @property
+    def _compiled_filters(self) -> Dict[str, Any]:
+        if self._compiled_filters_cache is None:
+            self._compiled_filters_cache = {
+                k: re.compile(v) if isinstance(v, str) else v
+                for k, v in self.filters.items()
+            }
+
+        return self._compiled_filters_cache
 
     def open_file(self, context: Context) -> IO[bytes]:
         file = self.get_file_from_context(context)

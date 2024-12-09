@@ -13,7 +13,7 @@ def sources():
             "storage": {
                 "class": "LocalFile",
                 "filters": {
-                    "name": r"example\.json",
+                    "name": "$.meta.json_file_name",
                 },
             },
             "format": {
@@ -96,6 +96,9 @@ def context(data_path):
             }
             for ext in ("json", "xml", "h5")
         ],
+        meta={
+            "json_file_name": r"example\.json",
+        },
     )
 
 
