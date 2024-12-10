@@ -8,11 +8,11 @@ except ImportError:
 def get(data: dict, path: str) -> list:
     # Fall back to simple dot paths
     if jsonpath_ng is None:
-        if path == "$":
-            return [data]
-
         val = data
         for part in path.split("."):
+            if part == "$":
+                continue
+
             val = val[part]
 
         return [val]

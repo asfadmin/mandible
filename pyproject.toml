@@ -24,10 +24,12 @@ lxml = { version = "^4.9.2", optional = true }
 # Numpy is pinned to a minimum version by h5py. Unpinning here means our
 # requirements will always match those of h5py.
 numpy = { version = "*", optional = true }
+requests = { version = "^2.32.3", optional = true }
 
 [tool.poetry.extras]
-all = ["h5py", "numpy", "jsonpath-ng", "lxml"]
+all = ["h5py", "numpy", "requests", "jsonpath-ng", "lxml"]
 h5 = ["h5py", "numpy"]
+http = ["requests"]
 jsonpath = ["jsonpath-ng"]
 xml = ["lxml"]
 
@@ -45,6 +47,7 @@ markers = [
     "h5: requires the 'h5' extra to be installed",
     "jsonpath: requires the 'jsonpath' extra to be installed",
     "xml: requires the 'xml' extra to be installed",
+    "http: requires the 'http' extra to be installed",
 ]
 
 [tool.isort]

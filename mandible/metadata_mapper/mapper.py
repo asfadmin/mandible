@@ -2,10 +2,11 @@ import inspect
 import logging
 from typing import Any, Optional
 
-from .context import Context
+from .context import Context, replace_context_values
 from .directive import DIRECTIVE_REGISTRY, TemplateDirective
-from .exception import MetadataMapperError, TemplateError
-from .source import Source, SourceProvider
+from .exception import ContextValueError, MetadataMapperError, TemplateError
+from .source import Source
+from .source_provider import SourceProvider
 from .types import Template
 
 log = logging.getLogger(__name__)
@@ -29,8 +30,20 @@ class MetadataMapper:
         else:
             sources = {}
 
+        for name, source in sources.items():
+            try:
+                sources[name] = replace_context_values(source, context)
+            except ContextValueError as e:
+                e.source_name = name
+                raise
+            except Exception as e:
+                raise MetadataMapperError(
+                    f"failed to inject context values into source "
+                    f"{repr(name)}: {e}",
+                ) from e
+
         try:
-            self._cache_source_keys(context, sources)
+            self._prepare_directives(context, sources)
         except TemplateError:
             raise
         except Exception as e:
@@ -56,7 +69,7 @@ class MetadataMapper:
                 f"failed to evaluate template: {e}"
             ) from e
 
-    def _cache_source_keys(self, context: Context, sources: dict[str, Source]):
+    def _prepare_directives(self, context: Context, sources: dict[str, Source]):
         for value, debug_path in _walk_values(self.template):
             if isinstance(value, dict):
                 directive_name = self._get_directive_name(value, debug_path)

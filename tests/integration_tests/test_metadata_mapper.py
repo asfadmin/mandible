@@ -306,3 +306,94 @@ def test_multiple_directives(context):
         ),
     ):
         mapper.get_metadata(context)
+
+
+def test_context_values_missing():
+    mapper = MetadataMapper(
+        template={},
+        source_provider=ConfigSourceProvider({
+            "test": {
+                "storage": {
+                    "class": "LocalFile",
+                    "filters": "$.meta.does-not-exist",
+                },
+                "format": {
+                    "class": "Json",
+                },
+            },
+        }),
+    )
+    context = Context()
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            "failed to process context values for source 'test': .* for path "
+            r"'\$\.meta\.does-not-exist'"
+        ),
+    ):
+        mapper.get_metadata(context)
+
+
+@pytest.mark.jsonpath
+def test_context_values_multiple_values():
+    mapper = MetadataMapper(
+        template={},
+        source_provider=ConfigSourceProvider({
+            "test": {
+                "storage": {
+                    "class": "LocalFile",
+                    "filters": "$.meta.foo[*].bar",
+                },
+                "format": {
+                    "class": "Json",
+                },
+            },
+        }),
+    )
+    context = Context(
+        meta={
+            "foo": [
+                {"bar": 1},
+                {"bar": 2},
+            ],
+        },
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            "failed to process context values for source 'test': "
+            r"context path '\$\.meta\.foo\[\*\]\.bar' returned more than one "
+            "value"
+        ),
+    ):
+        mapper.get_metadata(context)
+
+
+@pytest.mark.jsonpath
+def test_context_values_invalid():
+    mapper = MetadataMapper(
+        template={},
+        source_provider=ConfigSourceProvider({
+            "test": {
+                "storage": {
+                    "class": "LocalFile",
+                    "filters": "$.meta.bad-syntax[",
+                },
+                "format": {
+                    "class": "Json",
+                },
+            },
+        }),
+    )
+    context = Context()
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            "failed to process context values for source 'test': "
+            r"jsonpath error for path '\$\.meta\.bad-syntax\[': "
+        ),
+    ):
+        mapper.get_metadata(context)

@@ -6,7 +6,9 @@ import pytest
 from mandible.metadata_mapper.context import Context
 from mandible.metadata_mapper.storage import (
     STORAGE_REGISTRY,
+    CmrQuery,
     Dummy,
+    HttpRequest,
     LocalFile,
     S3File,
     Storage,
@@ -16,7 +18,9 @@ from mandible.metadata_mapper.storage import (
 
 def test_registry():
     assert STORAGE_REGISTRY == {
+        "CmrQuery": CmrQuery,
         "Dummy": Dummy,
+        "HttpRequest": HttpRequest,
         "LocalFile": LocalFile,
         "S3File": S3File,
     }
@@ -178,3 +182,36 @@ def test_s3_file_filters(s3_resource):
     })
     with storage.open_file(context) as f:
         assert f.read() == b"Content from file2.txt\n"
+
+
+@pytest.mark.http
+def test_cmr_query_params():
+    with pytest.raises(ValueError):
+        CmrQuery(url="foobar")
+
+    assert CmrQuery(
+        base_url="http://foo.bar",
+        path="/search/granules",
+    )._get_url() == "http://foo.bar/search/granules"
+    assert CmrQuery(
+        base_url="http://foo.bar",
+        path="search/granules",
+    )._get_url() == "http://foo.bar/search/granules"
+    assert CmrQuery(
+        base_url="http://foo.bar/",
+        path="/search/granules",
+    )._get_url() == "http://foo.bar/search/granules"
+    assert CmrQuery(
+        base_url="http://foo.bar/",
+        path="search/granules",
+    )._get_url() == "http://foo.bar/search/granules"
+
+    assert CmrQuery(
+        base_url="http://foo.bar",
+        path="/search/granules",
+        format="umm_json",
+    )._get_url() == "http://foo.bar/search/granules.umm_json"
+
+    assert CmrQuery(token="foobar")._get_headers() == {
+        "Authorization": "foobar",
+    }
