@@ -13,6 +13,8 @@ from .storage import Storage
 class HttpRequest(Storage):
     """A storage which returns the body of an HTTP response"""
 
+    # TODO(reweeden): python3.10 added support for KW_ONLY arguments which can
+    # be used to clean up the inheritance here a bit.
     url: str
     method: str = "GET"
     params: Optional[dict] = None
@@ -24,18 +26,21 @@ class HttpRequest(Storage):
     allow_redirects: bool = True
 
     def open_file(self, context: Context) -> IO[bytes]:
-        response = requests.request(
-            self.method,
-            self.url,
-            params=self.params,
-            data=self.data,
-            json=self.json,
-            headers=self.headers,
-            cookies=self.cookies,
-            timeout=self.timeout,
-            allow_redirects=self.allow_redirects,
-            stream=True,
-        )
+        kwargs = {
+            "allow_redirects": self.allow_redirects,
+            "cookies": self.cookies,
+            "data": self.data,
+            "headers": self.headers,
+            "json": self.json,
+            "method": self.method,
+            "params": self.params,
+            "stream": True,
+            "timeout": self.timeout,
+            "url": self.url,
+            # Allow subclasses to override these
+            **self._get_override_request_args(context),
+        }
+        response = requests.request(**kwargs)
 
         # TODO(reweeden): Using response.content causes the entire response
         # payload to be loaded into memory immediately. Ideally, we would
@@ -44,3 +49,6 @@ class HttpRequest(Storage):
         # object, however, this doesn't preform the content decoding that you
         # get when using response.content.
         return io.BytesIO(response.content)
+
+    def _get_override_request_args(self, context: Context) -> dict:
+        return {}

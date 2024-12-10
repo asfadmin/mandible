@@ -56,6 +56,12 @@ class HttpRequest(_PlaceholderBase):
         super().__init__("requests")
 
 
+@dataclass
+class CmrQuery(_PlaceholderBase):
+    def __init__(self):
+        super().__init__("requests")
+
+
 # Define storages that don't require extra dependencies
 
 @dataclass

@@ -9,12 +9,18 @@ from .storage import (
 )
 
 try:
+    from .cmr_query import CmrQuery
+except ImportError:
+    from .storage import CmrQuery
+
+try:
     from .http_request import HttpRequest
 except ImportError:
     from .storage import HttpRequest
 
 
 __all__ = (
+    "CmrQuery",
     "Dummy",
     "FilteredStorage",
     "HttpRequest",
