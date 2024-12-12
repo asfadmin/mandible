@@ -2,11 +2,11 @@ import io
 import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import IO, Any, Union
+from typing import IO, Any, Optional, Union
 
 import s3fs
 
-from .context import Context
+from mandible.metadata_mapper.context import Context
 
 
 class StorageError(Exception):
@@ -30,6 +30,39 @@ class Storage(ABC):
         """Get a filelike object to access the data."""
         pass
 
+
+# Define placeholders for when extras are not installed
+
+
+@dataclass
+class _PlaceholderBase(Storage, register=False):
+    """
+    Base class for defining placeholder implementations for classes that
+    require extra dependencies to be installed
+    """
+    def __init__(self, dep: str):
+        raise Exception(
+            f"{dep} must be installed to use the {self.__class__.__name__} "
+            "format class"
+        )
+
+    def open_file(self, context: Context) -> IO[bytes]:
+        pass
+
+
+@dataclass
+class HttpRequest(_PlaceholderBase):
+    def __init__(self):
+        super().__init__("requests")
+
+
+@dataclass
+class CmrQuery(_PlaceholderBase):
+    def __init__(self):
+        super().__init__("requests")
+
+
+# Define storages that don't require extra dependencies
 
 @dataclass
 class Dummy(Storage):
@@ -58,10 +91,17 @@ class FilteredStorage(Storage, register=False):
     filters: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
-        self._compiled_filters = {
-            k: re.compile(v) if isinstance(v, str) else v
-            for k, v in self.filters.items()
-        }
+        self._compiled_filters_cache: Optional[dict[str, Any]] = None
+
+    @property
+    def _compiled_filters(self) -> dict[str, Any]:
+        if self._compiled_filters_cache is None:
+            self._compiled_filters_cache = {
+                k: re.compile(v) if isinstance(v, str) else v
+                for k, v in self.filters.items()
+            }
+
+        return self._compiled_filters_cache
 
     def open_file(self, context: Context) -> IO[bytes]:
         file = self.get_file_from_context(context)
@@ -101,12 +141,16 @@ class FilteredStorage(Storage, register=False):
 
 @dataclass
 class LocalFile(FilteredStorage):
+    """A storage which reads from the file system"""
+
     def _open_file(self, info: dict) -> IO[bytes]:
         return open(info["path"], "rb")
 
 
 @dataclass
 class S3File(FilteredStorage):
+    """A storage which reads from an AWS S3 object"""
+
     s3fs_kwargs: dict[str, Any] = field(default_factory=dict)
 
     def _open_file(self, info: dict) -> IO[bytes]:
