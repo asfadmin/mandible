@@ -28,3 +28,34 @@ def test_template(source_provider, context):
         "list": [1, 2, 3, "A", "B", "C"],
         "number": 30.5,
     }
+
+
+def test_template_default(source_provider, context):
+    mapper = MetadataMapper(
+        template=build({
+            "badkey": mapped("fixed_name_file", "badkey", default=None),
+        }),
+        source_provider=source_provider,
+    )
+
+    assert mapper.get_metadata(context) == {
+        "badkey": None,
+    }
+
+
+def test_template_default_multiple_build(source_provider, context):
+    base_template = build({
+        "badkey": mapped("fixed_name_file", "badkey", default=None),
+    })
+    mapper = MetadataMapper(
+        template=build({
+            **base_template,
+            "goodkey": mapped("fixed_name_file", "integer"),
+        }),
+        source_provider=source_provider,
+    )
+
+    assert mapper.get_metadata(context) == {
+        "badkey": None,
+        "goodkey": 10,
+    }

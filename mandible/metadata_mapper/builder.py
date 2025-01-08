@@ -244,7 +244,7 @@ def build_with_config(template: Any, config: BuildConfig) -> Template:
         return tuple(build_with_config(v, config) for v in template)
     elif isinstance(template, set):
         return set(build_with_config(v, config) for v in template)
-    elif isinstance(template, (str, int, float, bool)):
+    elif template is None or isinstance(template, (str, int, float, bool)):
         return template
 
     raise ValueError(template)
