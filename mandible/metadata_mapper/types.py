@@ -6,13 +6,18 @@ from .context import Context
 KeyFunc = Callable[[Context], str]
 Key = Union[str, KeyFunc]
 Template = Union[
+    # Primitives
+    bool,
+    float,
+    int,
+    str,
+    # Special constants
+    None,
+    # Nested structures
     dict[str, "Template"],
     list["Template"],
-    tuple["Template", ...],
     set["Template"],
-    str,
-    int,
-    float,
-    bool,
+    tuple["Template", ...],
+    # Special types
     KeyFunc,
 ]
