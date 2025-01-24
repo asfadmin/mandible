@@ -47,7 +47,8 @@ class _PlaceholderBase(Storage, register=False):
         )
 
     def open_file(self, context: Context) -> IO[bytes]:
-        pass
+        # __init__ always raises
+        raise RuntimeError("Unreachable!")
 
 
 @dataclass

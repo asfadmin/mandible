@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-REGISTRY_TYPE_MAP = {
+REGISTRY_TYPE_MAP: dict[str, dict[str, Any]] = {
     "Format": FORMAT_REGISTRY,
     "Source": SOURCE_REGISTRY,
     "Storage": STORAGE_REGISTRY,

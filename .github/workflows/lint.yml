@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  lint:
+  flake8:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,4 +17,26 @@ jobs:
       - uses: TrueBrain/actions-flake8@v2
         with:
           flake8_version: 6.0.0
-          plugins: flake8-isort==6.1.1 flake8-quotes==3.4.0 flake8-commas==4.0.0 
+          plugins: flake8-isort==6.1.1 flake8-quotes==3.4.0 flake8-commas==4.0.0
+
+  mypy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+
+      - run: |
+          pip install poetry
+          poetry install --with=mypy -E all
+
+      - run: |
+          poetry run mypy \
+            --check-untyped-defs \
+            --disable-error-code=import-untyped \
+            --strict-equality \
+            --warn-redundant-casts \
+            --warn-unused-ignores \
+            mandible

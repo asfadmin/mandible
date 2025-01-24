@@ -1,3 +1,6 @@
+from typing import Optional
+
+
 class MetadataMapperError(Exception):
     """A generic error raised by the MetadataMapper"""
 
@@ -8,7 +11,7 @@ class MetadataMapperError(Exception):
 class TemplateError(MetadataMapperError):
     """An error that occurred while processing the metadata template."""
 
-    def __init__(self, msg: str, debug_path: str = None):
+    def __init__(self, msg: str, debug_path: Optional[str] = None):
         super().__init__(msg)
         self.debug_path = debug_path
 
@@ -26,7 +29,7 @@ class ContextValueError(MetadataMapperError):
     def __init__(
         self,
         msg: str,
-        source_name: str = None,
+        source_name: Optional[str] = None,
     ):
         super().__init__(msg)
         self.source_name = source_name

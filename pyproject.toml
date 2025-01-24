@@ -42,6 +42,11 @@ pytest = "^8.0.2"
 pytest-cov = "^4.0.0"
 pytest-mock = "^3.8.2"
 
+[tool.poetry.group.mypy.dependencies]
+lxml-stubs = "^0.5.1"
+mypy = "^1.14.1"
+types-requests = "<2.31.0.7"
+
 
 [tool.pytest.ini_options]
 markers = [

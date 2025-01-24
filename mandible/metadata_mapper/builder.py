@@ -103,7 +103,7 @@ def mapped(
     directive_name = Mapped.directive_name
     assert directive_name is not None
 
-    params = {
+    params: dict[str, Any] = {
         "source": source,
         "key": key,
     }

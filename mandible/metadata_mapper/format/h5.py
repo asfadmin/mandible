@@ -11,13 +11,13 @@ from .format import FileFormat
 
 
 @dataclass
-class H5(FileFormat):
+class H5(FileFormat[Any]):
     @staticmethod
     def parse_data(file: IO[bytes]) -> contextlib.AbstractContextManager[Any]:
         return h5py.File(file, "r")
 
     @staticmethod
-    def eval_key(data, key: Key) -> Any:
+    def eval_key(data: Any, key: Key) -> Any:
         return normalize(data[key.key][()])
 
 

@@ -310,6 +310,7 @@ def test_xml():
             Key("./nested/qux"),
             Key("./list/v", return_list=True),
             Key("./list/v", return_first=True),
+            Key("count(./list/v)"),
         ],
     ) == {
         Key("/root/foo"): "foo value",
@@ -318,6 +319,7 @@ def test_xml():
         Key("./nested/qux"): "qux nested value",
         Key("./list/v", return_list=True): ["list", "value"],
         Key("./list/v", return_first=True): "list",
+        Key("count(./list/v)"): 2,
     }
 
 
