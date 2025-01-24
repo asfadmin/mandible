@@ -55,6 +55,6 @@ class FileSource(Source):
                 "%s: using keys %r, got new values %r",
                 self,
                 keys,
-                new_values
+                new_values,
             )
             self._values.update(new_values)

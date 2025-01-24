@@ -42,8 +42,8 @@ def test_local_file(data_path):
     context = Context(
         files=[{
             "name": "local_file",
-            "path": str(data_path / "local_file.txt")
-        }]
+            "path": str(data_path / "local_file.txt"),
+        }],
     )
     storage = LocalFile(filters={"name": "local_file"})
 
@@ -55,8 +55,8 @@ def test_local_file_name_match(data_path):
     context = Context(
         files=[{
             "name": "local_file",
-            "path": str(data_path / "local_file.txt")
-        }]
+            "path": str(data_path / "local_file.txt"),
+        }],
     )
     storage = LocalFile(filters={"name": "local_.*"})
 
@@ -68,8 +68,8 @@ def test_local_file_int_filter(data_path):
     context = Context(
         files=[{
             "type": 0,
-            "path": str(data_path / "local_file.txt")
-        }]
+            "path": str(data_path / "local_file.txt"),
+        }],
     )
     storage = LocalFile(filters={"type": 0})
 
@@ -84,7 +84,7 @@ def test_local_file_creation():
 
 def test_local_file_name_match_error():
     context = Context(
-        files=[{"name": "local_file"}]
+        files=[{"name": "local_file"}],
     )
     storage = LocalFile(filters={"name": "foo.*"})
 
@@ -110,8 +110,8 @@ def test_s3_file_s3uri(s3_resource):
         files=[{
             "name": "s3_file",
             "bucket": "test-bucket",
-            "key": "bucket_file.txt"
-        }]
+            "key": "bucket_file.txt",
+        }],
     )
     storage = S3File(filters={"name": "s3_file"})
 
@@ -129,8 +129,8 @@ def test_s3_file_s3fs_kwargs(s3_resource):
         files=[{
             "name": "s3_file",
             "bucket": "test-bucket",
-            "key": "bucket_file.txt"
-        }]
+            "key": "bucket_file.txt",
+        }],
     )
     storage = S3File(
         filters={"name": "s3_file"},
@@ -161,24 +161,24 @@ def test_s3_file_filters(s3_resource):
             "type": type,
             "uri": f"https://example.asf.alaska.edu/{name}",
             "bucket": bucket.name,
-            "key": name
+            "key": name,
         }
 
     context = Context(
         files=[
             create_file(bucket, "file1.txt"),
             create_file(bucket, "file2.txt", type="metadata"),
-        ]
+        ],
     )
 
     storage = S3File(filters={
-        "name": "file1.txt"
+        "name": "file1.txt",
     })
     with storage.open_file(context) as f:
         assert f.read() == b"Content from file1.txt\n"
 
     storage = S3File(filters={
-        "type": "metadata"
+        "type": "metadata",
     })
     with storage.open_file(context) as f:
         assert f.read() == b"Content from file2.txt\n"

@@ -56,23 +56,23 @@ def test_config_source_provider(sources):
             "storage": {
                 "class": "LocalFile",
                 "filters": {
-                    "name": "foo"
-                }
+                    "name": "foo",
+                },
             },
             "format": {
-                "class": "Json"
-            }
+                "class": "Json",
+            },
         },
         "bar": {
             "storage": {
                 "class": "LocalFile",
                 "filters": {
-                    "name": "bar"
-                }
+                    "name": "bar",
+                },
             },
             "format": {
-                "class": "Json"
-            }
+                "class": "Json",
+            },
         },
         "baz": {
             "storage": {
@@ -145,35 +145,35 @@ def test_config_source_provider_all_formats():
             "storage": {
                 "class": "LocalFile",
                 "filters": {
-                    "name": "foo"
-                }
+                    "name": "foo",
+                },
             },
             "format": {
-                "class": "Json"
-            }
+                "class": "Json",
+            },
         },
         "xml": {
             "storage": {
                 "class": "LocalFile",
                 "filters": {
-                    "name": "bar"
-                }
+                    "name": "bar",
+                },
             },
             "format": {
-                "class": "Xml"
-            }
+                "class": "Xml",
+            },
         },
         "h5": {
             "storage": {
                 "class": "LocalFile",
                 "filters": {
-                    "name": "baz"
-                }
+                    "name": "baz",
+                },
             },
             "format": {
-                "class": "H5"
-            }
-        }
+                "class": "H5",
+            },
+        },
     })
 
     assert provider.get_sources() == {
@@ -237,9 +237,9 @@ def test_config_source_provider_missing_storage():
     provider = ConfigSourceProvider({
         "source": {
             "format": {
-                "class": "Json"
-            }
-        }
+                "class": "Json",
+            },
+        },
     })
 
     with pytest.raises(
@@ -256,9 +256,9 @@ def test_config_source_provider_invalid_storage():
     provider = ConfigSourceProvider({
         "source": {
             "storage": {
-                "class": "NotARealStorage"
-            }
-        }
+                "class": "NotARealStorage",
+            },
+        },
     })
 
     with pytest.raises(
@@ -266,7 +266,7 @@ def test_config_source_provider_invalid_storage():
         match=(
             "failed to create source 'source': "
             "invalid storage type 'NotARealStorage'"
-        )
+        ),
     ):
         provider.get_sources()
 
@@ -277,9 +277,9 @@ def test_config_source_provider_invalid_storage_kwargs(cls_name):
         "source": {
             "storage": {
                 "class": cls_name,
-                "invalid_arg": 1
-            }
-        }
+                "invalid_arg": 1,
+            },
+        },
     })
 
     with pytest.raises(
@@ -288,7 +288,7 @@ def test_config_source_provider_invalid_storage_kwargs(cls_name):
             "failed to create source 'source': "
             rf"({cls_name}\.)?__init__\(\) got an unexpected keyword argument "
             "'invalid_arg'"
-        )
+        ),
     ):
         provider.get_sources()
 
@@ -297,9 +297,9 @@ def test_config_source_provider_missing_format():
     provider = ConfigSourceProvider({
         "source": {
             "storage": {
-                "class": "S3File"
-            }
-        }
+                "class": "S3File",
+            },
+        },
     })
 
     with pytest.raises(
@@ -316,12 +316,12 @@ def test_config_source_provider_invalid_format():
     provider = ConfigSourceProvider({
         "source": {
             "storage": {
-                "class": "S3File"
+                "class": "S3File",
             },
             "format": {
-                "class": "NotARealFormat"
-            }
-        }
+                "class": "NotARealFormat",
+            },
+        },
     })
 
     with pytest.raises(
@@ -329,7 +329,7 @@ def test_config_source_provider_invalid_format():
         match=(
             "failed to create source 'source': "
             "invalid format type 'NotARealFormat'"
-        )
+        ),
     ):
         provider.get_sources()
 
@@ -339,7 +339,7 @@ def test_config_source_provider_invalid_format_kwargs(cls_name):
     provider = ConfigSourceProvider({
         "source": {
             "storage": {
-                "class": "S3File"
+                "class": "S3File",
             },
             "format": {
                 "class": cls_name,
@@ -354,6 +354,6 @@ def test_config_source_provider_invalid_format_kwargs(cls_name):
             "failed to create source 'source': "
             rf"({cls_name}\.)?__init__\(\) got an unexpected keyword argument "
             "'invalid_arg'"
-        )
+        ),
     ):
         provider.get_sources()

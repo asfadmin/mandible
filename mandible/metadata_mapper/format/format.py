@@ -124,7 +124,7 @@ class _PlaceholderBase(FileFormat, register=False):
     def __init__(self, dep: str):
         raise Exception(
             f"{dep} must be installed to use the {self.__class__.__name__} "
-            "format class"
+            "format class",
         )
 
     @staticmethod

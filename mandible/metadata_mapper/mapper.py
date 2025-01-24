@@ -48,7 +48,7 @@ class MetadataMapper:
             raise
         except Exception as e:
             raise MetadataMapperError(
-                f"failed to cache source keys: {e}"
+                f"failed to cache source keys: {e}",
             ) from e
 
         for name, source in sources.items():
@@ -66,7 +66,7 @@ class MetadataMapper:
             raise
         except Exception as e:
             raise MetadataMapperError(
-                f"failed to evaluate template: {e}"
+                f"failed to evaluate template: {e}",
             ) from e
 
     def _prepare_directives(self, context: Context, sources: dict[str, Source]):
@@ -95,7 +95,7 @@ class MetadataMapper:
         if isinstance(template, dict):
             directive_name = self._get_directive_name(
                 template,
-                debug_path
+                debug_path,
             )
             if directive_name is not None:
                 debug_path = f"{debug_path}.{directive_name}"
@@ -112,13 +112,13 @@ class MetadataMapper:
                         )
                         for k, v in template[directive_name].items()
                     },
-                    debug_path
+                    debug_path,
                 )
                 try:
                     return directive.call()
                 except Exception as e:
                     raise MetadataMapperError(
-                        f"failed to call directive at {debug_path}: {e}"
+                        f"failed to call directive at {debug_path}: {e}",
                     ) from e
 
             return {
@@ -160,7 +160,7 @@ class MetadataMapper:
             raise TemplateError(
                 "multiple directives found in config: "
                 f"{', '.join(repr(d) for d in directive_names)}",
-                debug_path
+                debug_path,
             )
 
         return directive_names[0]
@@ -177,7 +177,7 @@ class MetadataMapper:
         if cls is None:
             raise TemplateError(
                 f"invalid directive {repr(directive_name)}",
-                debug_path
+                debug_path,
             )
 
         argspec = inspect.getfullargspec(cls.__init__)
@@ -186,7 +186,7 @@ class MetadataMapper:
         required_keys = set(
             argspec.args[3:-len(argspec.defaults)]
             if argspec.defaults else
-            argspec.args[3:]
+            argspec.args[3:],
         )
         config_keys = set(config.keys())
         diff = required_keys - config_keys
@@ -198,7 +198,7 @@ class MetadataMapper:
             raise TemplateError(
                 f"missing key{s}: "
                 f"{', '.join(repr(d) for d in sorted(diff))}",
-                debug_path
+                debug_path,
             )
 
         # For forward compatibility, ignore any unexpected keys
