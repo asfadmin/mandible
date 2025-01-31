@@ -16,7 +16,7 @@ class MetadataMapper:
     def __init__(
         self,
         template: Template,
-        source_provider: SourceProvider = None,
+        source_provider: Optional[SourceProvider] = None,
         *,
         directive_marker: str = "@",
     ):
@@ -48,7 +48,7 @@ class MetadataMapper:
             raise
         except Exception as e:
             raise MetadataMapperError(
-                f"failed to cache source keys: {e}"
+                f"failed to cache source keys: {e}",
             ) from e
 
         for name, source in sources.items():
@@ -66,21 +66,22 @@ class MetadataMapper:
             raise
         except Exception as e:
             raise MetadataMapperError(
-                f"failed to evaluate template: {e}"
+                f"failed to evaluate template: {e}",
             ) from e
 
     def _prepare_directives(self, context: Context, sources: dict[str, Source]):
         for value, debug_path in _walk_values(self.template):
             if isinstance(value, dict):
-                directive_name = self._get_directive_name(value, debug_path)
-                if directive_name is None:
+                directive_config = self._get_directive_name(value, debug_path)
+                if directive_config is None:
                     continue
 
+                directive_name, directive_body = directive_config
                 directive = self._get_directive(
                     directive_name,
                     context,
                     sources,
-                    value[directive_name],
+                    directive_body,
                     f"{debug_path}.{directive_name}",
                 )
                 directive.prepare()
@@ -91,13 +92,14 @@ class MetadataMapper:
         template: Template,
         sources: dict[str, Source],
         debug_path: str = "$",
-    ):
+    ) -> Template:
         if isinstance(template, dict):
-            directive_name = self._get_directive_name(
+            directive_config = self._get_directive_name(
                 template,
-                debug_path
+                debug_path,
             )
-            if directive_name is not None:
+            if directive_config is not None:
+                directive_name, directive_body = directive_config
                 debug_path = f"{debug_path}.{directive_name}"
                 directive = self._get_directive(
                     directive_name,
@@ -110,15 +112,15 @@ class MetadataMapper:
                             sources,
                             debug_path=f"{debug_path}.{k}",
                         )
-                        for k, v in template[directive_name].items()
+                        for k, v in directive_body.items()
                     },
-                    debug_path
+                    debug_path,
                 )
                 try:
                     return directive.call()
                 except Exception as e:
                     raise MetadataMapperError(
-                        f"failed to call directive at {debug_path}: {e}"
+                        f"failed to call directive at {debug_path}: {e}",
                     ) from e
 
             return {
@@ -146,38 +148,48 @@ class MetadataMapper:
 
     def _get_directive_name(
         self,
-        value: dict,
+        value: dict[str, Template],
         debug_path: str,
-    ) -> Optional[str]:
-        directive_names = [
-            key for key in value
-            if key.startswith(self.directive_marker)
+    ) -> Optional[tuple[str, dict[str, Template]]]:
+        directive_configs = [
+            (k, v)
+            for (k, v) in value.items()
+            if k.startswith(self.directive_marker)
         ]
-        if not directive_names:
+        if not directive_configs:
             return None
 
-        if len(directive_names) > 1:
+        if len(directive_configs) > 1:
             raise TemplateError(
                 "multiple directives found in config: "
-                f"{', '.join(repr(d) for d in directive_names)}",
-                debug_path
+                f"{', '.join(repr(k) for k, v in directive_configs)}",
+                debug_path,
             )
 
-        return directive_names[0]
+        directive_name, directive_config = directive_configs[0]
+
+        if not isinstance(directive_config, dict):
+            raise TemplateError(
+                "directive body should be type 'dict' not "
+                f"{repr(directive_config.__class__.__name__)}",
+                f"{debug_path}.{directive_name}",
+            )
+
+        return directive_name, directive_config
 
     def _get_directive(
         self,
         directive_name: str,
         context: Context,
         sources: dict[str, Source],
-        config: dict,
+        config: dict[str, Template],
         debug_path: str,
     ) -> TemplateDirective:
         cls = DIRECTIVE_REGISTRY.get(directive_name[len(self.directive_marker):])
         if cls is None:
             raise TemplateError(
                 f"invalid directive {repr(directive_name)}",
-                debug_path
+                debug_path,
             )
 
         argspec = inspect.getfullargspec(cls.__init__)
@@ -186,7 +198,7 @@ class MetadataMapper:
         required_keys = set(
             argspec.args[3:-len(argspec.defaults)]
             if argspec.defaults else
-            argspec.args[3:]
+            argspec.args[3:],
         )
         config_keys = set(config.keys())
         diff = required_keys - config_keys
@@ -198,7 +210,7 @@ class MetadataMapper:
             raise TemplateError(
                 f"missing key{s}: "
                 f"{', '.join(repr(d) for d in sorted(diff))}",
-                debug_path
+                debug_path,
             )
 
         # For forward compatibility, ignore any unexpected keys

@@ -111,7 +111,7 @@ class UmmgBase(ABC):
     def related_urls_files_sort_key(self, file: CMAGranuleFile) -> tuple:
         type_order = self.get_related_url_type_order()
         try:
-            type_ordinal = type_order.index(file.get("type"))
+            type_ordinal = type_order.index(file.get("type", "data"))
         except ValueError:
             type_ordinal = len(type_order)
 

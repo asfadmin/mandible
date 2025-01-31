@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 T = TypeVar("T")
 
-REGISTRY_TYPE_MAP = {
+REGISTRY_TYPE_MAP: dict[str, dict[str, Any]] = {
     "Format": FORMAT_REGISTRY,
     "Source": SOURCE_REGISTRY,
     "Storage": STORAGE_REGISTRY,
@@ -72,7 +72,7 @@ class ConfigSourceProvider(SourceProvider):
         cls_name = config.get("class")
         if cls_name is None:
             raise SourceProviderError(
-                f"missing key 'class' in config {config}"
+                f"missing key 'class' in config {config}",
             )
 
         # TODO(reweeden): As of python3.10, inspect.get_annotations(parent_cls)

@@ -1,11 +1,12 @@
 import contextlib
+import inspect
 import json
 import re
 import zipfile
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
+from collections.abc import Generator, Iterable
 from dataclasses import dataclass
-from typing import IO, Any, TypeVar
+from typing import IO, Any, Generic, TypeVar
 
 from mandible import jsonpath
 from mandible.metadata_mapper.key import RAISE_EXCEPTION, Key
@@ -50,7 +51,7 @@ class Format(ABC):
 
 
 @dataclass
-class FileFormat(Format, ABC, register=False):
+class FileFormat(Format, Generic[T], ABC, register=False):
     """A Format for querying files from a standard data file.
 
     Simple, single format data types such as 'json' that can be queried
@@ -76,7 +77,7 @@ class FileFormat(Format, ABC, register=False):
         with self.parse_data(file) as data:
             return self._eval_key_wrapper(data, key)
 
-    def _eval_key_wrapper(self, data, key: Key) -> Any:
+    def _eval_key_wrapper(self, data: T, key: Key) -> Any:
         try:
             return self.eval_key(data, key)
         except KeyError as e:
@@ -116,7 +117,7 @@ class FileFormat(Format, ABC, register=False):
 
 
 @dataclass
-class _PlaceholderBase(FileFormat, register=False):
+class _PlaceholderBase(FileFormat[None], register=False):
     """
     Base class for defining placeholder implementations for classes that
     require extra dependencies to be installed
@@ -124,16 +125,18 @@ class _PlaceholderBase(FileFormat, register=False):
     def __init__(self, dep: str):
         raise Exception(
             f"{dep} must be installed to use the {self.__class__.__name__} "
-            "format class"
+            "format class",
         )
 
     @staticmethod
-    def parse_data(file: IO[bytes]) -> contextlib.AbstractContextManager[T]:
-        pass
+    def parse_data(file: IO[bytes]) -> contextlib.AbstractContextManager[None]:
+        # __init__ always raises
+        raise RuntimeError("Unreachable!")
 
     @staticmethod
-    def eval_key(data: T, key: Key):
-        pass
+    def eval_key(data: None, key: Key):
+        # __init__ always raises
+        raise RuntimeError("Unreachable!")
 
 
 @dataclass
@@ -151,10 +154,10 @@ class Xml(_PlaceholderBase):
 # Define formats that don't require extra dependencies
 
 @dataclass
-class Json(FileFormat):
+class Json(FileFormat[dict]):
     @staticmethod
     @contextlib.contextmanager
-    def parse_data(file: IO[bytes]) -> dict:
+    def parse_data(file: IO[bytes]) -> Generator[dict]:
         yield json.load(file)
 
     @staticmethod
@@ -237,20 +240,26 @@ class ZipMember(Format):
         return True
 
 
+ZIP_INFO_ATTRS = [
+    name
+    for name, _ in inspect.getmembers(zipfile.ZipInfo, inspect.isdatadescriptor)
+    if not name.startswith("_")
+]
+
+
 @dataclass
-class ZipInfo(FileFormat):
+class ZipInfo(FileFormat[dict]):
     """Query Zip headers and directory information."""
 
     @staticmethod
     @contextlib.contextmanager
-    def parse_data(file: IO[bytes]) -> dict:
+    def parse_data(file: IO[bytes]) -> Generator[dict]:
         with zipfile.ZipFile(file, "r") as zf:
             yield {
                 "infolist": [
                     {
                         k: getattr(info, k)
-                        for k in info.__slots__
-                        if not k.startswith("_")
+                        for k in ZIP_INFO_ATTRS
                     }
                     for info in zf.infolist()
                 ],

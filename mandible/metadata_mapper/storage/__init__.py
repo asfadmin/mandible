@@ -11,12 +11,12 @@ from .storage import (
 try:
     from .cmr_query import CmrQuery
 except ImportError:
-    from .storage import CmrQuery
+    from .storage import CmrQuery  # type: ignore
 
 try:
     from .http_request import HttpRequest
 except ImportError:
-    from .storage import HttpRequest
+    from .storage import HttpRequest  # type: ignore
 
 
 __all__ = (

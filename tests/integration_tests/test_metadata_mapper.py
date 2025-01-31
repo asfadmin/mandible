@@ -287,6 +287,26 @@ def test_invalid_directive(context):
         mapper.get_metadata(context)
 
 
+def test_invalid_directive_config_type(context):
+    mapper = MetadataMapper(
+        template={
+            "foo": {
+                "@mapped": 100,
+            },
+        },
+        source_provider=ConfigSourceProvider({}),
+    )
+
+    with pytest.raises(
+        MetadataMapperError,
+        match=(
+            r"failed to process template at \$\.foo\.@mapped: "
+            "directive body should be type 'dict' not 'int'"
+        ),
+    ):
+        mapper.get_metadata(context)
+
+
 def test_multiple_directives(context):
     mapper = MetadataMapper(
         template={

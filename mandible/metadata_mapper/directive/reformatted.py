@@ -4,8 +4,9 @@ from typing import Any
 
 from mandible.metadata_mapper.exception import MetadataMapperError
 from mandible.metadata_mapper.format import FORMAT_REGISTRY
+from mandible.metadata_mapper.types import Key
 
-from .directive import Key, TemplateDirective, get_key
+from .directive import TemplateDirective, get_key
 
 
 @dataclass
