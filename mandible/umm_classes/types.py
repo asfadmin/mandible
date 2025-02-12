@@ -315,8 +315,7 @@ class SpatialExtent(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#465
     """
-    # TODO(reweeden): Implement
-    GranuleLocalities: NotRequired[list[dict[str, Any]]]
+    GranuleLocalities: NotRequired[list[str]]
     HorizontalSpatialDomain: NotRequired["HorizontalSpatialDomain"]
     # TODO(reweeden): Implement
     VerticalSpatialDomains: NotRequired[list[dict[str, Any]]]
