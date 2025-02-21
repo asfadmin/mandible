@@ -1,6 +1,6 @@
 """Factory functions for creating small pieces of UMM"""
 
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from .types import (
     AccessConstraints,
@@ -8,6 +8,7 @@ from .types import (
     ArchiveAndDistributionInformation,
     CollectionReference,
     DataGranule,
+    HorizontalSpatialDomain,
     Identifier,
     Instrument,
     MeasuredParameter,
@@ -132,6 +133,30 @@ def related_url(
         obj["Size"] = size
     if size_unit is not None:
         obj["SizeUnit"] = size_unit
+
+    return obj
+
+
+def spatial_extent(
+    granule_localities: Optional[list[str]] = None,
+    horizontal_spatial_domain: Optional[HorizontalSpatialDomain] = None,
+    # TODO(reweeden): Implement typing
+    vertical_spatial_domains: Optional[list[dict[str, Any]]] = None,
+) -> SpatialExtent:
+    obj: SpatialExtent = {}
+
+    if granule_localities is not None:
+        obj["GranuleLocalities"] = granule_localities
+    if horizontal_spatial_domain is not None:
+        obj["HorizontalSpatialDomain"] = horizontal_spatial_domain
+    if vertical_spatial_domains is not None:
+        obj["VerticalSpatialDomains"] = vertical_spatial_domains
+
+    if not obj:
+        raise ValueError(
+            "one of 'granule_localities', 'horizontal_spatial_domain', or "
+            "'vertical_spatial_domains' is required",
+        )
 
     return obj
 
