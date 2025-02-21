@@ -12,6 +12,7 @@ from .factory import (
     metadata_specification,
     platform,
     provider_date,
+    range_date_time,
     ummg,
 )
 from .related_url_builder import RelatedUrlBuilder
@@ -335,20 +336,19 @@ class UmmgTemporalExtentRangeDateTimeMixin(UmmgBase):
     def get_beginning_date_time(self) -> datetime.datetime:
         pass
 
-    @abstractmethod
-    def get_ending_date_time(self) -> datetime.datetime:
-        pass
+    def get_ending_date_time(self) -> Optional[datetime.datetime]:
+        return None
 
     def get_temporal_extent(self) -> TemporalExtent:
         return {
-            "RangeDateTime": {
-                "BeginningDateTime": self.date_to_str(
+            "RangeDateTime": range_date_time(
+                beginning_date_time=self.date_to_str(
                     self.get_beginning_date_time(),
                 ),
-                "EndingDateTime": self.date_to_str(
+                ending_date_time=self.date_to_str(
                     self.get_ending_date_time(),
                 ),
-            },
+            ),
         }
 
 

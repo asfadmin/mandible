@@ -18,6 +18,7 @@ from .types import (
     Platform,
     Project,
     ProviderDate,
+    RangeDateTime,
     RelatedUrl,
     SpatialExtent,
     TemporalExtent,
@@ -105,6 +106,19 @@ def provider_date(type: str, date: str) -> ProviderDate:
         "Type": type,
         "Date": date,
     }
+
+
+def range_date_time(
+    beginning_date_time: str,
+    ending_date_time: Optional[str] = None,
+) -> RangeDateTime:
+    obj: RangeDateTime = {
+        "BeginningDateTime": beginning_date_time,
+    }
+    if ending_date_time is not None:
+        obj["EndingDateTime"] = ending_date_time
+
+    return obj
 
 
 def related_url(
