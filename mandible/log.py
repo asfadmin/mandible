@@ -36,7 +36,7 @@ def _build_cumulus_extras_from_cma(event: _Event) -> dict[str, Any]:
 
 def init_custom_log_record_factory(
     event: _Event,
-    record_builder: _ExtraFactory = _build_cumulus_extras_from_cma,
+    extra_factory: _ExtraFactory = _build_cumulus_extras_from_cma,
 ) -> None:
     """Configures the logging record factory and can be overwritten by providing
     a function that takes the event dict as an input and returns a dict of log
@@ -51,13 +51,13 @@ def init_custom_log_record_factory(
         "workflow_execution_name": event.get("cumulus_meta", {}).get("execution_name"),
     }
     """
-    extra = record_builder(event)
-    original_factory = logging.getLogRecordFactory()
+    extra = extra_factory(event)
+    original_record_factory = logging.getLogRecordFactory()
 
-    if isinstance(original_factory, LogRecordFactory):
-        original_factory.extra = extra
+    if isinstance(original_record_factory, LogRecordFactory):
+        original_record_factory.extra = extra
     else:
-        record_factory = LogRecordFactory(original_factory, extra)
+        record_factory = LogRecordFactory(original_record_factory, extra)
         logging.setLogRecordFactory(record_factory)
 
 
