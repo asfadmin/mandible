@@ -73,7 +73,7 @@ class UmmgBase(ABC):
     def date_to_str(self, date: None) -> None:
         ...
 
-    def date_to_str(self, date):
+    def date_to_str(self, date: Optional[datetime.date]) -> Optional[str]:
         """Serialize a datetime.date or datetime.datetime as a string using the
         format expected by UMM-G.
         """

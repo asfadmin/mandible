@@ -4,7 +4,7 @@ from typing import Any
 
 from mandible.metadata_mapper.exception import MetadataMapperError
 from mandible.metadata_mapper.format import FORMAT_REGISTRY
-from mandible.metadata_mapper.types import Key
+from mandible.metadata_mapper.types import Key, Template
 
 from .directive import TemplateDirective, get_key
 
@@ -22,7 +22,7 @@ class Reformatted(TemplateDirective):
     key: Key
     key_options: dict = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         format_cls = FORMAT_REGISTRY.get(self.format)
         if format_cls is None:
             raise MetadataMapperError(f"format {repr(self.format)} does not exist")
@@ -30,7 +30,7 @@ class Reformatted(TemplateDirective):
         self.format_obj = format_cls()
         self.key_obj = get_key(self.key, self.context, self.key_options)
 
-    def call(self):
+    def call(self) -> Template:
         if isinstance(self.value, bytes):
             value = self.value
         elif isinstance(self.value, str):

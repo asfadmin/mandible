@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 from mandible.metadata_mapper.exception import MetadataMapperError
-from mandible.metadata_mapper.types import Key
+from mandible.metadata_mapper.types import Key, Template
 
 from .directive import TemplateDirective, get_key
 
@@ -18,15 +18,15 @@ class Mapped(TemplateDirective):
     key: Key
     key_options: dict = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.source not in self.sources:
             raise MetadataMapperError(f"source {repr(self.source)} does not exist")
 
         self.source_obj = self.sources[self.source]
         self.key_obj = get_key(self.key, self.context, self.key_options)
 
-    def call(self):
+    def call(self) -> Template:
         return self.source_obj.get_value(self.key_obj)
 
-    def prepare(self):
+    def prepare(self) -> None:
         self.source_obj.add_key(self.key_obj)

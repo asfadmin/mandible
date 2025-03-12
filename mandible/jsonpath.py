@@ -2,7 +2,7 @@ try:
     import jsonpath_ng
     import jsonpath_ng.ext
 except ImportError:
-    jsonpath_ng = None
+    jsonpath_ng = None  # type: ignore
 
 
 def get(data: dict, path: str) -> list:

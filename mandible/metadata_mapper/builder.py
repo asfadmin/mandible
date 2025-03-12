@@ -78,14 +78,14 @@ class DirectiveBuilder(Builder):
         return truediv(other, self)
 
 
-T = TypeVar("T")
+F = TypeVar("F", bound=Callable[..., DirectiveBuilder])
 
 
-def _directive_builder(directive: type["TemplateDirective"]) -> Callable[[T], T]:
+def _directive_builder(directive: type["TemplateDirective"]) -> Callable[[F], F]:
     directive_name = directive.directive_name
     assert directive_name is not None
 
-    def decorator(func):
+    def decorator(func: F) -> F:
         func.__doc__ = directive.__doc__
 
         _DIRECTIVE_BUILDER_REGISTRY[directive_name] = func
@@ -98,7 +98,7 @@ def _directive_builder(directive: type["TemplateDirective"]) -> Callable[[T], T]
 def mapped(
     source: str,
     key: Key,
-    **key_options,
+    **key_options: Any,
 ) -> DirectiveBuilder:
     directive_name = Mapped.directive_name
     assert directive_name is not None
@@ -121,7 +121,7 @@ def reformatted(
     format: str,
     value: Any,
     key: Key,
-    **key_options,
+    **key_options: Any,
 ) -> DirectiveBuilder:
     directive_name = Reformatted.directive_name
     assert directive_name is not None
@@ -144,7 +144,11 @@ def reformatted(
 #
 
 
-def _binop_directive(directive_name: str, left: Any, right: Any):
+def _binop_directive(
+    directive_name: str,
+    left: Any,
+    right: Any,
+) -> DirectiveBuilder:
     return DirectiveBuilder(
         directive_name,
         {

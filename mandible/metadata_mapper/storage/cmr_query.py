@@ -18,7 +18,7 @@ class CmrQuery(HttpRequest):
     format: str = ""
     token: Optional[str] = None
 
-    def __post_init__(self, url: Optional[str]):
+    def __post_init__(self, url: Optional[str]) -> None:
         if url:
             raise ValueError(
                 "do not set 'url' directly, use 'base_url' and 'path' instead",

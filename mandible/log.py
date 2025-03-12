@@ -1,22 +1,27 @@
 import logging
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
+from typing import Any
+
+_LogRecordFactory = Callable[..., logging.LogRecord]
+_Event = dict[str, Any]
+_ExtraFactory = Callable[[_Event], dict[str, Any]]
 
 
 class LogRecordFactory:
-    def __init__(self, wrapped_factory: Callable, extra: dict):
+    def __init__(self, wrapped_factory: _LogRecordFactory, extra: _Event):
         self.wrapped_factory = wrapped_factory
         self.extra = extra
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args: Any, **kwargs: Any) -> logging.LogRecord:
         record = self.wrapped_factory(*args, **kwargs)
         for key, value in self.extra.items():
             setattr(record, key, value)
         return record
 
 
-def _build_cumulus_extras_from_cma(event: dict) -> dict:
+def _build_cumulus_extras_from_cma(event: _Event) -> dict[str, Any]:
     if "cma" in event:
         event = event["cma"].get("event") or {}
 
@@ -30,8 +35,8 @@ def _build_cumulus_extras_from_cma(event: dict) -> dict:
 
 
 def init_custom_log_record_factory(
-    event: dict,
-    record_builder: Callable[[dict], dict] = _build_cumulus_extras_from_cma,
+    event: _Event,
+    record_builder: _ExtraFactory = _build_cumulus_extras_from_cma,
 ) -> None:
     """Configures the logging record factory and can be overwritten by providing
     a function that takes the event dict as an input and returns a dict of log
@@ -56,7 +61,7 @@ def init_custom_log_record_factory(
         logging.setLogRecordFactory(record_factory)
 
 
-def init_root_logger():
+def init_root_logger() -> None:
     """Set up log levels for lambda using the environment variable"""
     level = os.getenv("LOG_LEVEL", logging.INFO)
 
@@ -67,7 +72,7 @@ def init_root_logger():
 
 
 @contextmanager
-def log_errors(*exceptions: type[BaseException]):
+def log_errors(*exceptions: type[BaseException]) -> Generator[None]:
     exceptions = exceptions or (BaseException,)
     try:
         yield

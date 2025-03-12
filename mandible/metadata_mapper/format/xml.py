@@ -35,7 +35,9 @@ class Xml(FileFormat[etree._ElementTree]):
         return xpath_result
 
 
-def convert_result(result: Union[etree._Element, int, str, bytes, tuple]):
+def convert_result(
+    result: Union[etree._Element, int, str, bytes, tuple],
+) -> Union[None, int, str, bytes]:
     if isinstance(result, etree._Element):
         return result.text
     if isinstance(result, (int, str, bytes)):

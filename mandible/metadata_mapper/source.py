@@ -17,25 +17,25 @@ SOURCE_REGISTRY: dict[str, type["Source"]] = {}
 @dataclass
 class Source(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls, register: bool = True, **kwargs):
+    def __init_subclass__(cls, register: bool = True, **kwargs: Any) -> None:
         if register:
             SOURCE_REGISTRY[cls.__name__] = cls
 
         super().__init_subclass__(**kwargs)
 
     # Begin class definition
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._keys: set[Key] = set()
         self._values: dict[Key, Any] = {}
 
-    def add_key(self, key: Key):
+    def add_key(self, key: Key) -> None:
         self._keys.add(key)
 
     @abstractmethod
-    def query_all_values(self, context: Context):
+    def query_all_values(self, context: Context) -> None:
         pass
 
-    def get_value(self, key: Key):
+    def get_value(self, key: Key) -> Any:
         return self._values[key]
 
 
@@ -44,7 +44,7 @@ class FileSource(Source):
     storage: Storage
     format: Format
 
-    def query_all_values(self, context: Context):
+    def query_all_values(self, context: Context) -> None:
         if not self._keys:
             return
 

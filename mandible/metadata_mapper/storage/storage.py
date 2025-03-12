@@ -18,7 +18,7 @@ STORAGE_REGISTRY: dict[str, type["Storage"]] = {}
 
 class Storage(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls, register: bool = True, **kwargs):
+    def __init_subclass__(cls, register: bool = True, **kwargs: Any) -> None:
         if register:
             STORAGE_REGISTRY[cls.__name__] = cls
 
@@ -53,13 +53,13 @@ class _PlaceholderBase(Storage, register=False):
 
 @dataclass
 class HttpRequest(_PlaceholderBase):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("requests")
 
 
 @dataclass
 class CmrQuery(_PlaceholderBase):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("requests")
 
 
@@ -91,7 +91,7 @@ class FilteredStorage(Storage, register=False):
     # Begin class definition
     filters: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._compiled_filters_cache: Optional[dict[str, Any]] = None
 
     @property

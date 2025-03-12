@@ -1,16 +1,21 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 
 from mandible.metadata_mapper.context import Context
 from mandible.metadata_mapper.key import Key
 from mandible.metadata_mapper.source import Source
 from mandible.metadata_mapper.types import Key as KeyType
+from mandible.metadata_mapper.types import Template
 
 DIRECTIVE_REGISTRY: dict[str, type["TemplateDirective"]] = {}
 
 
-def get_key(key: KeyType, context: Context, key_options: dict) -> Key:
+def get_key(
+    key: KeyType,
+    context: Context,
+    key_options: dict[str, Any],
+) -> Key:
     if callable(key):
         key = key(context)
 
@@ -29,8 +34,8 @@ class TemplateDirective(ABC):
         cls,
         register: bool = True,
         name: Optional[str] = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         if register:
             name = name or cls.__name__.lower()
             DIRECTIVE_REGISTRY[name] = cls
@@ -45,8 +50,8 @@ class TemplateDirective(ABC):
     sources: dict[str, Source]
 
     @abstractmethod
-    def call(self):
+    def call(self) -> Template:
         pass
 
-    def prepare(self):
+    def prepare(self) -> None:
         pass

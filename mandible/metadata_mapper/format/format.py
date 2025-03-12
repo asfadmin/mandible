@@ -18,7 +18,7 @@ class FormatError(Exception):
     def __init__(self, reason: str):
         self.reason = reason
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.reason
 
 
@@ -28,7 +28,7 @@ FORMAT_REGISTRY: dict[str, type["Format"]] = {}
 @dataclass
 class Format(ABC):
     # Registry boilerplate
-    def __init_subclass__(cls, register: bool = True, **kwargs):
+    def __init_subclass__(cls, register: bool = True, **kwargs: Any) -> None:
         if register:
             FORMAT_REGISTRY[cls.__name__] = cls
 
@@ -134,34 +134,34 @@ class _PlaceholderBase(FileFormat[None], register=False):
         raise RuntimeError("Unreachable!")
 
     @staticmethod
-    def eval_key(data: None, key: Key):
+    def eval_key(data: None, key: Key) -> Any:
         # __init__ always raises
         raise RuntimeError("Unreachable!")
 
 
 @dataclass
 class H5(_PlaceholderBase):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("h5py")
 
 
 @dataclass
 class Xml(_PlaceholderBase):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("lxml")
 
 
 # Define formats that don't require extra dependencies
 
 @dataclass
-class Json(FileFormat[dict]):
+class Json(FileFormat[dict[str, Any]]):
     @staticmethod
     @contextlib.contextmanager
-    def parse_data(file: IO[bytes]) -> Generator[dict]:
+    def parse_data(file: IO[bytes]) -> Generator[dict[str, Any]]:
         yield json.load(file)
 
     @staticmethod
-    def eval_key(data: dict, key: Key):
+    def eval_key(data: dict[str, Any], key: Key) -> Any:
         values = jsonpath.get(data, key.key)
 
         return key.resolve_list_match(values)
@@ -179,7 +179,7 @@ class ZipMember(Format):
     """Filter against any attributes of zipfile.ZipInfo objects"""
     format: Format
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._compiled_filters = {
             k: re.compile(v) if isinstance(v, str) else v
             for k, v in self.filters.items()
