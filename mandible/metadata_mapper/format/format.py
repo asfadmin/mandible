@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import IO, Any, Generic, TypeVar
 
 from mandible import jsonpath
+from mandible.jsonpath import JsonValue
 from mandible.metadata_mapper.key import RAISE_EXCEPTION, Key
 
 T = TypeVar("T")
@@ -154,14 +155,14 @@ class Xml(_PlaceholderBase):
 # Define formats that don't require extra dependencies
 
 @dataclass
-class Json(FileFormat[dict[str, Any]]):
+class Json(FileFormat[JsonValue]):
     @staticmethod
     @contextlib.contextmanager
-    def parse_data(file: IO[bytes]) -> Generator[dict[str, Any]]:
+    def parse_data(file: IO[bytes]) -> Generator[JsonValue]:
         yield json.load(file)
 
     @staticmethod
-    def eval_key(data: dict[str, Any], key: Key) -> Any:
+    def eval_key(data: JsonValue, key: Key) -> JsonValue:
         values = jsonpath.get(data, key.key)
 
         return key.resolve_list_match(values)
