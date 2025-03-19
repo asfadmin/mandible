@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import IO, Any, Generic, TypeVar
 
 from mandible import jsonpath
+from mandible.jsonpath import JsonValue
 from mandible.metadata_mapper.key import RAISE_EXCEPTION, Key
 
 T = TypeVar("T")
@@ -118,9 +119,8 @@ class FileFormat(Format, Generic[T], ABC, register=False):
 
 @dataclass
 class _PlaceholderBase(FileFormat[None], register=False):
-    """
-    Base class for defining placeholder implementations for classes that
-    require extra dependencies to be installed
+    """Base class for defining placeholder implementations for classes that
+    require extra dependencies to be installed.
     """
     def __init__(self, dep: str):
         raise Exception(
@@ -154,14 +154,29 @@ class Xml(_PlaceholderBase):
 # Define formats that don't require extra dependencies
 
 @dataclass
-class Json(FileFormat[dict[str, Any]]):
+class Json(FileFormat[JsonValue]):
+    """A Format for querying Json files.
+
+    When `jsonpath_ng` is installed, `jsonpath_ng.ext.parse` will be used to
+    evaluate keys using extended JSONPath functionality.
+    ```
+    $.inventory[?name = 'Banana'].price
+    ```
+
+    When `jsonpath_ng` is NOT installed, only limited use of `.` and `[]` syntax
+    is supported.
+    ```
+    $.inventory[3].price
+    ```
+    """
+
     @staticmethod
     @contextlib.contextmanager
-    def parse_data(file: IO[bytes]) -> Generator[dict[str, Any]]:
+    def parse_data(file: IO[bytes]) -> Generator[JsonValue]:
         yield json.load(file)
 
     @staticmethod
-    def eval_key(data: dict[str, Any], key: Key) -> Any:
+    def eval_key(data: JsonValue, key: Key) -> JsonValue:
         values = jsonpath.get(data, key.key)
 
         return key.resolve_list_match(values)

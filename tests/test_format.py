@@ -159,12 +159,44 @@ def test_json_optional_key():
     assert format.get_value(file, Key("bar", default=bar_value)) == bar_value
 
 
+def test_json_list():
+    file = io.BytesIO(b"""
+    [
+        "foo",
+        "bar",
+        "baz"
+    ]
+    """)
+    format = Json()
+
+    assert format.get_value(file, Key("$")) == ["foo", "bar", "baz"]
+    file.seek(0)
+    assert format.get_value(file, Key("$[1]")) == "bar"
+
+
+def test_json_primitive():
+    format = Json()
+
+    assert format.get_value(io.BytesIO(b"10"), Key("$")) == 10
+    assert format.get_value(io.BytesIO(b"true"), Key("$")) is True
+    assert format.get_value(io.BytesIO(b"null"), Key("$")) is None
+    assert format.get_value(io.BytesIO(b'"foo"'), Key("$")) == "foo"
+
+
 def test_json_key_error():
     file = io.BytesIO(b"{}")
     format = Json()
 
     with pytest.raises(FormatError, match="key not found 'foo'"):
         format.get_values(file, [Key("foo")])
+
+
+def test_json_key_error_primitive():
+    file = io.BytesIO(b'{"foo": 10}')
+    format = Json()
+
+    with pytest.raises(FormatError, match="key not found 'foo.bar'"):
+        format.get_values(file, [Key("foo.bar")])
 
 
 def test_zip():
