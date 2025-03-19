@@ -34,8 +34,10 @@ jobs:
 
       - run: |
           poetry run mypy \
+            --follow-untyped-imports \
+            --disallow-any-unimported \
+            --disallow-untyped-defs \
             --check-untyped-defs \
-            --disable-error-code=import-untyped \
             --strict-equality \
             --warn-redundant-casts \
             --warn-unused-ignores \

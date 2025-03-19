@@ -14,7 +14,7 @@ class Key:
     return_first: bool = False
     default: Any = RAISE_EXCEPTION
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.return_list and self.return_first:
             raise ValueError(
                 "cannot set both 'return_list' and 'return_first' to True",

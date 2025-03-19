@@ -1,5 +1,6 @@
 import inspect
 import logging
+from collections.abc import Generator
 from typing import Any, Optional
 
 from .context import Context, replace_context_values
@@ -69,7 +70,11 @@ class MetadataMapper:
                 f"failed to evaluate template: {e}",
             ) from e
 
-    def _prepare_directives(self, context: Context, sources: dict[str, Source]):
+    def _prepare_directives(
+        self,
+        context: Context,
+        sources: dict[str, Source],
+    ) -> None:
         for value, debug_path in _walk_values(self.template):
             if isinstance(value, dict):
                 directive_config = self._get_directive_name(value, debug_path)
@@ -227,7 +232,7 @@ class MetadataMapper:
             raise TemplateError(str(e), debug_path) from e
 
 
-def _walk_values(obj: Any, debug_path: str = "$"):
+def _walk_values(obj: Any, debug_path: str = "$") -> Generator[tuple[Any, str]]:
     yield obj, debug_path
     if isinstance(obj, dict):
         for key, val in obj.items():
