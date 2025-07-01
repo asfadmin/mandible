@@ -3,7 +3,6 @@ from .storage import (
     Dummy,
     FilteredStorage,
     LocalFile,
-    S3File,
     Storage,
     StorageError,
 )
@@ -11,12 +10,17 @@ from .storage import (
 try:
     from .cmr_query import CmrQuery
 except ImportError:
-    from .storage import CmrQuery  # type: ignore
+    from .placeholder import CmrQuery  # type: ignore
 
 try:
     from .http_request import HttpRequest
 except ImportError:
-    from .storage import HttpRequest  # type: ignore
+    from .placeholder import HttpRequest  # type: ignore
+
+try:
+    from .s3file import S3File
+except ImportError:
+    from .placeholder import S3File  # type: ignore
 
 
 __all__ = (

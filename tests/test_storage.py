@@ -100,6 +100,7 @@ def test_local_file_empty_context_error():
         storage.open_file(context)
 
 
+@pytest.mark.s3
 def test_s3_file_s3uri(s3_resource):
     bucket = s3_resource.Bucket("test-bucket")
     bucket.create()
@@ -119,6 +120,7 @@ def test_s3_file_s3uri(s3_resource):
         assert f.read() == b"Some remote file content\n"
 
 
+@pytest.mark.s3
 def test_s3_file_s3fs_kwargs(s3_resource):
     bucket = s3_resource.Bucket("test-bucket")
     bucket.create()
@@ -144,6 +146,7 @@ def test_s3_file_s3fs_kwargs(s3_resource):
         assert f.read() == b"Some remote file content\n"
 
 
+@pytest.mark.s3
 def test_s3_file_filters(s3_resource):
     bucket = s3_resource.Bucket("test-bucket")
     bucket.create()

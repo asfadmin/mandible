@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import IO, Any, Optional, Union
 
-import s3fs
-
 from mandible.metadata_mapper.context import Context
 
 
@@ -29,38 +27,6 @@ class Storage(ABC):
     def open_file(self, context: Context) -> IO[bytes]:
         """Get a filelike object to access the data."""
         pass
-
-
-# Define placeholders for when extras are not installed
-
-
-@dataclass
-class _PlaceholderBase(Storage, register=False):
-    """
-    Base class for defining placeholder implementations for classes that
-    require extra dependencies to be installed
-    """
-    def __init__(self, dep: str):
-        raise Exception(
-            f"{dep} must be installed to use the {self.__class__.__name__} "
-            "format class",
-        )
-
-    def open_file(self, context: Context) -> IO[bytes]:
-        # __init__ always raises
-        raise RuntimeError("Unreachable!")
-
-
-@dataclass
-class HttpRequest(_PlaceholderBase):
-    def __init__(self) -> None:
-        super().__init__("requests")
-
-
-@dataclass
-class CmrQuery(_PlaceholderBase):
-    def __init__(self) -> None:
-        super().__init__("requests")
 
 
 # Define storages that don't require extra dependencies
@@ -146,14 +112,3 @@ class LocalFile(FilteredStorage):
 
     def _open_file(self, info: dict) -> IO[bytes]:
         return open(info["path"], "rb")
-
-
-@dataclass
-class S3File(FilteredStorage):
-    """A storage which reads from an AWS S3 object"""
-
-    s3fs_kwargs: dict[str, Any] = field(default_factory=dict)
-
-    def _open_file(self, info: dict) -> IO[bytes]:
-        s3 = s3fs.S3FileSystem(anon=False, **self.s3fs_kwargs)
-        return s3.open(f"s3://{info['bucket']}/{info['key']}")

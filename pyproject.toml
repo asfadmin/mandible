@@ -15,7 +15,6 @@ build-backend = "poetry.core.masonry.api"
 python = ">=3.9"
 
 # Required
-s3fs = ">=0.4.2"
 typing-extensions = "^4.12.2"
 
 # Optional
@@ -26,12 +25,14 @@ lxml = { version = "^4.9.2", optional = true }
 # requirements will always match those of h5py.
 numpy = { version = "*", optional = true }
 requests = { version = "^2.32.3", optional = true }
+s3fs = { version = ">=0.4.2", optional = true }
 
 [tool.poetry.extras]
-all = ["h5py", "numpy", "requests", "jsonpath-ng", "lxml"]
+all = ["h5py", "numpy", "requests", "jsonpath-ng", "s3fs", "lxml"]
 h5 = ["h5py", "numpy"]
 http = ["requests"]
 jsonpath = ["jsonpath-ng"]
+s3 = ["s3fs"]
 xml = ["lxml"]
 
 
@@ -51,9 +52,10 @@ types-requests = "<2.31.0.7"
 [tool.pytest.ini_options]
 markers = [
     "h5: requires the 'h5' extra to be installed",
-    "jsonpath: requires the 'jsonpath' extra to be installed",
-    "xml: requires the 'xml' extra to be installed",
     "http: requires the 'http' extra to be installed",
+    "jsonpath: requires the 'jsonpath' extra to be installed",
+    "s3: requires the 's3' extra to be installed",
+    "xml: requires the 'xml' extra to be installed",
 ]
 
 [tool.isort]

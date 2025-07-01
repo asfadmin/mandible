@@ -178,6 +178,7 @@ def test_basic_py_source_provider(config, context):
     }
 
 
+@pytest.mark.s3
 @pytest.mark.xml
 def test_basic_s3_file(s3_resource, config, context):
     s3_resource.create_bucket(Bucket="test")
