@@ -11,12 +11,12 @@ from .format import (
 try:
     from .h5 import H5
 except ImportError:
-    from .format import H5  # type: ignore
+    from .placeholder import H5  # type: ignore
 
 try:
     from .xml import Xml
 except ImportError:
-    from .format import Xml  # type: ignore
+    from .placeholder import Xml  # type: ignore
 
 
 __all__ = (

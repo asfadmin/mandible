@@ -293,6 +293,7 @@ def test_config_source_provider_invalid_storage_kwargs(cls_name):
         provider.get_sources()
 
 
+@pytest.mark.s3
 def test_config_source_provider_missing_format():
     provider = ConfigSourceProvider({
         "source": {
@@ -312,6 +313,7 @@ def test_config_source_provider_missing_format():
         provider.get_sources()
 
 
+@pytest.mark.s3
 def test_config_source_provider_invalid_format():
     provider = ConfigSourceProvider({
         "source": {
@@ -334,6 +336,7 @@ def test_config_source_provider_invalid_format():
         provider.get_sources()
 
 
+@pytest.mark.s3
 @pytest.mark.parametrize("cls_name", FORMAT_REGISTRY.keys())
 def test_config_source_provider_invalid_format_kwargs(cls_name):
     provider = ConfigSourceProvider({
