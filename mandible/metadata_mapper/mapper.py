@@ -39,8 +39,7 @@ class MetadataMapper:
                 raise
             except Exception as e:
                 raise MetadataMapperError(
-                    f"failed to inject context values into source "
-                    f"{repr(name)}: {e}",
+                    f"failed to inject context values into source {repr(name)}: {e}",
                 ) from e
 
         try:
@@ -157,9 +156,7 @@ class MetadataMapper:
         debug_path: str,
     ) -> Optional[tuple[str, dict[str, Template]]]:
         directive_configs = [
-            (k, v)
-            for (k, v) in value.items()
-            if k.startswith(self.directive_marker)
+            (k, v) for (k, v) in value.items() if k.startswith(self.directive_marker)
         ]
         if not directive_configs:
             return None
@@ -190,7 +187,7 @@ class MetadataMapper:
         config: dict[str, Template],
         debug_path: str,
     ) -> TemplateDirective:
-        cls = DIRECTIVE_REGISTRY.get(directive_name[len(self.directive_marker):])
+        cls = DIRECTIVE_REGISTRY.get(directive_name[len(self.directive_marker) :])
         if cls is None:
             raise TemplateError(
                 f"invalid directive {repr(directive_name)}",
@@ -201,9 +198,9 @@ class MetadataMapper:
 
         # Ignore the `self`, `context`, and `sources` parameters
         required_keys = set(
-            argspec.args[3:-len(argspec.defaults)]
-            if argspec.defaults else
-            argspec.args[3:],
+            argspec.args[3 : -len(argspec.defaults)]
+            if argspec.defaults
+            else argspec.args[3:],
         )
         config_keys = set(config.keys())
         diff = required_keys - config_keys
@@ -213,18 +210,13 @@ class MetadataMapper:
             if len(diff) > 1:
                 s = "s"
             raise TemplateError(
-                f"missing key{s}: "
-                f"{', '.join(repr(d) for d in sorted(diff))}",
+                f"missing key{s}: {', '.join(repr(d) for d in sorted(diff))}",
                 debug_path,
             )
 
         # For forward compatibility, ignore any unexpected keys
         all_keys = set(argspec.args[2:])
-        kwargs = {
-            k: v
-            for k, v in config.items()
-            if k in all_keys
-        }
+        kwargs = {k: v for k, v in config.items() if k in all_keys}
 
         try:
             return cls(context, sources, **kwargs)

@@ -29,7 +29,9 @@ def _build_cumulus_extras_from_cma(event: _Event) -> dict[str, Any]:
         "cirrus_daac_version": os.getenv("DAAC_VERSION"),
         "cirrus_core_version": os.getenv("CORE_VERSION"),
         "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
-        "granule_name": event.get("payload", {}).get("granules", [{}])[0].get("granuleId"),
+        "granule_name": event.get("payload", {})
+        .get("granules", [{}])[0]
+        .get("granuleId"),
         "workflow_execution_name": event.get("cumulus_meta", {}).get("execution_name"),
     }
 

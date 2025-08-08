@@ -13,6 +13,7 @@ class AccessConstraints(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#195
     """
+
     Description: NotRequired[str]
     Value: Union[float, int]
 
@@ -22,6 +23,7 @@ class AdditionalAttribute(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#1057
     """
+
     Name: str
     Values: list[str]
 
@@ -31,6 +33,7 @@ class ArchiveAndDistributionInformationFilePackageType(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#263
     """
+
     Name: str
     SizeInBytes: NotRequired[int]
     Size: NotRequired[Union[float, int]]
@@ -46,6 +49,7 @@ class ArchiveAndDistributionInformationFileType(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#309
     """
+
     Name: str
     SizeInBytes: NotRequired[int]
     Size: NotRequired[Union[float, int]]
@@ -67,6 +71,7 @@ class BoundingRectangle(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#591
     """
+
     WestBoundingCoordinate: Union[float, int]
     NorthBoundingCoordinate: Union[float, int]
     EastBoundingCoordinate: Union[float, int]
@@ -78,6 +83,7 @@ class Boundary(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#625
     """
+
     Points: list["Point"]
 
 
@@ -86,6 +92,7 @@ class Characteristic(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#1008
     """
+
     Name: str
     Value: str
 
@@ -95,6 +102,7 @@ class Checksum(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#1159
     """
+
     Value: str
     Algorithm: str
 
@@ -104,6 +112,7 @@ class CollectionReferenceShortNameVersion(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#166
     """
+
     ShortName: str
     Version: str
 
@@ -113,6 +122,7 @@ class CollectionReferenceEntryTitle(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#184
     """
+
     EntryTitle: str
 
 
@@ -127,7 +137,10 @@ class DataGranule(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#213
     """
-    ArchiveAndDistributionInformation: NotRequired[list[ArchiveAndDistributionInformation]]
+
+    ArchiveAndDistributionInformation: NotRequired[
+        list[ArchiveAndDistributionInformation]
+    ]
     ReprocessingPlanned: NotRequired[str]
     ReprocessingActual: NotRequired[str]
     DayNightFlag: str
@@ -140,6 +153,7 @@ class ExclusiveZone(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#640
     """
+
     Boundaries: list[Boundary]
 
 
@@ -148,6 +162,7 @@ class Geometry(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#525
     """
+
     Points: NotRequired[list["Point"]]
     BoundingRectangles: NotRequired[list[BoundingRectangle]]
     GPolygons: NotRequired[list["GPolygon"]]
@@ -159,6 +174,7 @@ class GPolygon(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#611
     """
+
     Boundary: Boundary
     ExclusiveZone: NotRequired[ExclusiveZone]
 
@@ -168,6 +184,7 @@ class HorizontalSpatialDomain(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#497
     """
+
     # TODO(reweeden): Implement
     ZoneIdentifier: NotRequired[dict[str, Any]]
     Geometry: NotRequired[Geometry]
@@ -182,6 +199,7 @@ class Identifier(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#353
     """
+
     Identifier: str
     IdentifierType: str
     IdentifierName: NotRequired[str]
@@ -192,6 +210,7 @@ class Instrument(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#968
     """
+
     ShortName: str
     Characteristics: NotRequired[list[Characteristic]]
     ComposedOf: NotRequired[list["Instrument"]]
@@ -203,6 +222,7 @@ class Line(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#655
     """
+
     Points: list["Point"]
 
 
@@ -211,6 +231,7 @@ class MeasuredParameter(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#840
     """
+
     ParameterName: str
     # TODO(reweeden): Implement
     QAStats: NotRequired[dict[str, Any]]
@@ -223,6 +244,7 @@ class MetadataSpecification(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#1285
     """
+
     URL: str
     Name: str
     Version: str
@@ -233,6 +255,7 @@ class OrbitCalculatedSpatialDomain(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#786
     """
+
     OrbitalModelName: NotRequired[str]
     OrbitNumber: NotRequired[int]
     BeginOrbitNumber: NotRequired[int]
@@ -246,6 +269,7 @@ class PGEVersionClass(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#403
     """
+
     PGEName: NotRequired[str]
     PGEVersion: str
 
@@ -255,6 +279,7 @@ class Platform(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#949
     """
+
     ShortName: str
     Instruments: NotRequired[list[Instrument]]
 
@@ -264,6 +289,7 @@ class Point(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#611
     """
+
     Longitude: Union[float, int]
     Latitude: Union[float, int]
 
@@ -273,6 +299,7 @@ class Project(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#1028
     """
+
     ShortName: str
     Campaigns: NotRequired[list[str]]
 
@@ -282,6 +309,7 @@ class ProviderDate(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#144
     """
+
     Date: str
     Type: str
 
@@ -291,6 +319,7 @@ class RangeDateTime(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#447
     """
+
     BeginningDateTime: str
     EndingDateTime: NotRequired[str]
 
@@ -300,6 +329,7 @@ class RelatedUrl(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#1112
     """
+
     URL: str
     Type: str
     Subtype: NotRequired[str]
@@ -315,6 +345,7 @@ class SpatialExtent(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#465
     """
+
     GranuleLocalities: NotRequired[list[str]]
     HorizontalSpatialDomain: NotRequired["HorizontalSpatialDomain"]
     # TODO(reweeden): Implement
@@ -326,6 +357,7 @@ class TemporalExtentRangeDateTime(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#428
     """
+
     RangeDateTime: RangeDateTime
 
 
@@ -334,6 +366,7 @@ class TemporalExtentSingleDateTime(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#437
     """
+
     SingleDateTime: str
 
 
@@ -348,6 +381,7 @@ class TilingIdentificationSystem(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#1081
     """
+
     TilingIdentificationSystemName: str
     # TODO(reweeden): Implement
     Coordinate1: dict[str, Any]
@@ -360,6 +394,7 @@ class Ummg(TypedDict):
 
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#7
     """
+
     GranuleUR: str
     ProviderDates: list[ProviderDate]
     CollectionReference: CollectionReference
@@ -380,6 +415,7 @@ class Ummg(TypedDict):
     NativeProjectionNames: NotRequired[list[str]]
     GridMappingNames: NotRequired[list[str]]
     MetadataSpecification: MetadataSpecification
+
 
 # Other TypedDict definitions
 

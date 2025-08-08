@@ -29,6 +29,7 @@ class TemplateDirective(ABC):
     A directive is a special marker in the metadata template which will be
     replaced by the MetadataMapper.
     """
+
     # Registry boilerplate
     def __init_subclass__(
         cls,

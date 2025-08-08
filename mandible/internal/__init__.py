@@ -1,5 +1,3 @@
 from .types import Registry
 
-__all__ = (
-    "Registry",
-)
+__all__ = ("Registry",)

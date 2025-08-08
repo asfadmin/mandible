@@ -67,10 +67,7 @@ class FileFormat(Format, Generic[T], ABC, register=False):
         """Get a list of values from a file"""
 
         with self.parse_data(file) as data:
-            return {
-                key: self._eval_key_wrapper(data, key)
-                for key in keys
-            }
+            return {key: self._eval_key_wrapper(data, key) for key in keys}
 
     def get_value(self, file: IO[bytes], key: Key) -> Any:
         """Convenience function for getting a single value"""
@@ -115,6 +112,7 @@ class FileFormat(Format, Generic[T], ABC, register=False):
 
 
 # Define formats that don't require extra dependencies
+
 
 @dataclass
 class Json(FileFormat[JsonValue]):
@@ -235,10 +233,7 @@ class ZipInfo(FileFormat[dict]):
         with zipfile.ZipFile(file, "r") as zf:
             yield {
                 "infolist": [
-                    {
-                        k: getattr(info, k)
-                        for k in ZIP_INFO_ATTRS
-                    }
+                    {k: getattr(info, k) for k in ZIP_INFO_ATTRS}
                     for info in zf.infolist()
                 ],
                 "filename": zf.filename,
