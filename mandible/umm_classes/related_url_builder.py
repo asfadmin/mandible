@@ -26,7 +26,7 @@ class RelatedUrlBuilder(ABC):
         self.include_s3_uri = include_s3_uri
 
     def get_http_description(self) -> Optional[str]:
-        return f'Download {self.file["fileName"]}'
+        return f"Download {self.file['fileName']}"
 
     def get_http_format(self) -> Optional[str]:
         return None
@@ -91,7 +91,7 @@ class RelatedUrlBuilder(ABC):
     def get_s3_description(self) -> Optional[str]:
         return (
             "This link provides direct download access via S3 to "
-            f'{self.file["fileName"]}'
+            f"{self.file['fileName']}"
         )
 
     def get_s3_format(self) -> Optional[str]:
@@ -135,7 +135,7 @@ class DatapoolUrlBuilder(RelatedUrlBuilder):
     def get_http_url(self) -> str:
         return (
             f"https://{self.download_host}/{self.processing_type}"
-            f'/{self.mission}/{self.file["fileName"]}'
+            f"/{self.mission}/{self.file['fileName']}"
         )
 
 
@@ -155,5 +155,5 @@ class TeaUrlBuilder(RelatedUrlBuilder):
     def get_http_url(self) -> str:
         return urllib.parse.urljoin(
             self.download_url,
-            f'{self.path_prefix}/{self.file["key"]}',
+            f"{self.path_prefix}/{self.file['key']}",
         )

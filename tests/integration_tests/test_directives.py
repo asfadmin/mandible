@@ -155,9 +155,11 @@ def test_mapped_extra_parameter(context, fixed_name_file_config):
                 },
             },
         },
-        source_provider=ConfigSourceProvider({
-            "fixed_name_file": fixed_name_file_config,
-        }),
+        source_provider=ConfigSourceProvider(
+            {
+                "fixed_name_file": fixed_name_file_config,
+            }
+        ),
     )
 
     mapper.get_metadata(context) == {"foo": "value for foo"}
@@ -177,21 +179,23 @@ def test_reformatted_json_field_in_json():
                 "key": "foo",
             },
         },
-        source_provider=ConfigSourceProvider({
-            "file": {
-                "storage": {
-                    "class": "Dummy",
-                    "data": br"""
+        source_provider=ConfigSourceProvider(
+            {
+                "file": {
+                    "storage": {
+                        "class": "Dummy",
+                        "data": rb"""
                     {
                         "some-field": "{\"foo\": \"bar\"}"
                     }
                     """,
+                    },
+                    "format": {
+                        "class": "Json",
+                    },
                 },
-                "format": {
-                    "class": "Json",
-                },
-            },
-        }),
+            }
+        ),
     )
 
     context = Context()
@@ -214,21 +218,23 @@ def test_reformatted_json_field_in_xml():
                 "key": "foo",
             },
         },
-        source_provider=ConfigSourceProvider({
-            "file": {
-                "storage": {
-                    "class": "Dummy",
-                    "data": b"""
+        source_provider=ConfigSourceProvider(
+            {
+                "file": {
+                    "storage": {
+                        "class": "Dummy",
+                        "data": b"""
                     <root>
                         <json-field>{"foo": "bar"}</json-field>
                     </root>
                     """,
+                    },
+                    "format": {
+                        "class": "Xml",
+                    },
                 },
-                "format": {
-                    "class": "Xml",
-                },
-            },
-        }),
+            }
+        ),
     )
 
     context = Context()
@@ -251,21 +257,23 @@ def test_reformatted_json_field_in_xml_get_entire_value():
                 "key": "$",
             },
         },
-        source_provider=ConfigSourceProvider({
-            "file": {
-                "storage": {
-                    "class": "Dummy",
-                    "data": b"""
+        source_provider=ConfigSourceProvider(
+            {
+                "file": {
+                    "storage": {
+                        "class": "Dummy",
+                        "data": b"""
                     <root>
                         <json-field>{"foo": "bar"}</json-field>
                     </root>
                     """,
+                    },
+                    "format": {
+                        "class": "Xml",
+                    },
                 },
-                "format": {
-                    "class": "Xml",
-                },
-            },
-        }),
+            }
+        ),
     )
 
     context = Context()
@@ -288,21 +296,23 @@ def test_reformatted_xml_field_in_json():
                 "key": "/root/field",
             },
         },
-        source_provider=ConfigSourceProvider({
-            "file": {
-                "storage": {
-                    "class": "Dummy",
-                    "data": b"""
+        source_provider=ConfigSourceProvider(
+            {
+                "file": {
+                    "storage": {
+                        "class": "Dummy",
+                        "data": b"""
                     {
                         "foo": "<root><field>bar</field></root>"
                     }
                     """,
+                    },
+                    "format": {
+                        "class": "Json",
+                    },
                 },
-                "format": {
-                    "class": "Json",
-                },
-            },
-        }),
+            }
+        ),
     )
 
     context = Context()
@@ -324,17 +334,19 @@ def test_reformatted_bad_type():
                 "key": "$",
             },
         },
-        source_provider=ConfigSourceProvider({
-            "file": {
-                "storage": {
-                    "class": "Dummy",
-                    "data": b'{"foo": true}',
+        source_provider=ConfigSourceProvider(
+            {
+                "file": {
+                    "storage": {
+                        "class": "Dummy",
+                        "data": b'{"foo": true}',
+                    },
+                    "format": {
+                        "class": "Json",
+                    },
                 },
-                "format": {
-                    "class": "Json",
-                },
-            },
-        }),
+            }
+        ),
     )
 
     context = Context()
@@ -359,21 +371,23 @@ def test_reformatted_nested():
                 "key": "/root/field",
             },
         },
-        source_provider=ConfigSourceProvider({
-            "file": {
-                "storage": {
-                    "class": "Dummy",
-                    "data": b"""
+        source_provider=ConfigSourceProvider(
+            {
+                "file": {
+                    "storage": {
+                        "class": "Dummy",
+                        "data": b"""
                     {
                         "foo": "<root><field>bar</field></root>"
                     }
                     """,
+                    },
+                    "format": {
+                        "class": "Json",
+                    },
                 },
-                "format": {
-                    "class": "Json",
-                },
-            },
-        }),
+            }
+        ),
     )
 
     context = Context()
@@ -491,9 +505,11 @@ def test_add_mapped_values(context, fixed_name_file_config):
                 },
             },
         },
-        source_provider=ConfigSourceProvider({
-            "fixed_name_file": fixed_name_file_config,
-        }),
+        source_provider=ConfigSourceProvider(
+            {
+                "fixed_name_file": fixed_name_file_config,
+            }
+        ),
     )
 
     assert mapper.get_metadata(context) == "value for foovalue for nested"

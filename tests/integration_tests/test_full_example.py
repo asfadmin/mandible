@@ -36,54 +36,56 @@ def sources():
 
 @pytest.fixture
 def template():
-    return build({
-        "JsonMd": {
-            # Simple queries
-            "description": mapped("json", "description"),
-            "total": mapped("json", "meta.summary.total"),
-            "complete": mapped("json", "meta.summary.complete"),
-            "null": mapped("json", "meta.null"),
-            # JSONPath only queries
-            "banana_price": mapped("json", "inventory[?name = 'Banana'].price"),
-            "oreo_price": mapped(
-                "json",
-                "inventory[?name = 'Oreo'].price",
-                default=4.49,
-            ),
-            "first_red_item": mapped(
-                "json",
-                "inventory[?attributes.color = 'red'].name",
-                return_first=True,
-            ),
-            "in_stock_items": mapped(
-                "json",
-                "inventory[?in_stock = true].name",
-                return_list=True,
-            ),
-        },
-        "XmlMd": {
-            "description": mapped("xml", "./description"),
-            "total": mapped("xml", "./meta/summary/total"),
-            "complete": mapped("xml", "./meta/summary/complete"),
-            "null": mapped("xml", "./meta/null"),
-            "banana_price": mapped("xml", "./inventory/item[name='Banana']/price"),
-            "oreo_price": mapped(
-                "xml",
-                "./inventory/item[name='Oreo']/price",
-                default=4.49,
-            ),
-            "first_red_item": mapped(
-                "xml",
-                "./inventory/item[attributes/color='red']/name",
-                return_first=True,
-            ),
-            "in_stock_items": mapped(
-                "xml",
-                "./inventory/item[in_stock='true']/name",
-                return_list=True,
-            ),
-        },
-    })
+    return build(
+        {
+            "JsonMd": {
+                # Simple queries
+                "description": mapped("json", "description"),
+                "total": mapped("json", "meta.summary.total"),
+                "complete": mapped("json", "meta.summary.complete"),
+                "null": mapped("json", "meta.null"),
+                # JSONPath only queries
+                "banana_price": mapped("json", "inventory[?name = 'Banana'].price"),
+                "oreo_price": mapped(
+                    "json",
+                    "inventory[?name = 'Oreo'].price",
+                    default=4.49,
+                ),
+                "first_red_item": mapped(
+                    "json",
+                    "inventory[?attributes.color = 'red'].name",
+                    return_first=True,
+                ),
+                "in_stock_items": mapped(
+                    "json",
+                    "inventory[?in_stock = true].name",
+                    return_list=True,
+                ),
+            },
+            "XmlMd": {
+                "description": mapped("xml", "./description"),
+                "total": mapped("xml", "./meta/summary/total"),
+                "complete": mapped("xml", "./meta/summary/complete"),
+                "null": mapped("xml", "./meta/null"),
+                "banana_price": mapped("xml", "./inventory/item[name='Banana']/price"),
+                "oreo_price": mapped(
+                    "xml",
+                    "./inventory/item[name='Oreo']/price",
+                    default=4.49,
+                ),
+                "first_red_item": mapped(
+                    "xml",
+                    "./inventory/item[attributes/color='red']/name",
+                    return_first=True,
+                ),
+                "in_stock_items": mapped(
+                    "xml",
+                    "./inventory/item[in_stock='true']/name",
+                    return_list=True,
+                ),
+            },
+        }
+    )
 
 
 @pytest.fixture

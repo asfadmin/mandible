@@ -46,8 +46,7 @@ class ConfigSourceProvider(SourceProvider):
 
     def get_sources(self) -> dict[str, Source]:
         return {
-            key: self._create_source(key, config)
-            for key, config in self.config.items()
+            key: self._create_source(key, config) for key, config in self.config.items()
         }
 
     def _create_source(self, key: str, config: dict) -> Source:
@@ -111,9 +110,7 @@ class ConfigSourceProvider(SourceProvider):
 
     def _instantiate_class(self, cls: type[T], config: dict[str, Any]) -> T:
         kwargs = {
-            k: self._convert_arg(cls, k, v)
-            for k, v in config.items()
-            if k != "class"
+            k: self._convert_arg(cls, k, v) for k, v in config.items() if k != "class"
         }
 
         return cls(**kwargs)
@@ -123,10 +120,7 @@ class ConfigSourceProvider(SourceProvider):
             if "class" in arg:
                 return self._create_object(parent_cls, key, arg)
 
-            return {
-                k: self._convert_arg(parent_cls, k, v)
-                for k, v in arg.items()
-            }
+            return {k: self._convert_arg(parent_cls, k, v) for k, v in arg.items()}
 
         if isinstance(arg, list):
             return [self._convert_arg(parent_cls, key, v) for v in arg]

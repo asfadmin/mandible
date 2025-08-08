@@ -154,10 +154,13 @@ def test_build_add():
 
 
 def test_build_add_automatic():
-    template = mapped(
-        source="some_source",
-        key="some.key",
-    ) + 10
+    template = (
+        mapped(
+            source="some_source",
+            key="some.key",
+        )
+        + 10
+    )
 
     assert build(template) == {
         "@add": {
@@ -206,10 +209,13 @@ def test_build_floordiv():
 
 
 def test_build_floordiv_automatic():
-    template = mapped(
-        source="some_source",
-        key="some.key",
-    ) // 10
+    template = (
+        mapped(
+            source="some_source",
+            key="some.key",
+        )
+        // 10
+    )
 
     assert build(template) == {
         "@floordiv": {
@@ -258,10 +264,13 @@ def test_build_mul():
 
 
 def test_build_mul_automatic():
-    template = mapped(
-        source="some_source",
-        key="some.key",
-    ) * 10
+    template = (
+        mapped(
+            source="some_source",
+            key="some.key",
+        )
+        * 10
+    )
 
     assert build(template) == {
         "@mul": {
@@ -310,10 +319,13 @@ def test_build_sub():
 
 
 def test_build_sub_automatic():
-    template = mapped(
-        source="some_source",
-        key="some.key",
-    ) - 10
+    template = (
+        mapped(
+            source="some_source",
+            key="some.key",
+        )
+        - 10
+    )
 
     assert build(template) == {
         "@sub": {
@@ -362,10 +374,13 @@ def test_build_truediv():
 
 
 def test_build_truediv_automatic():
-    template = mapped(
-        source="some_source",
-        key="some.key",
-    ) / 10
+    template = (
+        mapped(
+            source="some_source",
+            key="some.key",
+        )
+        / 10
+    )
 
     assert build(template) == {
         "@truediv": {

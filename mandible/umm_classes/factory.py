@@ -37,7 +37,9 @@ def additional_attribute(name: str, *value: str) -> AdditionalAttribute:
 def data_granule(
     day_night_flag: str,
     production_date_time: str,
-    archive_and_distribution_information: Optional[list[ArchiveAndDistributionInformation]] = None,
+    archive_and_distribution_information: Optional[
+        list[ArchiveAndDistributionInformation]
+    ] = None,
     reprocessing_planned: Optional[str] = None,
     reprocessing_actual: Optional[str] = None,
     identifiers: Optional[list[Identifier]] = None,
@@ -185,7 +187,9 @@ def ummg(
     pge_version_class: Optional[PGEVersionClass] = None,
     temporal_extent: Optional[TemporalExtent] = None,
     spatial_extent: Optional[SpatialExtent] = None,
-    orbit_calculated_spatial_domains: Optional[list[OrbitCalculatedSpatialDomain]] = None,
+    orbit_calculated_spatial_domains: Optional[
+        list[OrbitCalculatedSpatialDomain]
+    ] = None,
     measured_parameters: Optional[list[MeasuredParameter]] = None,
     platforms: Optional[list[Platform]] = None,
     projects: Optional[list[Project]] = None,
