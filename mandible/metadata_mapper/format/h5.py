@@ -29,9 +29,10 @@ def normalize(node_val: Any) -> Any:
     if isinstance(node_val, np.floating):
         return float(node_val)
     if isinstance(node_val, np.ndarray):
-        value = node_val.tolist()
-        if isinstance(value[0], bytes):
-            value = [x.decode("utf-8") for x in value]
+        value = [
+            x.decode("utf-8") if isinstance(x, bytes) else x
+            for x in node_val.tolist()
+        ]
         return value
     if isinstance(node_val, bytes):
         return node_val.decode("utf-8")
