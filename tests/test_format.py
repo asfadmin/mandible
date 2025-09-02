@@ -1,4 +1,6 @@
+import bz2
 import io
+import json
 import zipfile
 from unittest import mock
 
@@ -7,6 +9,7 @@ import pytest
 from mandible.metadata_mapper.format import (
     FORMAT_REGISTRY,
     H5,
+    Bzip2File,
     Format,
     FormatError,
     Json,
@@ -24,6 +27,7 @@ except ImportError:
 
 def test_registry():
     assert FORMAT_REGISTRY == {
+        "Bzip2File": Bzip2File,
         "H5": H5,
         "Json": Json,
         "Xml": Xml,
@@ -471,3 +475,49 @@ def test_xml_key_error():
 
     with pytest.raises(FormatError, match="key not found 'foo'"):
         format.get_values(file, [Key("foo")])
+
+
+@pytest.mark.h5
+def test_bzip2_h5py():
+    h5_buffer = io.BytesIO()
+    with h5py.File(h5_buffer, "w") as f:
+        f["foo"] = "foo value"
+        f["bar"] = "bar value"
+        f["list"] = ["list", "value"]
+
+    bz2_compressed_file = io.BytesIO(bz2.compress(h5_buffer.getvalue()))
+    format = Bzip2File(format=H5())
+
+    assert format.get_value(bz2_compressed_file, Key("foo")) == "foo value"
+    bz2_compressed_file.seek(0)
+    assert format.get_value(bz2_compressed_file, Key("bar")) == "bar value"
+    bz2_compressed_file.seek(0)
+    assert format.get_value(bz2_compressed_file, Key("list")) == ["list", "value"]
+    bz2_compressed_file.seek(0)
+    assert format.get_values(bz2_compressed_file, [Key("foo"), Key("bar")]) == {
+        Key("foo"): "foo value",
+        Key("bar"): "bar value",
+    }
+
+
+def test_bzip2_json():
+    json_bytes = json.dumps(
+        {
+            "foo": "foo value",
+            "bar": "bar value",
+        },
+    ).encode("utf-8")
+
+    bz2_compressed_file = io.BytesIO(bz2.compress(json_bytes))
+    format = Bzip2File(format=Json())
+
+    assert format.get_value(bz2_compressed_file, Key("$.foo")) == "foo value"
+    bz2_compressed_file.seek(0)
+    assert format.get_values(bz2_compressed_file, [Key("$.foo")]) == {
+        Key("$.foo"): "foo value",
+    }
+    bz2_compressed_file.seek(0)
+    assert format.get_value(bz2_compressed_file, Key("$")) == {
+        "bar": "bar value",
+        "foo": "foo value",
+    }

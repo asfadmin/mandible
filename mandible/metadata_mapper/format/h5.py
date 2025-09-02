@@ -25,13 +25,10 @@ class H5(FileFormat[Any]):
 
 
 def parse_key(key: str) -> tuple[str, Optional[str]]:
-    """
-    Parse a key where '@' is special.
-    '@@' means a literal '@'.
-    '@' can appear at most once as a separator.
+    """Parse a HDF5 key where '@' separates the group name from an attribute name.
 
-    Returns:
-        (left, right) where right is None if no unescaped '@'
+    The special @ character can be escaped as @@ if the group or attribute name contains a literal '@'.
+    :returns: (str, str | None) -- the group name and the attribute name (if any)
     """
 
     # HDF5 states null character is not a valid group name

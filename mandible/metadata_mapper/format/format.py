@@ -1,3 +1,4 @@
+import bz2
 import contextlib
 import inspect
 import json
@@ -67,10 +68,7 @@ class FileFormat(Format, Generic[T], ABC, register=False):
         """Get a list of values from a file"""
 
         with self.parse_data(file) as data:
-            return {
-                key: self._eval_key_wrapper(data, key)
-                for key in keys
-            }
+            return {key: self._eval_key_wrapper(data, key) for key in keys}
 
     def get_value(self, file: IO[bytes], key: Key) -> Any:
         """Convenience function for getting a single value"""
@@ -235,10 +233,7 @@ class ZipInfo(FileFormat[dict]):
         with zipfile.ZipFile(file, "r") as zf:
             yield {
                 "infolist": [
-                    {
-                        k: getattr(info, k)
-                        for k in ZIP_INFO_ATTRS
-                    }
+                    {k: getattr(info, k) for k in ZIP_INFO_ATTRS}
                     for info in zf.infolist()
                 ],
                 "filename": zf.filename,
@@ -250,3 +245,29 @@ class ZipInfo(FileFormat[dict]):
         values = jsonpath.get(data, key.key)
 
         return key.resolve_list_match(values)
+
+
+@dataclass
+class Bzip2File(Format):
+    """A Bzip2 compressed file
+
+    :param format: The `Format` of the compressed file
+    """
+
+    format: Format
+
+    def get_values(
+        self,
+        file: IO[bytes],
+        keys: Iterable[Key],
+    ) -> dict[Key, Any]:
+        """Get a list of values from a file"""
+
+        with bz2.BZ2File(file, mode="rb") as bz2f:
+            return self.format.get_values(bz2f, keys)
+
+    def get_value(self, file: IO[bytes], key: Key) -> Any:
+        """Convenience function for getting a single value"""
+
+        with bz2.BZ2File(file, mode="rb") as bz2f:
+            return self.format.get_value(bz2f, key)
