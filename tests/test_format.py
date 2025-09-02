@@ -95,6 +95,47 @@ def test_h5_empty_key():
 
 
 @pytest.mark.h5
+def test_h5_attribute():
+    file = io.BytesIO()
+    with h5py.File(file, "w") as f:
+        f["foo"] = "foo value"
+        f["bar"] = "bar value"
+        f["list"] = ["list", "value"]
+        f["foo@bar"] = "foo@bar value"
+        new_group = f.create_group("foo_with_attribute")
+        new_group.attrs["value"] = "foo_with_attribute value"
+        new_group.attrs["foo@bar"] = "foo_with_attribute @bar value"
+        new_group_with_at = f.create_group("bar@foo")
+        new_group_with_at.attrs["attr@ibute"] = "testing_attribute@_group@"
+
+    format = H5()
+
+    assert format.get_values(
+        file,
+        [
+            Key("/foo"),
+            Key("bar"),
+            Key("list"),
+            Key("foo@@bar"),
+            Key("foo_with_attribute@value"),
+            Key("foo_with_attribute@foo@@bar"),
+            Key("bar@@foo@attr@@ibute"),
+        ],
+    ) == {
+        Key("/foo"): "foo value",
+        Key("bar"): "bar value",
+        Key("list"): ["list", "value"],
+        Key("foo@@bar"): "foo@bar value",
+        Key("foo_with_attribute@value"): "foo_with_attribute value",
+        Key("foo_with_attribute@foo@@bar"): "foo_with_attribute @bar value",
+        Key("bar@@foo@attr@@ibute"): "testing_attribute@_group@",
+    }
+
+    with pytest.raises(FormatError, match="Invalid key: multiple '@'"):
+        format.get_values(file, [Key("test@test@test")])
+
+
+@pytest.mark.h5
 def test_h5_key_error():
     file = io.BytesIO()
     with h5py.File(file, "w"):
