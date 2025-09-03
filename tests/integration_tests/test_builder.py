@@ -6,21 +6,26 @@ from mandible.metadata_mapper.builder import build, mapped
 
 @pytest.fixture
 def source_provider(config):
-    return ConfigSourceProvider({
-        "fixed_name_file": config["sources"]["fixed_name_file"],
-        "name_match_file": config["sources"]["name_match_file"],
-    })
+    return ConfigSourceProvider(
+        {
+            "fixed_name_file": config["sources"]["fixed_name_file"],
+            "name_match_file": config["sources"]["name_match_file"],
+        },
+    )
 
 
 def test_template(source_provider, context):
     mapper = MetadataMapper(
-        template=build({
-            "list": (
-                mapped("fixed_name_file", "list")
-                + mapped("name_match_file", "list")
-            ),
-            "number": mapped("fixed_name_file", "integer") + 20.5,
-        }),
+        template=build(
+            {
+                "list": (
+                    mapped("fixed_name_file", "list")
+                    # ruff hint
+                    + mapped("name_match_file", "list")
+                ),
+                "number": mapped("fixed_name_file", "integer") + 20.5,
+            },
+        ),
         source_provider=source_provider,
     )
 
@@ -32,9 +37,11 @@ def test_template(source_provider, context):
 
 def test_template_default(source_provider, context):
     mapper = MetadataMapper(
-        template=build({
-            "badkey": mapped("fixed_name_file", "badkey", default=None),
-        }),
+        template=build(
+            {
+                "badkey": mapped("fixed_name_file", "badkey", default=None),
+            },
+        ),
         source_provider=source_provider,
     )
 
@@ -44,14 +51,18 @@ def test_template_default(source_provider, context):
 
 
 def test_template_default_multiple_build(source_provider, context):
-    base_template = build({
-        "badkey": mapped("fixed_name_file", "badkey", default=None),
-    })
+    base_template = build(
+        {
+            "badkey": mapped("fixed_name_file", "badkey", default=None),
+        },
+    )
     mapper = MetadataMapper(
-        template=build({
-            **base_template,
-            "goodkey": mapped("fixed_name_file", "integer"),
-        }),
+        template=build(
+            {
+                **base_template,
+                "goodkey": mapped("fixed_name_file", "integer"),
+            },
+        ),
         source_provider=source_provider,
     )
 

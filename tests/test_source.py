@@ -68,10 +68,7 @@ def test_custom_source(mock_context):
         arg1: str
 
         def query_all_values(self, context: Context):
-            self._values.update({
-                key: key.key
-                for key in self._keys
-            })
+            self._values.update({key: key.key for key in self._keys})
 
     source = CustomSource("foo")
     source.add_key(Key("hello"))

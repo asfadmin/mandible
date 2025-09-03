@@ -66,12 +66,10 @@ class UmmgBase(ABC):
         self.granule = granule
 
     @overload
-    def date_to_str(self, date: datetime.date) -> str:
-        ...
+    def date_to_str(self, date: datetime.date) -> str: ...
 
     @overload
-    def date_to_str(self, date: None) -> None:
-        ...
+    def date_to_str(self, date: None) -> None: ...
 
     def date_to_str(self, date: Optional[datetime.date]) -> Optional[str]:
         """Serialize a datetime.date or datetime.datetime as a string using the
@@ -207,7 +205,8 @@ class UmmgBase(ABC):
             additional_attributes=sorted(
                 self.get_additional_attributes(),
                 key=lambda attr: attr["Name"],
-            ) or None,
+            )
+            or None,
             cloud_cover=self.get_cloud_cover(),
             collection_reference=self.get_collection_reference(),
             data_granule=self.get_data_granule(),
@@ -218,6 +217,7 @@ class UmmgBase(ABC):
             metadata_specification=self.get_metadata_specification(),
             native_projection_names=self.get_native_projection_names() or None,
             orbit_calculated_spatial_domains=(
+                # ruff hint
                 self.get_orbit_calculated_spatial_domains() or None
             ),
             pge_version_class=self.get_pge_version_class(),
@@ -269,6 +269,7 @@ class UmmgDataGranuleMixin(UmmgBase):
     def get_data_granule(self) -> DataGranule:
         return data_granule(
             archive_and_distribution_information=(
+                # ruff hint
                 self.get_archive_and_distribution_information() or None
             ),
             day_night_flag=self.get_day_night_flag(),

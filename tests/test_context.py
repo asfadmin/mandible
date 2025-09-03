@@ -54,18 +54,27 @@ def test_replace_context_values_noop(context):
 
 
 def test_replace_context_values_direct(context):
-    assert replace_context_values(
-        ContextValue("$.meta.foo"),
-        context,
-    ) == "foo-value"
-    assert replace_context_values(
-        ContextValue("$.meta.bar"),
-        context,
-    ) == "bar-value"
-    assert replace_context_values(
-        ContextValue("$.meta.a-number"),
-        context,
-    ) == 1
+    assert (
+        replace_context_values(
+            ContextValue("$.meta.foo"),
+            context,
+        )
+        == "foo-value"
+    )
+    assert (
+        replace_context_values(
+            ContextValue("$.meta.bar"),
+            context,
+        )
+        == "bar-value"
+    )
+    assert (
+        replace_context_values(
+            ContextValue("$.meta.a-number"),
+            context,
+        )
+        == 1
+    )
     assert replace_context_values(
         ContextValue("$.meta.a-list"),
         context,
