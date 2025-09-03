@@ -31,6 +31,7 @@ class Storage(ABC):
 
 # Define storages that don't require extra dependencies
 
+
 @dataclass
 class Dummy(Storage):
     """A dummy storage that returns a hardcoded byte stream.
@@ -54,6 +55,7 @@ class FilteredStorage(Storage, register=False):
     """A storage which matches a set of filters on the context's files and
     returns data from the matching file.
     """
+
     # Begin class definition
     filters: dict[str, Any] = field(default_factory=dict)
 
@@ -64,6 +66,7 @@ class FilteredStorage(Storage, register=False):
     def _compiled_filters(self) -> dict[str, Any]:
         if self._compiled_filters_cache is None:
             self._compiled_filters_cache = {
+                # ruff hint
                 k: re.compile(v) if isinstance(v, str) else v
                 for k, v in self.filters.items()
             }

@@ -46,6 +46,7 @@ class ConfigSourceProvider(SourceProvider):
 
     def get_sources(self) -> dict[str, Source]:
         return {
+            # ruff hint
             key: self._create_source(key, config)
             for key, config in self.config.items()
         }
@@ -85,8 +86,7 @@ class ConfigSourceProvider(SourceProvider):
 
         if not issubclass(cls, base_cls):
             raise SourceProviderError(
-                f"invalid {key} type {repr(cls_name)} must be a subclass of "
-                f"{repr(base_cls.__name__)}",
+                f"invalid {key} type {repr(cls_name)} must be a subclass of {repr(base_cls.__name__)}",
             )
 
         return self._instantiate_class(cls, config)
@@ -111,6 +111,7 @@ class ConfigSourceProvider(SourceProvider):
 
     def _instantiate_class(self, cls: type[T], config: dict[str, Any]) -> T:
         kwargs = {
+            # ruff hint
             k: self._convert_arg(cls, k, v)
             for k, v in config.items()
             if k != "class"
@@ -124,6 +125,7 @@ class ConfigSourceProvider(SourceProvider):
                 return self._create_object(parent_cls, key, arg)
 
             return {
+                # ruff hint
                 k: self._convert_arg(parent_cls, k, v)
                 for k, v in arg.items()
             }

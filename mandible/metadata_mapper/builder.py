@@ -42,6 +42,7 @@ class DirectiveBuilder(Builder):
     def build(self, config: BuildConfig) -> Template:
         return {
             f"{config.directive_marker}{self.name}": {
+                # ruff hint
                 k: v.build(config) if isinstance(v, Builder) else v
                 for k, v in self.params.items()
             },
@@ -138,6 +139,7 @@ def reformatted(
         directive_name,
         params,
     )
+
 
 #
 # Operations
@@ -237,6 +239,7 @@ def build_with_config(template: Any, config: BuildConfig) -> Template:
     """
     if isinstance(template, dict):
         return {
+            # ruff hint
             k: build_with_config(v, config)
             for k, v in template.items()
         }

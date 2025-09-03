@@ -47,18 +47,17 @@ def test_empty_context(fixed_name_file_config):
                 },
             },
         },
-        source_provider=ConfigSourceProvider({
-            "fixed_name_file": fixed_name_file_config,
-        }),
+        source_provider=ConfigSourceProvider(
+            {
+                "fixed_name_file": fixed_name_file_config,
+            },
+        ),
     )
     context = Context()
 
     with pytest.raises(
         MetadataMapperError,
-        match=(
-            "failed to query source 'fixed_name_file': "
-            "no files in context"
-        ),
+        match="failed to query source 'fixed_name_file': no files in context",
     ):
         mapper.get_metadata(context)
 
@@ -88,9 +87,11 @@ def test_custom_directive_marker(context, fixed_name_file_config):
                 },
             },
         },
-        source_provider=ConfigSourceProvider({
-            "fixed_name_file": fixed_name_file_config,
-        }),
+        source_provider=ConfigSourceProvider(
+            {
+                "fixed_name_file": fixed_name_file_config,
+            },
+        ),
         directive_marker="#",
     )
     assert mapper.get_metadata(context) == {
@@ -108,9 +109,11 @@ def test_custom_directive_marker_long(context, fixed_name_file_config):
                 },
             },
         },
-        source_provider=ConfigSourceProvider({
-            "fixed_name_file": fixed_name_file_config,
-        }),
+        source_provider=ConfigSourceProvider(
+            {
+                "fixed_name_file": fixed_name_file_config,
+            },
+        ),
         directive_marker="###",
     )
     assert mapper.get_metadata(context) == {
@@ -122,48 +125,50 @@ def test_custom_directive_marker_long(context, fixed_name_file_config):
 def test_basic_py_source_provider(config, context):
     mapper = MetadataMapper(
         template=config["template"],
-        source_provider=PySourceProvider({
-            "fixed_name_file": FileSource(
-                storage=LocalFile(
-                    filters={
-                        "name": "fixed_name_file.json",
-                    },
+        source_provider=PySourceProvider(
+            {
+                "fixed_name_file": FileSource(
+                    storage=LocalFile(
+                        filters={
+                            "name": "fixed_name_file.json",
+                        },
+                    ),
+                    format=Json(),
                 ),
-                format=Json(),
-            ),
-            "fixed_xml_file": FileSource(
-                storage=LocalFile(
-                    filters={
-                        "name": "fixed_xml_file.xml",
-                    },
+                "fixed_xml_file": FileSource(
+                    storage=LocalFile(
+                        filters={
+                            "name": "fixed_xml_file.xml",
+                        },
+                    ),
+                    format=Xml(),
                 ),
-                format=Xml(),
-            ),
-            "namespace_xml_file": FileSource(
-                storage=LocalFile(
-                    filters={
-                        "name": "xml_with_namespace.xml",
-                    },
+                "namespace_xml_file": FileSource(
+                    storage=LocalFile(
+                        filters={
+                            "name": "xml_with_namespace.xml",
+                        },
+                    ),
+                    format=Xml(),
                 ),
-                format=Xml(),
-            ),
-            "name_match_file": FileSource(
-                storage=LocalFile(
-                    filters={
-                        "name": r".*match_me\.json",
-                    },
+                "name_match_file": FileSource(
+                    storage=LocalFile(
+                        filters={
+                            "name": r".*match_me\.json",
+                        },
+                    ),
+                    format=Json(),
                 ),
-                format=Json(),
-            ),
-            "name_match_file2": FileSource(
-                storage=LocalFile(
-                    filters={
-                        "name": re.compile(r".*match_me\.json"),
-                    },
+                "name_match_file2": FileSource(
+                    storage=LocalFile(
+                        filters={
+                            "name": re.compile(r".*match_me\.json"),
+                        },
+                    ),
+                    format=Json(),
                 ),
-                format=Json(),
-            ),
-        }),
+            },
+        ),
     )
     assert mapper.get_metadata(context) == {
         "foo": "value for foo",
@@ -218,27 +223,26 @@ def test_no_matching_files(context):
                 },
             },
         },
-        source_provider=ConfigSourceProvider({
-            "source_file": {
-                "storage": {
-                    "class": "LocalFile",
-                    "filters": {
-                        "name": "does not exist",
+        source_provider=ConfigSourceProvider(
+            {
+                "source_file": {
+                    "storage": {
+                        "class": "LocalFile",
+                        "filters": {
+                            "name": "does not exist",
+                        },
+                    },
+                    "format": {
+                        "class": "Json",
                     },
                 },
-                "format": {
-                    "class": "Json",
-                },
             },
-        }),
+        ),
     )
 
     with pytest.raises(
         MetadataMapperError,
-        match=(
-            "failed to query source 'source_file': "
-            "no files matched filters"
-        ),
+        match="failed to query source 'source_file': no files matched filters",
     ):
         mapper.get_metadata(context)
 
@@ -253,17 +257,16 @@ def test_source_non_existent_key(context, fixed_name_file_config):
                 },
             },
         },
-        source_provider=ConfigSourceProvider({
-            "fixed_name_file": fixed_name_file_config,
-        }),
+        source_provider=ConfigSourceProvider(
+            {
+                "fixed_name_file": fixed_name_file_config,
+            },
+        ),
     )
 
     with pytest.raises(
         MetadataMapperError,
-        match=(
-            "failed to query source 'fixed_name_file': "
-            "key not found 'does_not_exist'"
-        ),
+        match="failed to query source 'fixed_name_file': key not found 'does_not_exist'",
     ):
         mapper.get_metadata(context)
 
@@ -332,17 +335,19 @@ def test_multiple_directives(context):
 def test_context_values_missing():
     mapper = MetadataMapper(
         template={},
-        source_provider=ConfigSourceProvider({
-            "test": {
-                "storage": {
-                    "class": "LocalFile",
-                    "filters": "$.meta.does-not-exist",
-                },
-                "format": {
-                    "class": "Json",
+        source_provider=ConfigSourceProvider(
+            {
+                "test": {
+                    "storage": {
+                        "class": "LocalFile",
+                        "filters": "$.meta.does-not-exist",
+                    },
+                    "format": {
+                        "class": "Json",
+                    },
                 },
             },
-        }),
+        ),
     )
     context = Context()
 
@@ -360,17 +365,19 @@ def test_context_values_missing():
 def test_context_values_multiple_values():
     mapper = MetadataMapper(
         template={},
-        source_provider=ConfigSourceProvider({
-            "test": {
-                "storage": {
-                    "class": "LocalFile",
-                    "filters": "$.meta.foo[*].bar",
-                },
-                "format": {
-                    "class": "Json",
+        source_provider=ConfigSourceProvider(
+            {
+                "test": {
+                    "storage": {
+                        "class": "LocalFile",
+                        "filters": "$.meta.foo[*].bar",
+                    },
+                    "format": {
+                        "class": "Json",
+                    },
                 },
             },
-        }),
+        ),
     )
     context = Context(
         meta={
@@ -396,17 +403,19 @@ def test_context_values_multiple_values():
 def test_context_values_invalid():
     mapper = MetadataMapper(
         template={},
-        source_provider=ConfigSourceProvider({
-            "test": {
-                "storage": {
-                    "class": "LocalFile",
-                    "filters": "$.meta.bad-syntax[",
-                },
-                "format": {
-                    "class": "Json",
+        source_provider=ConfigSourceProvider(
+            {
+                "test": {
+                    "storage": {
+                        "class": "LocalFile",
+                        "filters": "$.meta.bad-syntax[",
+                    },
+                    "format": {
+                        "class": "Json",
+                    },
                 },
             },
-        }),
+        ),
     )
     context = Context()
 

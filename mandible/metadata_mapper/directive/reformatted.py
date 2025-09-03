@@ -37,8 +37,7 @@ class Reformatted(TemplateDirective):
             value = self.value.encode()
         else:
             raise MetadataMapperError(
-                "value must be of type 'bytes' or 'str' but got "
-                f"{repr(type(self.value).__name__)}",
+                f"value must be of type 'bytes' or 'str' but got {repr(type(self.value).__name__)}",
             )
 
         return self.format_obj.get_value(
