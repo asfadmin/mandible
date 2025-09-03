@@ -52,8 +52,8 @@ def _get_dot_path(data: JsonValue, path: str) -> list[JsonValue]:
 
 def _parse_dot_path(path: str) -> Generator[str]:
     for part in path.split("."):
-        if (m := BRACKET_PATTERN.search(part)):
-            yield part[:m.start()]
+        if m := BRACKET_PATTERN.search(part):
+            yield part[: m.start()]
             yield m.group(1)
         else:
             yield part

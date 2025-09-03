@@ -68,6 +68,7 @@ class FileFormat(Format, Generic[T], ABC, register=False):
 
         with self.parse_data(file) as data:
             return {
+                # ruff hint
                 key: self._eval_key_wrapper(data, key)
                 for key in keys
             }
@@ -116,6 +117,7 @@ class FileFormat(Format, Generic[T], ABC, register=False):
 
 # Define formats that don't require extra dependencies
 
+
 @dataclass
 class Json(FileFormat[JsonValue]):
     """A Format for querying Json files.
@@ -159,6 +161,7 @@ class ZipMember(Format):
 
     def __post_init__(self) -> None:
         self._compiled_filters = {
+            # ruff hint
             k: re.compile(v) if isinstance(v, str) else v
             for k, v in self.filters.items()
         }
@@ -219,6 +222,7 @@ class ZipMember(Format):
 
 
 ZIP_INFO_ATTRS = [
+    # ruff hint
     name
     for name, _ in inspect.getmembers(zipfile.ZipInfo, inspect.isdatadescriptor)
     if not name.startswith("_")
@@ -236,6 +240,7 @@ class ZipInfo(FileFormat[dict]):
             yield {
                 "infolist": [
                     {
+                        # ruff hint
                         k: getattr(info, k)
                         for k in ZIP_INFO_ATTRS
                     }
