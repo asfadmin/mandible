@@ -20,8 +20,9 @@ def test_all_directives_have_builder_class():
     directive_names = set(DIRECTIVE_REGISTRY)
     builder_names = set(_DIRECTIVE_BUILDER_REGISTRY)
 
-    assert directive_names <= builder_names, \
+    assert directive_names <= builder_names, (
         "Some directives don't have a builder class!"
+    )
 
 
 def test_mapped_mutually_exclusive_key_options():

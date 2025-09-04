@@ -139,6 +139,7 @@ def reformatted(
         params,
     )
 
+
 #
 # Operations
 #
@@ -236,10 +237,7 @@ def build_with_config(template: Any, config: BuildConfig) -> Template:
     :returns: Template - a standard template with all `Builder`s replaced
     """
     if isinstance(template, dict):
-        return {
-            k: build_with_config(v, config)
-            for k, v in template.items()
-        }
+        return {k: build_with_config(v, config) for k, v in template.items()}
     elif isinstance(template, list):
         return [build_with_config(v, config) for v in template]
     elif isinstance(template, Builder):
