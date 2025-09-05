@@ -31,6 +31,20 @@ def sources():
                 "class": "Xml",
             },
         },
+        "bzip2json": {
+            "storage": {
+                "class": "LocalFile",
+                "filters": {
+                    "name": r"example\.json\.bz2",
+                },
+            },
+            "format": {
+                "class": "Bzip2File",
+                "format": {
+                    "class": "Json",
+                },
+            },
+        },
     }
 
 
@@ -83,6 +97,29 @@ def template():
                 return_list=True,
             ),
         },
+        "Bzip2JsonMd": {
+            "description": mapped("bzip2json", "description"),
+            "total": mapped("bzip2json", "meta.summary.total"),
+            "complete": mapped("bzip2json", "meta.summary.complete"),
+            "null": mapped("bzip2json", "meta.null"),
+            # JSONPath only queries
+            "banana_price": mapped("bzip2json", "inventory[?name = 'Banana'].price"),
+            "oreo_price": mapped(
+                "bzip2json",
+                "inventory[?name = 'Oreo'].price",
+                default=4.49,
+            ),
+            "first_red_item": mapped(
+                "bzip2json",
+                "inventory[?attributes.color = 'red'].name",
+                return_first=True,
+            ),
+            "in_stock_items": mapped(
+                "bzip2json",
+                "inventory[?in_stock = true].name",
+                return_list=True,
+            ),
+        },
     })
 
 
@@ -94,7 +131,7 @@ def context(data_path):
                 "name": f"example.{ext}",
                 "path": str(data_path / f"example.{ext}"),
             }
-            for ext in ("json", "xml", "h5")
+            for ext in ("json", "json.bz2", "xml", "h5")
         ],
         meta={
             "json_file_name": r"example\.json",
@@ -125,6 +162,16 @@ def test_full_example(context, sources, template):
             "complete": "false",
             "null": None,
             "banana_price": "0.99",
+            "oreo_price": 4.49,
+            "first_red_item": "Apple",
+            "in_stock_items": ["Apple", "Banana", "Tomato", "Scotch Tape", "Oreo"],
+        },
+        "Bzip2JsonMd": {
+            "description": "A store inventory",
+            "total": 5,
+            "complete": False,
+            "null": None,
+            "banana_price": 0.99,
             "oreo_price": 4.49,
             "first_red_item": "Apple",
             "in_stock_items": ["Apple", "Banana", "Tomato", "Scotch Tape", "Oreo"],
