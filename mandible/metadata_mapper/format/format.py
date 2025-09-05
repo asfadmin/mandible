@@ -148,7 +148,7 @@ class ZipMember(Format):
     """A member from a zip archive.
 
     :param filters: A set of filters used to select the desired archive member
-    :param format: The Format of the archive member
+    :param format: The `Format` of the archive member
     """
 
     filters: dict[str, Any]
