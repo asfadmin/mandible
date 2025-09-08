@@ -23,3 +23,22 @@ def test_normalize():
     assert normalize(np.array(["A", "B"], dtype="|S1")) == ["A", "B"]
     assert normalize(np.array(["A", "B"], dtype="O")) == ["A", "B"]
     assert normalize(np.array([], dtype="|S1")) == []
+
+
+def test_parse_key():
+    from mandible.metadata_mapper.format.h5 import parse_key
+
+    assert parse_key("foo") == ("foo", None)
+    assert parse_key("foo@@oo") == ("foo@oo", None)
+    assert parse_key("foo@bar") == ("foo", "bar")
+    assert parse_key("@bar") == ("", "bar")
+    assert parse_key("foo@") == ("foo", "")
+    assert parse_key("fo@@o@bar") == ("fo@o", "bar")
+    assert parse_key("foo@@@bar") == ("foo@", "bar")
+    assert parse_key("@@@@") == ("@@", None)
+    assert parse_key("@@@foo@@") == ("@", "foo@")
+
+    with pytest.raises(ValueError):
+        parse_key("a@b@c")
+    with pytest.raises(ValueError):
+        parse_key("@@a@b@c@@")

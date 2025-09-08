@@ -1,5 +1,6 @@
 from .format import (
     FORMAT_REGISTRY,
+    Bzip2File,
     FileFormat,
     Format,
     FormatError,
@@ -21,6 +22,7 @@ except ImportError:
 
 __all__ = (
     "FORMAT_REGISTRY",
+    "Bzip2File",
     "FileFormat",
     "Format",
     "FormatError",

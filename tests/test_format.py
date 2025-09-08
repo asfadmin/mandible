@@ -1,4 +1,6 @@
+import bz2
 import io
+import json
 import zipfile
 from unittest import mock
 
@@ -7,6 +9,7 @@ import pytest
 from mandible.metadata_mapper.format import (
     FORMAT_REGISTRY,
     H5,
+    Bzip2File,
     Format,
     FormatError,
     Json,
@@ -24,6 +27,7 @@ except ImportError:
 
 def test_registry():
     assert FORMAT_REGISTRY == {
+        "Bzip2File": Bzip2File,
         "H5": H5,
         "Json": Json,
         "Xml": Xml,
@@ -92,6 +96,47 @@ def test_h5_empty_key():
 
     with pytest.raises(FormatError, match="key not found ''"):
         format.get_value(file, Key(""))
+
+
+@pytest.mark.h5
+def test_h5_attribute():
+    file = io.BytesIO()
+    with h5py.File(file, "w") as f:
+        f["foo"] = "foo value"
+        f["bar"] = "bar value"
+        f["list"] = ["list", "value"]
+        f["foo@bar"] = "foo@bar value"
+        new_group = f.create_group("foo_with_attribute")
+        new_group.attrs["value"] = "foo_with_attribute value"
+        new_group.attrs["foo@bar"] = "foo_with_attribute @bar value"
+        new_group_with_at = f.create_group("bar@foo")
+        new_group_with_at.attrs["attr@ibute"] = "testing_attribute@_group@"
+
+    format = H5()
+
+    assert format.get_values(
+        file,
+        [
+            Key("/foo"),
+            Key("bar"),
+            Key("list"),
+            Key("foo@@bar"),
+            Key("foo_with_attribute@value"),
+            Key("foo_with_attribute@foo@@bar"),
+            Key("bar@@foo@attr@@ibute"),
+        ],
+    ) == {
+        Key("/foo"): "foo value",
+        Key("bar"): "bar value",
+        Key("list"): ["list", "value"],
+        Key("foo@@bar"): "foo@bar value",
+        Key("foo_with_attribute@value"): "foo_with_attribute value",
+        Key("foo_with_attribute@foo@@bar"): "foo_with_attribute @bar value",
+        Key("bar@@foo@attr@@ibute"): "testing_attribute@_group@",
+    }
+
+    with pytest.raises(FormatError, match="Invalid key: multiple '@'"):
+        format.get_values(file, [Key("test@test@test")])
 
 
 @pytest.mark.h5
@@ -430,3 +475,49 @@ def test_xml_key_error():
 
     with pytest.raises(FormatError, match="key not found 'foo'"):
         format.get_values(file, [Key("foo")])
+
+
+@pytest.mark.h5
+def test_bzip2_h5py():
+    h5_buffer = io.BytesIO()
+    with h5py.File(h5_buffer, "w") as f:
+        f["foo"] = "foo value"
+        f["bar"] = "bar value"
+        f["list"] = ["list", "value"]
+
+    bz2_compressed_file = io.BytesIO(bz2.compress(h5_buffer.getvalue()))
+    format = Bzip2File(format=H5())
+
+    assert format.get_value(bz2_compressed_file, Key("foo")) == "foo value"
+    bz2_compressed_file.seek(0)
+    assert format.get_value(bz2_compressed_file, Key("bar")) == "bar value"
+    bz2_compressed_file.seek(0)
+    assert format.get_value(bz2_compressed_file, Key("list")) == ["list", "value"]
+    bz2_compressed_file.seek(0)
+    assert format.get_values(bz2_compressed_file, [Key("foo"), Key("bar")]) == {
+        Key("foo"): "foo value",
+        Key("bar"): "bar value",
+    }
+
+
+def test_bzip2_json():
+    json_bytes = json.dumps(
+        {
+            "foo": "foo value",
+            "bar": "bar value",
+        },
+    ).encode("utf-8")
+
+    bz2_compressed_file = io.BytesIO(bz2.compress(json_bytes))
+    format = Bzip2File(format=Json())
+
+    assert format.get_value(bz2_compressed_file, Key("$.foo")) == "foo value"
+    bz2_compressed_file.seek(0)
+    assert format.get_values(bz2_compressed_file, [Key("$.foo")]) == {
+        Key("$.foo"): "foo value",
+    }
+    bz2_compressed_file.seek(0)
+    assert format.get_value(bz2_compressed_file, Key("$")) == {
+        "bar": "bar value",
+        "foo": "foo value",
+    }
