@@ -168,8 +168,7 @@ def spatial_extent(
 
     if not obj:
         raise ValueError(
-            "one of 'granule_localities', 'horizontal_spatial_domain', or "
-            "'vertical_spatial_domains' is required",
+            "one of 'granule_localities', 'horizontal_spatial_domain', or 'vertical_spatial_domains' is required",
         )
 
     return obj

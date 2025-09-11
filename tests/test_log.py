@@ -44,11 +44,13 @@ def test_init_custom_log_record_factory_update(caplog):
         assert caplog.records[0].granule_name is None
         assert caplog.records[0].workflow_execution_name is None
 
-    init_custom_log_record_factory({
-        "cumulus_meta": {
-            "cumulus_version": "v0.0.0",
+    init_custom_log_record_factory(
+        {
+            "cumulus_meta": {
+                "cumulus_version": "v0.0.0",
+            },
         },
-    })
+    )
 
     caplog.clear()
     with caplog.at_level(logging.INFO):

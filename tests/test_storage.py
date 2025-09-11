@@ -40,10 +40,12 @@ def test_registry_error():
 
 def test_local_file(data_path):
     context = Context(
-        files=[{
-            "name": "local_file",
-            "path": str(data_path / "local_file.txt"),
-        }],
+        files=[
+            {
+                "name": "local_file",
+                "path": str(data_path / "local_file.txt"),
+            },
+        ],
     )
     storage = LocalFile(filters={"name": "local_file"})
 
@@ -53,10 +55,12 @@ def test_local_file(data_path):
 
 def test_local_file_name_match(data_path):
     context = Context(
-        files=[{
-            "name": "local_file",
-            "path": str(data_path / "local_file.txt"),
-        }],
+        files=[
+            {
+                "name": "local_file",
+                "path": str(data_path / "local_file.txt"),
+            },
+        ],
     )
     storage = LocalFile(filters={"name": "local_.*"})
 
@@ -66,10 +70,12 @@ def test_local_file_name_match(data_path):
 
 def test_local_file_int_filter(data_path):
     context = Context(
-        files=[{
-            "type": 0,
-            "path": str(data_path / "local_file.txt"),
-        }],
+        files=[
+            {
+                "type": 0,
+                "path": str(data_path / "local_file.txt"),
+            },
+        ],
     )
     storage = LocalFile(filters={"type": 0})
 
@@ -108,11 +114,13 @@ def test_s3_file_s3uri(s3_resource):
     obj.upload_fileobj(io.BytesIO(b"Some remote file content\n"))
 
     context = Context(
-        files=[{
-            "name": "s3_file",
-            "bucket": "test-bucket",
-            "key": "bucket_file.txt",
-        }],
+        files=[
+            {
+                "name": "s3_file",
+                "bucket": "test-bucket",
+                "key": "bucket_file.txt",
+            },
+        ],
     )
     storage = S3File(filters={"name": "s3_file"})
 
@@ -128,11 +136,13 @@ def test_s3_file_s3fs_kwargs(s3_resource):
     obj.upload_fileobj(io.BytesIO(b"Some remote file content\n"))
 
     context = Context(
-        files=[{
-            "name": "s3_file",
-            "bucket": "test-bucket",
-            "key": "bucket_file.txt",
-        }],
+        files=[
+            {
+                "name": "s3_file",
+                "bucket": "test-bucket",
+                "key": "bucket_file.txt",
+            },
+        ],
     )
     storage = S3File(
         filters={"name": "s3_file"},
@@ -174,15 +184,19 @@ def test_s3_file_filters(s3_resource):
         ],
     )
 
-    storage = S3File(filters={
-        "name": "file1.txt",
-    })
+    storage = S3File(
+        filters={
+            "name": "file1.txt",
+        },
+    )
     with storage.open_file(context) as f:
         assert f.read() == b"Content from file1.txt\n"
 
-    storage = S3File(filters={
-        "type": "metadata",
-    })
+    storage = S3File(
+        filters={
+            "type": "metadata",
+        },
+    )
     with storage.open_file(context) as f:
         assert f.read() == b"Content from file2.txt\n"
 
@@ -192,28 +206,43 @@ def test_cmr_query_params():
     with pytest.raises(ValueError):
         CmrQuery(url="foobar")
 
-    assert CmrQuery(
-        base_url="http://foo.bar",
-        path="/search/granules",
-    )._get_url() == "http://foo.bar/search/granules"
-    assert CmrQuery(
-        base_url="http://foo.bar",
-        path="search/granules",
-    )._get_url() == "http://foo.bar/search/granules"
-    assert CmrQuery(
-        base_url="http://foo.bar/",
-        path="/search/granules",
-    )._get_url() == "http://foo.bar/search/granules"
-    assert CmrQuery(
-        base_url="http://foo.bar/",
-        path="search/granules",
-    )._get_url() == "http://foo.bar/search/granules"
+    assert (
+        CmrQuery(
+            base_url="http://foo.bar",
+            path="/search/granules",
+        )._get_url()
+        == "http://foo.bar/search/granules"
+    )
+    assert (
+        CmrQuery(
+            base_url="http://foo.bar",
+            path="search/granules",
+        )._get_url()
+        == "http://foo.bar/search/granules"
+    )
+    assert (
+        CmrQuery(
+            base_url="http://foo.bar/",
+            path="/search/granules",
+        )._get_url()
+        == "http://foo.bar/search/granules"
+    )
+    assert (
+        CmrQuery(
+            base_url="http://foo.bar/",
+            path="search/granules",
+        )._get_url()
+        == "http://foo.bar/search/granules"
+    )
 
-    assert CmrQuery(
-        base_url="http://foo.bar",
-        path="/search/granules",
-        format="umm_json",
-    )._get_url() == "http://foo.bar/search/granules.umm_json"
+    assert (
+        CmrQuery(
+            base_url="http://foo.bar",
+            path="/search/granules",
+            format="umm_json",
+        )._get_url()
+        == "http://foo.bar/search/granules.umm_json"
+    )
 
     assert CmrQuery(token="foobar")._get_headers() == {
         "Authorization": "foobar",

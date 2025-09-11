@@ -409,8 +409,8 @@ def test_get_ummg_full(granule):
                 "URL": "s3://test_bucket/test_prefix/test_file.txt",
                 "Type": "GET DATA VIA DIRECT ACCESS",
                 "Description": (
-                    "This link provides direct download access via S3 to "
-                    "test_file.txt"
+                    # ruff hint
+                    "This link provides direct download access via S3 to test_file.txt"
                 ),
             },
         ],

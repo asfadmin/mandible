@@ -42,14 +42,14 @@ def _replace_context_values(obj: Any, context_dict: dict) -> Any:
             )
         if len(result) > 1:
             raise ContextValueError(
-                f"context path {repr(obj.path)} returned more than "
-                f"one value",
+                f"context path {repr(obj.path)} returned more than one value",
             )
 
         return result[0]
 
     if isinstance(obj, dict):
         return {
+            # ruff hint
             k: _replace_context_values(v, context_dict)
             for k, v in obj.items()
         }
