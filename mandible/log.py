@@ -30,6 +30,7 @@ def _build_cumulus_extras_from_cma(event: _Event) -> dict[str, Any]:
         "cirrus_core_version": os.getenv("CORE_VERSION"),
         "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
         "granule_name": event.get("payload", {}).get("granules", [{}])[0].get("granuleId"),
+        "provider": event.get("meta", {}).get("provider", {}).get("id"),
         "workflow_execution_name": event.get("cumulus_meta", {}).get("execution_name"),
     }
 
@@ -48,6 +49,7 @@ def init_custom_log_record_factory(
         "cirrus_core_version": os.getenv("CORE_VERSION"),
         "cumulus_version": event.get("cumulus_meta", {}).get("cumulus_version"),
         "granule_name": event.get("payload", {}).get("granules", [{}])[0].get("granuleId"),
+        "provider": event.get("meta", {}).get("provider", {}).get("id"),
         "workflow_execution_name": event.get("cumulus_meta", {}).get("execution_name"),
     }
     """
