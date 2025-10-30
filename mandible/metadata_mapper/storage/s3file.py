@@ -11,7 +11,8 @@ class S3File(FilteredStorage):
     """A storage which reads from an AWS S3 object"""
 
     s3fs_kwargs: dict[str, Any] = field(default_factory=dict)
+    fsspec_kwargs: dict[str, Any] = field(default_factory=dict)
 
     def _open_file(self, info: dict) -> IO[bytes]:
         s3 = s3fs.S3FileSystem(anon=False, **self.s3fs_kwargs)
-        return s3.open(f"s3://{info['bucket']}/{info['key']}")
+        return s3.open(f"s3://{info['bucket']}/{info['key']}", **self.fsspec_kwargs)
