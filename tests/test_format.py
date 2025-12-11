@@ -1,6 +1,7 @@
 import bz2
 import io
 import json
+import sys
 import zipfile
 from unittest import mock
 
@@ -339,7 +340,9 @@ def test_zipinfo_jsonpath():
     format = ZipInfo()
 
     assert format.get_value(file, Key("infolist[1].compress_size")) == 21
-    assert format.get_value(file, Key("infolist[1]")) == {
+    infolist_item = format.get_value(file, Key("infolist[1]"))
+
+    expected = {
         "CRC": 3800794396,
         "comment": b"",
         "compress_size": 21,
@@ -359,6 +362,11 @@ def test_zipinfo_jsonpath():
         "reserved": 0,
         "volume": 0,
     }
+
+    if sys.version_info >= (3, 13, 0):
+        expected["compress_level"] = None
+
+    assert infolist_item == expected
 
 
 @pytest.mark.xml
