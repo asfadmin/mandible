@@ -30,7 +30,7 @@ from .types import (
 def additional_attribute(name: str, *value: str) -> AdditionalAttribute:
     return {
         "Name": name,
-        "Values": list(value),
+        "Values": [str(val) for val in value],
     }
 
 
