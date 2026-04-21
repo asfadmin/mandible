@@ -8,6 +8,7 @@ from .types import (
     ArchiveAndDistributionInformation,
     CollectionReference,
     DataGranule,
+    Geometry,
     HorizontalSpatialDomain,
     Identifier,
     Instrument,
@@ -55,6 +56,18 @@ def data_granule(
     if identifiers is not None:
         obj["Identifiers"] = identifiers
 
+    return obj
+
+
+def horizontal_spatial_domain(
+    geometry: Optional[Geometry] = None,
+    zone_identifier: Optional[str] = None,
+) -> HorizontalSpatialDomain:
+    obj: HorizontalSpatialDomain = {}
+    if geometry is not None:
+        obj["Geometry"] = geometry
+    if zone_identifier is not None:
+        obj["ZoneIdentifier"] = zone_identifier
     return obj
 
 
