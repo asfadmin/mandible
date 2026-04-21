@@ -8,6 +8,7 @@ from .types import (
     ArchiveAndDistributionInformation,
     CollectionReference,
     DataGranule,
+    Geometry,
     HorizontalSpatialDomain,
     Identifier,
     Instrument,
@@ -54,6 +55,32 @@ def data_granule(
         obj["ReprocessingActual"] = reprocessing_actual
     if identifiers is not None:
         obj["Identifiers"] = identifiers
+
+    return obj
+
+
+def horizontal_spatial_domain(
+    zone_identifier: Optional[str] = None,
+    geometry: Optional[Geometry] = None,
+    # TODO(reweeden): Implement typing
+    orbit: Optional[dict[str, Any]] = None,
+    # TODO(reweeden): Implement typing
+    track: Optional[dict[str, Any]] = None,
+) -> HorizontalSpatialDomain:
+    obj: HorizontalSpatialDomain = {}
+    if zone_identifier is not None:
+        obj["ZoneIdentifier"] = zone_identifier
+    if geometry is not None:
+        obj["Geometry"] = geometry
+    if orbit is not None:
+        obj["Orbit"] = orbit
+    if track is not None:
+        obj["Track"] = track
+
+    if orbit is None and track is None:
+        raise ValueError(
+            "one of 'orbit' or 'track' is required",
+        )
 
     return obj
 

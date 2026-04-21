@@ -183,8 +183,7 @@ class HorizontalSpatialDomain(TypedDict):
     https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule/v1.6.5/umm-g-json-schema.json#497
     """
 
-    # TODO(reweeden): Implement
-    ZoneIdentifier: NotRequired[dict[str, Any]]
+    ZoneIdentifier: NotRequired[str]
     Geometry: NotRequired[Geometry]
     # TODO(reweeden): Implement
     Orbit: NotRequired[dict[str, Any]]
