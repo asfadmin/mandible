@@ -6,9 +6,12 @@ from .types import (
     AccessConstraints,
     AdditionalAttribute,
     ArchiveAndDistributionInformation,
+    Boundary,
     CollectionReference,
     DataGranule,
+    ExclusiveZone,
     Geometry,
+    GPolygon,
     HorizontalSpatialDomain,
     Identifier,
     Instrument,
@@ -17,6 +20,7 @@ from .types import (
     OrbitCalculatedSpatialDomain,
     PGEVersionClass,
     Platform,
+    Point,
     Project,
     ProviderDate,
     RangeDateTime,
@@ -32,6 +36,12 @@ def additional_attribute(name: str, *value: str) -> AdditionalAttribute:
     return {
         "Name": name,
         "Values": list(value),
+    }
+
+
+def boundary(points: list[Point]) -> Boundary:
+    return {
+        "Points": points,
     }
 
 
@@ -59,6 +69,19 @@ def data_granule(
     return obj
 
 
+def g_polygon(
+    boundary: Boundary,
+    exclusive_zone: Optional[ExclusiveZone] = None,
+) -> GPolygon:
+    obj: GPolygon = {
+        "Boundary": boundary,
+    }
+    if exclusive_zone is not None:
+        obj["ExclusiveZone"] = exclusive_zone
+
+    return obj
+
+
 def horizontal_spatial_domain(
     zone_identifier: Optional[str] = None,
     geometry: Optional[Geometry] = None,
@@ -79,7 +102,7 @@ def horizontal_spatial_domain(
 
     if orbit is None and geometry is None:
         raise ValueError(
-            "one of 'Orbit' or 'Geometry' is required",
+            "one of 'orbit' or 'geometry' is required",
         )
 
     return obj
@@ -126,6 +149,13 @@ def platform(
         obj["Instruments"] = instruments
 
     return obj
+
+
+def point(lat: float, lon: float) -> Point:
+    return {
+        "Latitude": lat,
+        "Longitude": lon,
+    }
 
 
 def provider_date(type: str, date: str) -> ProviderDate:
