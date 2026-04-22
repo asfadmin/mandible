@@ -77,9 +77,9 @@ def horizontal_spatial_domain(
     if track is not None:
         obj["Track"] = track
 
-    if orbit is None and track is None:
+    if orbit is None and geometry is None:
         raise ValueError(
-            "one of 'orbit' or 'track' is required",
+            "one of 'Orbit' or 'Geometry' is required",
         )
 
     return obj
