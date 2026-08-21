@@ -1,8 +1,11 @@
 {
   "foo": "value for foo",
+  "empty-string": "",
   "nested": {
     "key": "value for nested"
   },
   "integer": 10,
+  "zero": 0,
+  "bool": true,
   "list": [1, 2, 3]
 }

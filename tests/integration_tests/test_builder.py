@@ -7,6 +7,7 @@ from mandible.metadata_mapper.builder import (
     floordiv,
     mapped,
     mul,
+    or_,
     sub,
     truediv,
 )
@@ -49,6 +50,22 @@ def test_template_operations(source_provider, context):
                     "string": mapped("fixed_name_file", "foo") * 2,
                     "constant": mul(10, 7),
                 },
+                "or": {
+                    "number": or_(
+                        mapped("fixed_name_file", "zero"),
+                        mapped("fixed_name_file", "integer"),
+                    ),
+                    "number_method": mapped("fixed_name_file", "zero").or_(
+                        mapped("fixed_name_file", "integer"),
+                    ),
+                    "bool": mapped("fixed_name_file", "bool").or_(True),
+                    "string": mapped("fixed_name_file", "empty-string").or_("Unknown"),
+                    "constant": or_(False, "foobar"),
+                    "missing_key": or_(
+                        mapped("fixed_name_file", "does-not-exist", default=None),
+                        mapped("fixed_name_file", "foo"),
+                    ),
+                },
                 "sub": {
                     "number": mapped("fixed_name_file", "integer") - 3,
                     "number_r": 1.5 - mapped("fixed_name_file", "integer"),
@@ -83,6 +100,14 @@ def test_template_operations(source_provider, context):
             "number_r": 15.0,
             "string": "value for foovalue for foo",
             "constant": 70,
+        },
+        "or": {
+            "number": 10,
+            "number_method": 10,
+            "bool": True,
+            "string": "Unknown",
+            "constant": "foobar",
+            "missing_key": "value for foo",
         },
         "sub": {
             "number": 7,
