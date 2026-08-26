@@ -8,6 +8,7 @@ from .directive import (
     FloorDiv,
     Mapped,
     Mul,
+    Or,
     Reformatted,
     Sub,
     TemplateDirective,
@@ -47,6 +48,9 @@ class DirectiveBuilder(Builder):
                 for k, v in self.params.items()
             },
         }
+
+    def or_(self, other: Any) -> "DirectiveBuilder":
+        return or_(self, other)
 
     def __add__(self, other: Any) -> "DirectiveBuilder":
         return add(self, other)
@@ -188,6 +192,17 @@ def mul(
     right: Any,
 ) -> DirectiveBuilder:
     directive_name = Mul.directive_name
+    assert directive_name is not None
+
+    return _binop_directive(directive_name, left, right)
+
+
+@_directive_builder(Or)
+def or_(
+    left: Any,
+    right: Any,
+) -> DirectiveBuilder:
+    directive_name = Or.directive_name
     assert directive_name is not None
 
     return _binop_directive(directive_name, left, right)

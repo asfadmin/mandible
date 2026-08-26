@@ -35,6 +35,14 @@ class Mul(_BinOp):
 
 
 @dataclass
+class Or(_BinOp):
+    """Perform a python or operation on two values."""
+
+    def call(self) -> Any:
+        return self.left or self.right
+
+
+@dataclass
 class Sub(_BinOp):
     """Perform a python - operation on two values."""
 

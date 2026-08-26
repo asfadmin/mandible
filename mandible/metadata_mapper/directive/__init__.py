@@ -1,6 +1,6 @@
 from .directive import DIRECTIVE_REGISTRY, Key, TemplateDirective, get_key
 from .mapped import Mapped
-from .operations import Add, FloorDiv, Mul, Sub, TrueDiv
+from .operations import Add, FloorDiv, Mul, Or, Sub, TrueDiv
 from .reformatted import Reformatted
 
 __all__ = (
@@ -10,6 +10,7 @@ __all__ = (
     "Key",
     "Mapped",
     "Mul",
+    "Or",
     "Reformatted",
     "Sub",
     "TemplateDirective",

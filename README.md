@@ -39,29 +39,33 @@ mapper = MetadataMapper(
         "polarization": {
             "@mapped": {
                 "source": "met.json",
-                "key": "Polarization"
-            }
-        }
-    },
-    source_provider=ConfigSourceProvider({
-        "met.json": {
-            "storage": {
-                "class": "LocalFile",
-                "filters": {
-                    "name": r".*\.met\.json"
-                }
+                "key": "Polarization",
             },
-            "format": {
-                "class": "Json"
-            }
+        },
+    },
+    source_provider=ConfigSourceProvider(
+        {
+            "met.json": {
+                "storage": {
+                    "class": "LocalFile",
+                    "filters": {
+                        "name": r".*\.met\.json",
+                    },
+                },
+                "format": {
+                    "class": "Json",
+                },
+            },
         }
-    })
+    ),
 )
 context = Context(
-    files=[{
-        "name": "my-granule.met.json",
-        "path": "/tmp/ingest/my-granule.met.json"
-    }]
+    files=[
+        {
+            "name": "my-granule.met.json",
+            "path": "/tmp/ingest/my-granule.met.json",
+        }
+    ]
 )
 
 mapper.get_metadata(context)
