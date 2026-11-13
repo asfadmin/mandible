@@ -5,6 +5,7 @@ from typing import IO, Any, Optional, Union
 import requests
 
 from mandible.metadata_mapper.context import Context
+from mandible.metadata_mapper.exception import MetadataMapperError
 
 from .storage import Storage
 
@@ -24,6 +25,7 @@ class HttpRequest(Storage):
     cookies: Optional[dict] = None
     timeout: Optional[Union[float, tuple[float, float]]] = None
     allow_redirects: bool = True
+    raise_for_status: bool = True
 
     def open_file(self, context: Context) -> IO[bytes]:
         kwargs = {
@@ -41,6 +43,14 @@ class HttpRequest(Storage):
             **self._get_override_request_args(context),
         }
         response = requests.request(**kwargs)
+
+        if self.raise_for_status:
+            try:
+                response.raise_for_status()
+            except requests.HTTPError as e:
+                raise MetadataMapperError(
+                    f"HTTPError: {e} with response body: {e.response.text[:2048]}",
+                ) from e
 
         # TODO(reweeden): Using response.content causes the entire response
         # payload to be loaded into memory immediately. Ideally, we would
