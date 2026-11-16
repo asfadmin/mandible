@@ -4,6 +4,15 @@ from hashlib import md5
 import pytest
 
 from mandible.metadata_mapper.context import Context
+from mandible.metadata_mapper.format import (
+    H5,
+    Bzip2File,
+    Json,
+    Xml,
+    ZipInfo,
+    ZipMember,
+)
+from mandible.metadata_mapper.key import Key
 from mandible.metadata_mapper.storage import (
     STORAGE_REGISTRY,
     CmrQuery,
@@ -199,6 +208,131 @@ def test_s3_file_filters(s3_resource):
     )
     with storage.open_file(context) as f:
         assert f.read() == b"Content from file2.txt\n"
+
+
+@pytest.mark.http
+def test_http_request(requests_mock):
+    requests_mock.get("mock://test.com", text="Some remote file content\n")
+
+    context = Context()
+    storage = HttpRequest(url="mock://test.com")
+
+    with storage.open_file(context) as f:
+        assert f.read() == b"Some remote file content\n"
+
+
+@pytest.mark.http
+def test_http_request_with_format_bzip2(data_path, requests_mock):
+    requests_mock.get(
+        "mock://test.com",
+        content=(data_path / "example.json.bz2").read_bytes(),
+    )
+
+    context = Context()
+    storage = HttpRequest(url="mock://test.com")
+
+    with storage.open_file(context) as f:
+        assert Bzip2File(Json()).get_value(f, Key("description")) == "A store inventory"
+
+
+@pytest.mark.h5
+@pytest.mark.http
+def test_http_request_with_format_h5(data_path, requests_mock):
+    requests_mock.get(
+        "mock://test.com",
+        content=(data_path / "example.h5").read_bytes(),
+    )
+
+    context = Context()
+    storage = HttpRequest(url="mock://test.com")
+
+    with storage.open_file(context) as f:
+        assert H5().get_value(f, Key("description")) == "A store inventory"
+
+
+@pytest.mark.http
+def test_http_request_with_format_json(data_path, requests_mock):
+    requests_mock.get(
+        "mock://test.com",
+        content=(data_path / "example.json").read_bytes(),
+    )
+
+    context = Context()
+    storage = HttpRequest(url="mock://test.com")
+
+    with storage.open_file(context) as f:
+        assert Json().get_value(f, Key("description")) == "A store inventory"
+
+
+@pytest.mark.xml
+@pytest.mark.http
+def test_http_request_with_format_xml(data_path, requests_mock):
+    requests_mock.get(
+        "mock://test.com",
+        content=(data_path / "example.xml").read_bytes(),
+    )
+
+    context = Context()
+    storage = HttpRequest(url="mock://test.com")
+
+    with storage.open_file(context) as f:
+        assert Xml().get_value(f, Key("/root/description")) == "A store inventory"
+
+
+@pytest.mark.http
+def test_http_request_with_format_zip_info(data_path, requests_mock):
+    requests_mock.get(
+        "mock://test.com",
+        content=(data_path / "example.zip").read_bytes(),
+    )
+
+    context = Context()
+    storage = HttpRequest(url="mock://test.com")
+
+    with storage.open_file(context) as f:
+        assert ZipInfo().get_value(f, Key("infolist[0].filename")) == "example.json"
+
+
+@pytest.mark.http
+def test_http_request_with_format_zip_member(data_path, requests_mock):
+    requests_mock.get(
+        "mock://test.com",
+        content=(data_path / "example.zip").read_bytes(),
+    )
+
+    context = Context()
+    storage = HttpRequest(url="mock://test.com")
+
+    with storage.open_file(context) as f:
+        assert (
+            ZipMember(
+                filters={"filename": "example.json"},
+                format=Json(),
+            ).get_value(f, Key("description"))
+            == "A store inventory"
+        )
+
+
+@pytest.mark.http
+def test_cmr_query(requests_mock):
+    requests_mock.get(
+        "//test.com/foobar.umm_json?collection_concept_id=C1234567890-ASF&granule_ur=GRANULE_UR",
+        json={"items": [{"foo": "bar"}]},
+    )
+
+    context = Context()
+    storage = CmrQuery(
+        base_url="http://test.com",
+        path="/foobar",
+        format="umm_json",
+        params={
+            "collection_concept_id": "C1234567890-ASF",
+            "granule_ur": "GRANULE_UR",
+        },
+    )
+
+    with storage.open_file(context) as f:
+        assert f.read() == b'{"items": [{"foo": "bar"}]}'
 
 
 @pytest.mark.http
