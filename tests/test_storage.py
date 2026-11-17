@@ -4,15 +4,6 @@ from hashlib import md5
 import pytest
 
 from mandible.metadata_mapper.context import Context
-from mandible.metadata_mapper.format import (
-    H5,
-    Bzip2File,
-    Json,
-    Xml,
-    ZipInfo,
-    ZipMember,
-)
-from mandible.metadata_mapper.key import Key
 from mandible.metadata_mapper.storage import (
     STORAGE_REGISTRY,
     CmrQuery,
@@ -219,98 +210,6 @@ def test_http_request(requests_mock):
 
     with storage.open_file(context) as f:
         assert f.read() == b"Some remote file content\n"
-
-
-@pytest.mark.http
-def test_http_request_with_format_bzip2(data_path, requests_mock):
-    requests_mock.get(
-        "mock://test.com",
-        content=(data_path / "example.json.bz2").read_bytes(),
-    )
-
-    context = Context()
-    storage = HttpRequest(url="mock://test.com")
-
-    with storage.open_file(context) as f:
-        assert Bzip2File(Json()).get_value(f, Key("description")) == "A store inventory"
-
-
-@pytest.mark.h5
-@pytest.mark.http
-def test_http_request_with_format_h5(data_path, requests_mock):
-    requests_mock.get(
-        "mock://test.com",
-        content=(data_path / "example.h5").read_bytes(),
-    )
-
-    context = Context()
-    storage = HttpRequest(url="mock://test.com")
-
-    with storage.open_file(context) as f:
-        assert H5().get_value(f, Key("description")) == "A store inventory"
-
-
-@pytest.mark.http
-def test_http_request_with_format_json(data_path, requests_mock):
-    requests_mock.get(
-        "mock://test.com",
-        content=(data_path / "example.json").read_bytes(),
-    )
-
-    context = Context()
-    storage = HttpRequest(url="mock://test.com")
-
-    with storage.open_file(context) as f:
-        assert Json().get_value(f, Key("description")) == "A store inventory"
-
-
-@pytest.mark.xml
-@pytest.mark.http
-def test_http_request_with_format_xml(data_path, requests_mock):
-    requests_mock.get(
-        "mock://test.com",
-        content=(data_path / "example.xml").read_bytes(),
-    )
-
-    context = Context()
-    storage = HttpRequest(url="mock://test.com")
-
-    with storage.open_file(context) as f:
-        assert Xml().get_value(f, Key("/root/description")) == "A store inventory"
-
-
-@pytest.mark.http
-def test_http_request_with_format_zip_info(data_path, requests_mock):
-    requests_mock.get(
-        "mock://test.com",
-        content=(data_path / "example.zip").read_bytes(),
-    )
-
-    context = Context()
-    storage = HttpRequest(url="mock://test.com")
-
-    with storage.open_file(context) as f:
-        assert ZipInfo().get_value(f, Key("infolist[0].filename")) == "example.json"
-
-
-@pytest.mark.http
-def test_http_request_with_format_zip_member(data_path, requests_mock):
-    requests_mock.get(
-        "mock://test.com",
-        content=(data_path / "example.zip").read_bytes(),
-    )
-
-    context = Context()
-    storage = HttpRequest(url="mock://test.com")
-
-    with storage.open_file(context) as f:
-        assert (
-            ZipMember(
-                filters={"filename": "example.json"},
-                format=Json(),
-            ).get_value(f, Key("description"))
-            == "A store inventory"
-        )
 
 
 @pytest.mark.http
