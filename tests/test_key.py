@@ -12,3 +12,7 @@ def test_resolve_list_match():
 
     with pytest.raises(ValueError, match="returned multiple values"):
         Key("foo").resolve_list_match(["a", "b", "c"])
+
+
+def test_repr():
+    assert "default=RAISE_EXCEPTION" in repr(Key("foo"))
