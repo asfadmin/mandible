@@ -202,6 +202,39 @@ def test_s3_file_filters(s3_resource):
 
 
 @pytest.mark.http
+def test_http_request(requests_mock):
+    requests_mock.get("mock://test.com", text="Some remote file content\n")
+
+    context = Context()
+    storage = HttpRequest(url="mock://test.com")
+
+    with storage.open_file(context) as f:
+        assert f.read() == b"Some remote file content\n"
+
+
+@pytest.mark.http
+def test_cmr_query(requests_mock):
+    requests_mock.get(
+        "//test.com/foobar.umm_json?collection_concept_id=C1234567890-ASF&granule_ur=GRANULE_UR",
+        json={"items": [{"foo": "bar"}]},
+    )
+
+    context = Context()
+    storage = CmrQuery(
+        base_url="http://test.com",
+        path="/foobar",
+        format="umm_json",
+        params={
+            "collection_concept_id": "C1234567890-ASF",
+            "granule_ur": "GRANULE_UR",
+        },
+    )
+
+    with storage.open_file(context) as f:
+        assert f.read() == b'{"items": [{"foo": "bar"}]}'
+
+
+@pytest.mark.http
 def test_cmr_query_params():
     with pytest.raises(ValueError):
         CmrQuery(url="foobar")

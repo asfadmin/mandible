@@ -1,5 +1,5 @@
 import urllib.parse
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from typing import Optional
 
 from mandible.metadata_mapper.context import Context
@@ -16,7 +16,7 @@ class CmrQuery(HttpRequest):
     base_url: str = ""
     path: str = ""
     format: str = ""
-    token: Optional[str] = None
+    token: Optional[str] = field(repr=False, default=None)
 
     def __post_init__(self, url: Optional[str]) -> None:
         if url:

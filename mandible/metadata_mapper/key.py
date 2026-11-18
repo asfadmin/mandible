@@ -2,7 +2,15 @@ from dataclasses import dataclass
 from typing import Any, TypeVar, Union
 
 T = TypeVar("T")
-RAISE_EXCEPTION = object()
+
+
+# TODO(reweeden): Use sentinel() in python3.15
+class _RAISE_EXCEPTION_TYPE:
+    def __repr__(self) -> str:
+        return "RAISE_EXCEPTION"
+
+
+RAISE_EXCEPTION = _RAISE_EXCEPTION_TYPE()
 
 
 @dataclass(frozen=True)
