@@ -41,6 +41,7 @@ moto = "^5.0.0"
 pytest = "^8.0.2"
 pytest-cov = "^4.0.0"
 pytest-mock = "^3.8.2"
+requests-mock = "^1.12.1"
 
 [tool.poetry.group.mypy.dependencies]
 lxml-stubs = "^0.5.1"
